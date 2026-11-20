@@ -33,7 +33,12 @@ Thiết kế: font **Be Vietnam Pro** cho toàn trang (kể cả nhãn nhỏ), d
   - Nguồn: benhvienhungvuong.vn/favicon.png và logo đầu trang của website BV.
   - Lưu ý: khung xem trước dạng data: không tải được ảnh tương đối; xem thử bằng server cục bộ hoặc sau khi deploy.
 - Khẩu hiệu BV: "Thân thiện – Chuyên nghiệp – Chu đáo" (màu accent, chữ nghiêng).
-- Ảnh: không dùng ảnh chụp; minh hoạ SVG (`.hero-art`: hình thoi, lọ thuốc, viên nang, vỉ thuốc), ẩn dưới 820px.
+- Ảnh thật của BV (nguồn: website BV + Google Sites cũ), nén WebP trong `assets/`:
+  - `bv-toan-canh.webp` (1920×1080, ~270KB) – ảnh flycam toàn cảnh, làm nền hero dưới lớp phủ xanh.
+  - `bv-cong-chinh.webp` (1200×800, ~160KB) – cổng chính & toà nhà A, ở mục "Về Khoa Dược", kèm nút "Video giới thiệu" → YouTube bCUnUgNY9gw.
+  - Không dùng ảnh minh hoạ AI/stock của Sites cũ (bác sĩ cầm bảng, lọ thuốc) và ảnh cơ sở Gia Lai/Thanh Ba.
+  - Ảnh mới: resize ≤1920px, WebP q55–78, giữ mỗi ảnh < 300KB.
+  - (Sau) Cần ảnh thật của **Khoa Dược** (kho thuốc, quầy cấp phát, tập thể khoa) – chưa có.
 ## Link đã biết
 - Thông tin thuốc BVHV: https://script.google.com/macros/s/AKfycbw0rOd8davPK5fL-vFp8-aj3DEPztAGZ8WfGx-9Joi0q9zcZ37hXxZigjjtA6xWlhP7/exec
 - Website BV: https://benhvienhungvuong.vn/

@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#1577bc">
 <link rel="icon" type="image/png" href="assets/favicon-bvhv.png">
 <link rel="apple-touch-icon" href="assets/favicon-bvhv.png">
+<link rel="preload" as="image" href="assets/bv-toan-canh.webp" type="image/webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -79,7 +80,10 @@ header.nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--s
 .theme:hover{border-color:var(--brand);color:var(--brand)}
 
 /* ================= HERO ================= */
-.hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(135deg,var(--hero-a) 0%,var(--hero-b) 100%)}
+/* Nền: ảnh toàn cảnh BV phủ lớp xanh nhận diện để chữ trắng luôn dễ đọc */
+.hero{position:relative;overflow:hidden;color:#fff;background:
+  linear-gradient(105deg,color-mix(in srgb,var(--hero-a) 95%,transparent) 0%,color-mix(in srgb,var(--hero-b) 84%,transparent) 45%,color-mix(in srgb,var(--hero-b) 38%,transparent) 100%),
+  url(assets/bv-toan-canh.webp) center 40%/cover no-repeat var(--hero-b)}
 .hero::before,.hero::after{content:"";position:absolute;border:2px solid rgb(255 255 255 / .08);transform:rotate(45deg);pointer-events:none}
 .hero::before{width:520px;height:520px;right:-140px;top:-220px}
 .hero::after{width:300px;height:300px;right:220px;bottom:-200px;border-color:rgb(255 255 255 / .06)}
@@ -164,9 +168,21 @@ section+section{border-top:1px solid var(--line)}
 .vid small{display:block;color:var(--muted);font-size:var(--fs-xs)}
 
 /* about + contact */
-.contact{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:48px;align-items:start}
-.contact .sec-head{margin-bottom:20px}
+.about-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:56px;align-items:center}
+.about .sec-head{margin-bottom:16px}
 .about p{color:var(--muted);font-size:var(--fs-base)}
+.photo{position:relative;margin:0;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);aspect-ratio:3/2;background:var(--tint)}
+.photo img{display:block;width:100%;height:100%;object-fit:cover}
+.photo figcaption{position:absolute;inset:auto 0 0 0;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding:56px 20px 18px;background:linear-gradient(transparent,rgb(6 22 38 / .82));color:#fff;font-size:var(--fs-sm);line-height:1.45}
+.photo figcaption b{display:block;font-size:var(--fs-base)}
+.play-btn{display:inline-flex;align-items:center;gap:10px;flex:none;background:#fff;color:#13263a;text-decoration:none;font-size:var(--fs-sm);font-weight:600;padding:6px 16px 6px 6px;border-radius:99px;box-shadow:0 6px 18px -6px rgb(0 0 0 / .5);transition:transform .2s}
+.play-btn:hover{transform:translateY(-2px)}
+.play-btn span{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center}
+.facts{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:10px}
+.facts li{display:flex;gap:12px;align-items:flex-start;font-size:var(--fs-base);line-height:1.5}
+.facts svg{flex:none;color:var(--brand);margin-top:3px}
+.card{margin-top:56px}
+.card .cl{grid-template-columns:repeat(3,minmax(0,1fr))}
 .note{display:flex;gap:14px;margin-top:24px;padding:18px 20px;background:var(--accent-tint);border-radius:var(--r);font-size:var(--fs-sm);line-height:1.6;color:var(--ink)}
 .note svg{color:var(--accent);flex:none;margin-top:2px}
 .card{background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:#fff;border-radius:var(--r-lg);padding:32px;box-shadow:var(--shadow)}
@@ -195,7 +211,9 @@ footer{background:var(--navy);color:#b7c6d6;font-size:var(--fs-sm);margin-top:0}
 @media (max-width:980px){
   .hero .wrap{grid-template-columns:1fr;gap:40px}
   .quick{max-width:600px}
-  .split,.contact{grid-template-columns:1fr}
+  .split,.about-grid{grid-template-columns:1fr}
+  .about-grid{gap:36px}
+  .card .cl{grid-template-columns:1fr}
   .foot{grid-template-columns:1fr 1fr}
   .foot>div:first-child{grid-column:1/-1}
 }
@@ -313,18 +331,32 @@ footer{background:var(--navy);color:#b7c6d6;font-size:var(--fs-sm);margin-top:0}
   </section>
 
   <section id="lien-he">
-    <div class="wrap contact">
+    <div class="wrap">
+     <div class="about-grid">
+      <figure class="photo">
+        <img src="assets/bv-cong-chinh.webp" width="1200" height="800" loading="lazy" alt="Cổng chính và toà nhà A, Bệnh viện Đa khoa Hùng Vương">
+        <figcaption>
+          <span><b>Bệnh viện Đa khoa Hùng Vương</b>Cổng chính · Toà nhà A</span>
+          <a class="play-btn" href="https://www.youtube.com/watch?v=bCUnUgNY9gw" target="_blank" rel="noopener"><span><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" fill="currentColor"/></svg></span>Video giới thiệu</a>
+        </figcaption>
+      </figure>
       <div class="about">
         <div class="sec-head">
           <span class="label">04 · Giới thiệu</span>
           <h2>Về Khoa Dược</h2>
         </div>
         <p>Khoa Dược – Bệnh viện Đa khoa Hùng Vương cung cấp thông tin thuốc, giám sát sử dụng thuốc an toàn – hợp lý và hỗ trợ chuyên môn cho các khoa lâm sàng.</p>
+        <ul class="facts">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>Thông tin thuốc cập nhật theo danh mục bệnh viện</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>Giám sát sử dụng thuốc an toàn – hợp lý</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>Hỗ trợ chuyên môn cho các khoa lâm sàng</li>
+        </ul>
         <div class="note">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>
           <span><strong>Lưu ý:</strong> Thông tin trên trang chỉ mang tính tham khảo cho nhân viên y tế. Luôn đối chiếu với tờ hướng dẫn sử dụng, Dược thư Quốc gia và hướng dẫn chẩn đoán – điều trị của Bộ Y tế trước khi chỉ định.</span>
         </div>
       </div>
+     </div>
       <div class="card">
         <h3>Liên hệ Khoa Dược</h3>
         <ul class="cl">
@@ -333,7 +365,7 @@ footer{background:var(--navy);color:#b7c6d6;font-size:var(--fs-sm);margin-top:0}
           <li><span class="ci"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
             <span><small class="dt">Website bệnh viện</small><span class="dd"><a href="https://benhvienhungvuong.vn/" target="_blank" rel="noopener">benhvienhungvuong.vn</a></span></span></li>
           <li><span class="ci"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-            <span><small class="dt">Góp ý</small><span class="dd">Gửi qua email – sẽ có biểu mẫu góp ý</span></span></li>
+            <span><small class="dt">Góp ý</small><span class="dd">Gửi qua email Khoa Dược</span></span></li>
         </ul>
       </div>
     </div>
