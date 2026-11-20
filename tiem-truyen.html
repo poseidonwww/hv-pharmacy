@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pha thuốc tiêm truyền · Khoa Dược BVĐK Hùng Vương</title>
+<meta name="description" content="Hướng dẫn hoàn nguyên, pha loãng, nồng độ, tốc độ truyền và bảo quản thuốc tiêm truyền tại Bệnh viện Đa khoa Hùng Vương.">
+<meta name="theme-color" content="#1577bc">
+<link rel="icon" type="image/png" href="assets/favicon-bvhv.png">
+<link rel="apple-touch-icon" href="assets/favicon-bvhv.png">
+<link rel="preconnect" href="https://docs.google.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* ===== Riêng trang Thuốc tiêm truyền ===== */
+.page-hero .lead{margin-bottom:24px;max-width:64ch}
+.page-hero .search{max-width:720px}
+.groups{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.groups button{font:600 var(--fs-sm) var(--font);color:#fff;background:rgb(255 255 255 / .12);border:1px solid rgb(255 255 255 / .25);border-radius:99px;padding:8px 14px;cursor:pointer}
+.groups button[aria-pressed=true]{background:#fff;color:var(--brand);border-color:#fff}
+.groups b{font-weight:500;opacity:.7;margin-left:4px}
+
+.results{padding:40px 0 72px}
+.gtitle{font-size:var(--fs-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:28px 0 12px}
+.gtitle:first-child{margin-top:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card-d{display:flex;flex-direction:column;gap:6px;text-align:left;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;cursor:pointer;box-shadow:var(--shadow-sm);transition:transform .2s,box-shadow .2s,border-color .2s}
+.card-d:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
+.card-d b{font-size:var(--fs-base);font-weight:700;line-height:1.35}
+.card-d .bd{color:var(--brand);font-size:var(--fs-sm);font-weight:500}
+.card-d .df{color:var(--muted);font-size:var(--fs-xs);line-height:1.5}
+.card-d .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:8px}
+.tg{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+.tg.red{background:var(--accent-tint);border-color:transparent;color:var(--accent)}
+.src{margin-top:28px;font-size:var(--fs-xs);color:var(--muted);text-align:center}
+
+/* chi tiết */
+dialog.detail{width:min(880px,calc(100% - 32px))}
+.dtop .df{font-size:var(--fs-xs);color:var(--muted);margin-top:6px;white-space:pre-line}
+.dbody{padding-top:16px}
+.dactions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:6px}
+.grp{margin-top:18px}
+.grp h3{display:flex;align-items:center;gap:10px;font-size:var(--fs-base);margin-bottom:10px}
+.grp h3 span{width:26px;height:26px;border-radius:8px;background:var(--tint);color:var(--brand);display:grid;place-items:center;font-size:13px;font-weight:700;flex:none}
+.fields{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin:0}
+.fl{display:grid;grid-template-columns:minmax(150px,32%) 1fr;gap:16px;padding:12px 16px}
+.fl+.fl{border-top:1px solid var(--line)}
+.fl dt{font-size:var(--fs-sm);font-weight:600;color:var(--muted)}
+.fl dd{margin:0;font-size:var(--fs-base);line-height:1.6;white-space:pre-line}
+.fl.key{background:var(--accent-tint)}
+.fl.key dt{color:var(--accent)}
+.fl.key dd{font-weight:600}
+.warn{display:flex;gap:12px;margin-top:18px;padding:14px 16px;border-radius:var(--r);background:var(--accent-tint);border-left:4px solid var(--accent);line-height:1.6;white-space:pre-line}
+.warn svg{flex:none;color:var(--accent);margin-top:3px}
+@media (max-width:760px){
+  .fl{grid-template-columns:1fr;gap:4px}
+}
+@media print{
+  .topbar,header.nav,.page-hero,.results,footer{display:none!important}
+  dialog.detail{position:static;box-shadow:none;width:100%;max-height:none}
+  .dwrap{max-height:none}.dbody{overflow:visible}.x,.dactions{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <span>Bệnh viện Đa khoa Hùng Vương · Khoa Dược</span>
+  <span>Email: <a href="mailto:khoaduochv@gmail.com">khoaduochv@gmail.com</a></span>
+</div></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="./" aria-label="Khoa Dược – BVĐK Hùng Vương, trang chủ">
+      <img src="assets/favicon-bvhv.png" width="44" height="44" alt="">
+      <span><b>Khoa Dược</b><small>Bệnh viện Đa khoa Hùng Vương</small></span>
+    </a>
+    <ul>
+      <li><a href="danh-muc.html">Danh mục thuốc</a></li>
+      <li><a href="tiem-truyen.html" aria-current="page">Tiêm truyền</a></li>
+      <li><a href="dac-biet.html">Người bệnh đặc biệt</a></li>
+      <li><a href="./#lien-he">Liên hệ</a></li>
+    </ul>
+    <button class="theme" id="theme" aria-label="Đổi giao diện sáng/tối">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="hero page-hero">
+    <div class="wrap">
+      <nav class="crumb" aria-label="Đường dẫn"><a href="./">Trang chủ</a><span>/</span><span>Thuốc tiêm truyền</span></nav>
+      <h1>Pha và sử dụng thuốc tiêm truyền</h1>
+      <p class="lead">Cách hoàn nguyên, pha loãng, nồng độ khuyến cáo, tốc độ truyền và bảo quản sau pha cho các thuốc tiêm đang dùng tại bệnh viện.</p>
+      <label class="search" for="q">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="q" type="search" placeholder="Nhập tên thuốc hoặc biệt dược… (vd: vancomycin)" autocomplete="off">
+        <kbd>/</kbd>
+      </label>
+      <div class="groups" id="groups" role="group" aria-label="Lọc theo nhóm"></div>
+    </div>
+  </div>
+
+  <section class="results" aria-live="polite">
+    <div class="wrap">
+      <div class="rhead"><h2 id="rtitle">Tất cả thuốc</h2><span id="rcount"></span></div>
+      <div id="out"><div class="cards"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div></div>
+      <p class="src">Nguồn dữ liệu: bảng “Pha truyền” của Khoa Dược (Google Sheets), tự cập nhật khi khoa sửa bảng.</p>
+    </div>
+  </section>
+</main>
+
+<dialog class="detail" id="detail" aria-labelledby="d-name">
+  <div class="dwrap">
+    <div class="dtop">
+      <div><h2 id="d-name"></h2><div class="inn" id="d-bd"></div><div class="df" id="d-df"></div></div>
+      <button class="x" id="d-close" aria-label="Đóng"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="dbody" id="d-body"></div>
+  </div>
+</dialog>
+
+<footer>
+  <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span><a href="./" style="color:inherit">← Về trang chủ</a></span></div></div>
+</footer>
+
+<script>
+/* ====== CẤU HÌNH ======
+   Bảng "Pha truyền" (chủ sở hữu: khoaduochv@gmail.com), trang tính đầu tiên.
+   2 dòng tiêu đề; dòng chỉ có cột A (vd "Thuốc kháng sinh") là tên NHÓM.
+   Cột: A Tên thuốc · B Biệt dược · C Dạng bào chế · D Bảo quản · E Cảm quan · F Cách hoàn nguyên
+        G Bảo quản sau hoàn nguyên · H Cách pha loãng · I Nồng độ khuyến cáo · J Thời gian/tốc độ truyền
+        K Đặc điểm dung dịch pha loãng · L Bảo quản sau pha loãng · M Đường dùng ngoài tĩnh mạch · N Lưu ý */
+const SHEET_ID="1w29urr_OiIs4MAurEwM8oLKdVMpq3k9z699i_WWNEJs";
+const OLD_TOOL="https://script.google.com/macros/s/AKfycbzzTYnZqhwLdG7ZC_CO_xzSoFzMoCABXwwYPPV9DoHxjEROSdMpC4dZrjOJcp0apwFHyg/exec";
+const GROUPS=[ // [tiêu đề, [[cột, nhãn, nổi bật?], ...]]
+  ["Mô tả",[[2,"Dạng bào chế"],[3,"Bảo quản"],[4,"Cảm quan"]]],
+  ["Hoàn nguyên",[[5,"Cách hoàn nguyên"],[6,"Bảo quản sau hoàn nguyên"]]],
+  ["Pha loãng & truyền",[[7,"Cách pha loãng"],[8,"Nồng độ khuyến cáo",1],[9,"Thời gian / tốc độ truyền",1],[10,"Đặc điểm dung dịch pha loãng"],[11,"Bảo quản sau pha loãng"]]],
+  ["Đường dùng ngoài tĩnh mạch",[[12,"Tiêm bắp / đường khác"]]]
+];
+/* ====================== */
+
+const $=id=>document.getElementById(id);
+const CACHE_KEY="hv-tt-v1";
+const URL_CSV=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=0`;
+const norm=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/gi,"d").toLowerCase();
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clean=s=>(s||"").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim();
+function parseCSV(t){const rows=[];let row=[],f="",q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}else if(c==='"')q=true;else if(c===','){row.push(f);f=""}else if(c==='\n'){row.push(f);rows.push(row);row=[];f=""}else if(c!=='\r')f+=c}if(f||row.length){row.push(f);rows.push(row)}return rows}
+
+let ALL=[], GNAMES=[], group="";
+function setData(csv){
+  const rows=parseCSV(csv).slice(2); let g="Khác"; ALL=[]; GNAMES=[];
+  for(const r of rows){
+    const a=(r[0]||"").trim(), rest=r.slice(1).some(x=>(x||"").trim());
+    if(a&&!rest){ g=a; if(!GNAMES.includes(g)) GNAMES.push(g); continue; }
+    if(!a&&!(r[1]||"").trim()) continue;
+    const d={g,ten:a,bd:(r[1]||"").trim(),r:r.map(clean)};
+    d.id=d.ten+(d.bd?" – "+d.bd:""); d.key=norm(d.ten+" "+d.bd); d.ni=norm(d.ten); d.nb=norm(d.bd);
+    ALL.push(d);
+  }
+  if(!GNAMES.length) GNAMES=["Khác"];
+  $("groups").innerHTML=[["","Tất cả",ALL.length],...GNAMES.map(n=>[n,n,ALL.filter(d=>d.g===n).length])]
+    .map(([v,t,n])=>`<button data-g="${esc(v)}" aria-pressed="${v===group}">${esc(t)}<b>${n}</b></button>`).join("");
+  render(); openFromHash();
+}
+function render(){
+  const raw=$("q").value.trim(), ws=norm(raw).split(/\s+/).filter(Boolean);
+  let v=ALL.filter(d=>(!group||d.g===group)&&ws.every(w=>d.key.includes(w)));
+  if(ws.length){const w=ws[0],rk=d=>d.ni.startsWith(w)?0:d.nb.startsWith(w)?1:2; v=v.map(d=>[rk(d),d]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);}
+  $("rtitle").textContent=ws.length?`Kết quả cho “${raw}”`:(group||"Tất cả thuốc");
+  $("rcount").textContent=`${v.length} thuốc`;
+  if(!v.length){$("out").innerHTML=`<div class="state">Không tìm thấy thuốc phù hợp. Thuốc chưa có trong bảng có thể tra ở <a href="danh-muc.html">Danh mục thuốc</a>.</div>`;return}
+  const card=d=>{const t=[];if(d.r[5])t.push('<span class="tg">Hoàn nguyên</span>');if(d.r[8])t.push('<span class="tg red">Nồng độ tối đa</span>');if(d.r[13])t.push('<span class="tg red">Lưu ý</span>');
+    return `<button class="card-d" data-id="${esc(d.id)}"><b>${esc(d.ten||d.bd)}</b>${d.bd&&d.ten?`<span class="bd">${esc(d.bd)}</span>`:""}${d.r[2]?`<span class="df">${esc(d.r[2].split("\n")[0])}</span>`:""}${t.length?`<span class="tags">${t.join("")}</span>`:""}</button>`};
+  const gs=(group||ws.length)?[[ws.length?"":group,v]]:GNAMES.map(n=>[n,v.filter(d=>d.g===n)]).filter(x=>x[1].length);
+  $("out").innerHTML=gs.map(([n,arr])=>`${n&&!group?`<h3 class="gtitle">${esc(n)} · ${arr.length}</h3>`:""}<div class="cards">${arr.map(card).join("")}</div>`).join("");
+}
+function openDetail(d,push=true){
+  $("d-name").textContent=d.ten||d.bd; $("d-bd").textContent=d.ten?d.bd:""; $("d-df").textContent=d.g;
+  let h=`<div class="dactions"><button class="btn" id="d-share">Sao chép link</button><button class="btn" onclick="print()">In hướng dẫn</button><a class="btn" href="danh-muc.html" >Tra Danh mục thuốc</a></div>`;
+  let n=0;
+  for(const [title,fields] of GROUPS){
+    const fs=fields.filter(([c])=>d.r[c]); if(!fs.length) continue; n++;
+    h+=`<div class="grp"><h3><span>${n}</span>${title}</h3><dl class="fields">${fs.map(([c,l,k])=>`<div class="fl${k?" key":""}"><dt>${l}</dt><dd>${esc(d.r[c])}</dd></div>`).join("")}</dl></div>`;
+  }
+  if(d.r[13]) h+=`<div class="warn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg><div><strong>Lưu ý: </strong>${esc(d.r[13])}</div></div>`;
+  h+=`<div class="dnote"><strong>Tham khảo:</strong> Luôn đối chiếu tờ hướng dẫn sử dụng của lô thuốc đang dùng. Báo Khoa Dược khi thấy thông tin chưa khớp.</div>`;
+  $("d-body").innerHTML=h;
+  $("d-share").onclick=async e=>{try{await navigator.clipboard.writeText(location.href);e.target.textContent="Đã sao chép ✓"}catch(_){e.target.textContent=location.href}};
+  if(!$("detail").open) $("detail").showModal();
+  $("d-body").scrollTop=0;
+  if(push) history.replaceState(null,"","#t="+encodeURIComponent(d.id));
+}
+function openFromHash(){const m=location.hash.match(/^#t=(.+)$/);if(!m)return;const id=decodeURIComponent(m[1]);const d=ALL.find(x=>x.id===id);if(d)openDetail(d,false)}
+
+$("out").addEventListener("click",e=>{const b=e.target.closest(".card-d");if(b)openDetail(ALL.find(d=>d.id===b.dataset.id))});
+$("groups").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;group=b.dataset.g;[...$("groups").children].forEach(x=>x.setAttribute("aria-pressed",x===b));render()});
+let tm;$("q").addEventListener("input",()=>{clearTimeout(tm);tm=setTimeout(render,100)});
+$("d-close").onclick=()=>$("detail").close();
+$("detail").addEventListener("click",e=>{if(e.target===$("detail"))$("detail").close()});
+$("detail").addEventListener("close",()=>history.replaceState(null,"",location.pathname+location.search));
+addEventListener("hashchange",openFromHash);
+addEventListener("keydown",e=>{if(e.key==="/"&&document.activeElement!==$("q")&&!$("detail").open){e.preventDefault();$("q").focus()}});
+
+(async()=>{
+  let cached=null;try{cached=JSON.parse(localStorage.getItem(CACHE_KEY)||"null")}catch(e){}
+  if(cached&&cached.csv)setData(cached.csv);
+  try{
+    const r=await fetch(URL_CSV,{credentials:"omit"});if(!r.ok)throw new Error(r.status);
+    const csv=await r.text();
+    if(!cached||cached.csv!==csv)setData(csv);
+    try{localStorage.setItem(CACHE_KEY,JSON.stringify({t:Date.now(),csv}))}catch(e){}
+  }catch(e){
+    if(!cached)$("out").innerHTML=`<div class="state">Không tải được dữ liệu. Kiểm tra kết nối mạng rồi tải lại trang,<br>hoặc <a href="${OLD_TOOL}" target="_blank" rel="noopener">mở công cụ tra cứu cũ</a>.</div>`;
+  }
+})();
+
+const root=document.documentElement;
+try{const s=localStorage.getItem("hv-theme");if(s)root.dataset.theme=s}catch(e){}
+$("theme").onclick=()=>{const dark=root.dataset.theme?root.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;root.dataset.theme=dark?"light":"dark";try{localStorage.setItem("hv-theme",root.dataset.theme)}catch(e){}};
+</script>
+</body>
+</html>

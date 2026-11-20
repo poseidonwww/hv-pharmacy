@@ -18,6 +18,10 @@
     - Chọn suy thận/suy gan mà không gõ tên → chỉ hiện thuốc có ghi CCĐ/chỉnh liều (CCĐ lên trước). Ô trống → hiện "Tờ HDSD không ghi khuyến cáo riêng" (KHÔNG ghi "an toàn").
     - Số liệu người bệnh chỉ tính trên trình duyệt, không lưu, không gửi đi.
     - Sheet1 và Sheet2 là 2 bản riêng – khoa sửa thông tin chung cần sửa cả hai (hoặc gộp về 1 trang tính sau).
+  - `tiem-truyen.html` – Pha thuốc tiêm truyền. Nguồn: Sheet **"Pha truyền"** `1w29urr_OiIs4MAurEwM8oLKdVMpq3k9z699i_WWNEJs` (chủ: khoaduochv; có Apps Script gắn kèm "Pha chế thuốc tiêm truyền" `1u9zJha709CjDjJAk4bAkFvHQgi3vnxbfVqVNhoTYqSTSPKRxa3p4__31` – chính là công cụ cũ). Trang tính đầu, 2 dòng tiêu đề; dòng chỉ có cột A = tên nhóm ("Thuốc kháng sinh", "Thuốc tiêm truyền khác"). Cột A–N: tên, biệt dược, dạng bào chế, bảo quản, cảm quan, cách hoàn nguyên, BQ sau hoàn nguyên, cách pha loãng, **nồng độ khuyến cáo**, **tốc độ truyền** (2 cột này tô đỏ), đặc điểm dd, BQ sau pha loãng, đường ngoài TM, lưu ý. 62 thuốc, ~34KB → tải hết 1 lần (cache `hv-tt-v1`). Link chia sẻ `#t=<tên> – <biệt dược>`; có nút In.
+  - KHÔNG dùng file "Hướng dẫn pha - bảo quản kháng sinh" (11/2024) – nội dung cũ, khác bảng "Pha truyền".
+- CSS trang con dùng chung (page-hero, crumb, dialog chi tiết, nút…) nằm trong `assets/site.css` mục "TRANG CON". Menu trang con: Danh mục thuốc · Tiêm truyền · Người bệnh đặc biệt · Liên hệ.
+- Lưu ý CSS: `site.css` có rule chung cho thẻ `section` (padding 80px) → trong trang con KHÔNG dùng `<section>` cho khối nhỏ, dùng `<div>`.
 - Tài liệu PDF để trên Google Drive; video trên YouTube; góp ý dùng Google Form.
 - Giai đoạn sau: đọc danh sách tài liệu/tin từ **Google Sheets** (publish CSV) để khoa tự cập nhật không cần sửa code.
 

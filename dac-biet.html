@@ -15,11 +15,6 @@
 <link rel="stylesheet" href="assets/site.css">
 <style>
 /* ===== Riêng trang Người bệnh đặc biệt ===== */
-.page-hero .wrap{display:block;padding-top:40px;padding-bottom:44px}
-.crumb{display:flex;gap:8px;font-size:var(--fs-sm);color:rgb(255 255 255 / .75);margin-bottom:14px}
-.crumb a{color:#fff;text-decoration:none}
-.crumb a:hover{text-decoration:underline}
-.page-hero h1{font-size:clamp(28px,2vw + 18px,40px);margin:0 0 10px;max-width:none}
 .page-hero .lead{margin-bottom:0;max-width:64ch}
 
 .layout{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:32px;align-items:start;padding-top:36px;padding-bottom:72px}
@@ -55,8 +50,6 @@
 .main .search{max-width:none;box-shadow:var(--shadow-sm);border:1px solid var(--line);margin-bottom:16px}
 .main .search:focus-within{border-color:var(--brand)}
 .rhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.rhead h2{font-size:var(--fs-md);font-weight:600;letter-spacing:0}
-.rhead span{font-size:var(--fs-sm);color:var(--muted)}
 .dlist{list-style:none;margin:0;padding:0;overflow:hidden}
 .dlist li+li{border-top:1px solid var(--line)}
 .drow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;width:100%;padding:14px 18px;background:none;border:0;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:background .15s}
@@ -71,23 +64,12 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .tg.amb{background:#3a2a10;color:#ffc46b}}
 .drow .arr{color:var(--muted)}
 .more{display:block;margin:16px auto 0;font:600 var(--fs-sm) var(--font);color:var(--brand);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:10px 22px;cursor:pointer}
-.more[hidden]{display:none}
 .state{padding:36px 20px;text-align:center;color:var(--muted)}
-.state a{color:var(--brand)}
 .skel{height:72px;background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 50%,var(--surface) 100%);background-size:200% 100%;animation:sh 1.2s infinite}
-@keyframes sh{to{background-position:-200% 0}}
 .hint-box{padding:16px 18px;margin-bottom:16px;border-radius:var(--r);background:var(--tint);font-size:var(--fs-sm);color:var(--ink)}
 
 /* chi tiết */
-dialog.detail{width:min(820px,calc(100% - 32px));max-height:calc(100dvh - 48px);padding:0;border:0;border-radius:var(--r-lg);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgb(0 0 0 / .55);overflow:hidden}
-dialog.detail::backdrop{background:rgb(8 20 32 / .55);backdrop-filter:blur(2px)}
-.dwrap{display:flex;flex-direction:column;max-height:calc(100dvh - 48px)}
-.dtop{display:flex;gap:16px;align-items:flex-start;padding:22px 24px;border-bottom:1px solid var(--line);background:var(--surface-2)}
-.dtop h2{font-size:clamp(20px,1vw + 16px,24px);line-height:1.3}
-.dtop .inn{color:var(--brand);font-weight:600;margin-top:4px}
 .dtop .pt{font-size:var(--fs-xs);color:var(--muted);margin-top:6px}
-.x{margin-left:auto;flex:none;width:40px;height:40px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:grid;place-items:center}
-.x:hover{border-color:var(--brand);color:var(--brand)}
 .dbody{overflow:auto;padding:16px 24px 24px}
 .blk{border:1px solid var(--line);border-radius:var(--r);margin-top:14px;overflow:hidden}
 .blk h3{display:flex;align-items:center;gap:10px;font-size:var(--fs-base);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)}
@@ -104,20 +86,12 @@ dialog.detail::backdrop{background:rgb(8 20 32 / .55);backdrop-filter:blur(2px)}
 .blk p{line-height:1.6}
 .na{color:var(--muted);font-style:italic}
 .dactions{display:flex;flex-wrap:wrap;gap:10px}
-.btn{display:inline-flex;align-items:center;gap:8px;font:600 var(--fs-sm) var(--font);text-decoration:none;border-radius:var(--r-sm);padding:9px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
-.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
-.btn:hover{border-color:var(--brand)}
-.dnote{margin-top:16px;padding:12px 14px;border-radius:var(--r-sm);background:var(--accent-tint);font-size:var(--fs-xs);line-height:1.55}
-.nav ul a[aria-current]{color:var(--brand);background:var(--tint)}
 
 @media (max-width:980px){
   .layout{grid-template-columns:1fr}
   .side{position:static;max-height:none}
 }
 @media (max-width:760px){
-  dialog.detail{width:100%;max-width:100%;height:100dvh;max-height:100dvh;border-radius:0;margin:0}
-  .dwrap{max-height:100dvh;height:100%}
-  .dtop,.dbody{padding-left:16px;padding-right:16px}
   .layout{padding-top:24px}
 }
 </style>
@@ -136,8 +110,8 @@ dialog.detail::backdrop{background:rgb(8 20 32 / .55);backdrop-filter:blur(2px)}
       <span><b>Khoa Dược</b><small>Bệnh viện Đa khoa Hùng Vương</small></span>
     </a>
     <ul>
-      <li><a href="./#tra-cuu">Tra cứu</a></li>
       <li><a href="danh-muc.html">Danh mục thuốc</a></li>
+      <li><a href="tiem-truyen.html">Tiêm truyền</a></li>
       <li><a href="dac-biet.html" aria-current="page">Người bệnh đặc biệt</a></li>
       <li><a href="./#lien-he">Liên hệ</a></li>
     </ul>
