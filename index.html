@@ -10,134 +10,227 @@
 <link rel="apple-touch-icon" href="assets/favicon-bvhv.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
+/* ================= TOKENS =================
+   Màu nhận diện BVĐK Hùng Vương: xanh dương #1577BC + đỏ chữ thập #D7262E
+   Font: Be Vietnam Pro (không chân, tối ưu tiếng Việt), dự phòng Arial
+   Thang cỡ chữ (tỉ lệ ~1.25, gốc 16px) – chỉ dùng các biến --fs-* dưới đây */
 :root{
-  /* Màu nhận diện BVĐK Hùng Vương: xanh dương #1577BC + đỏ chữ thập */
-  --bg:#f5f8fb; --surface:#ffffff; --ink:#12263a; --muted:#556577;
-  --line:#d6dfe8; --brand:#1577bc; --brand-ink:#ffffff; --accent:#d7262e; --tint:#e6f1fa;
-  /* Font: Be Vietnam Pro (không chân, tối ưu tiếng Việt), dự phòng Arial */
-  --display:"Be Vietnam Pro",Arial,sans-serif; --body:"Be Vietnam Pro",Arial,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
-  --r:14px;
+  --bg:#f4f7fa; --surface:#ffffff; --surface-2:#f8fafc; --ink:#13263a; --muted:#56677a;
+  --line:#dde5ee; --brand:#1577bc; --brand-strong:#0f5f98; --brand-ink:#ffffff;
+  --accent:#d7262e; --tint:#e8f2fb; --accent-tint:#fdecec;
+  --hero-a:#1577bc; --hero-b:#0d4f82; --navy:#0e2a44;
+  --font:"Be Vietnam Pro",Arial,sans-serif;
+
+  --fs-xs:12.5px;   /* nhãn nhỏ, chú thích */
+  --fs-sm:14.5px;   /* mô tả thẻ, phụ đề */
+  --fs-base:16px;   /* nội dung */
+  --fs-md:18px;     /* đoạn dẫn, tiêu đề thẻ lớn */
+  --fs-lg:clamp(24px,1.4vw + 17px,32px);   /* tiêu đề mục (h2) */
+  --fs-xl:clamp(30px,2.6vw + 18px,46px);   /* tiêu đề trang (h1) */
+
+  --r-sm:10px; --r:14px; --r-lg:20px;
+  --shadow-sm:0 1px 2px rgb(16 42 68 / .06),0 1px 3px rgb(16 42 68 / .06);
+  --shadow:0 2px 4px rgb(16 42 68 / .04),0 12px 32px -12px rgb(16 42 68 / .18);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){
-  --bg:#0c1621; --surface:#132232; --ink:#e6edf4; --muted:#97a8ba;
-  --line:#253749; --brand:#5aaee8; --brand-ink:#07131e; --accent:#ff7a6b; --tint:#16293c;}}
+  --bg:#0b1520; --surface:#122131; --surface-2:#0f1c2a; --ink:#e6edf4; --muted:#9aabbd;
+  --line:#22364a; --brand:#5aaee8; --brand-strong:#82c2f0; --brand-ink:#07131e;
+  --accent:#ff7a6b; --tint:#16304a; --accent-tint:#3a1d22;
+  --hero-a:#123b5f; --hero-b:#0b2338; --navy:#081420;
+  --shadow-sm:0 1px 2px rgb(0 0 0 / .3); --shadow:0 12px 32px -12px rgb(0 0 0 / .6);}}
 :root[data-theme=dark]{
-  --bg:#0c1621; --surface:#132232; --ink:#e6edf4; --muted:#97a8ba;
-  --line:#253749; --brand:#5aaee8; --brand-ink:#07131e; --accent:#ff7a6b; --tint:#16293c;}
+  --bg:#0b1520; --surface:#122131; --surface-2:#0f1c2a; --ink:#e6edf4; --muted:#9aabbd;
+  --line:#22364a; --brand:#5aaee8; --brand-strong:#82c2f0; --brand-ink:#07131e;
+  --accent:#ff7a6b; --tint:#16304a; --accent-tint:#3a1d22;
+  --hero-a:#123b5f; --hero-b:#0b2338; --navy:#081420;
+  --shadow-sm:0 1px 2px rgb(0 0 0 / .3); --shadow:0 12px 32px -12px rgb(0 0 0 / .6);}
+
+/* ================= BASE ================= */
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--body);-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--fs-base)/1.65 var(--font);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 a{color:inherit}
+h1,h2,h3,h4{margin:0;font-weight:700;line-height:1.25;letter-spacing:-.015em}
+h1,h2{text-wrap:balance}
+p{text-wrap:pretty}
+p{margin:0}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
-.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+.label{display:inline-flex;align-items:center;gap:8px;font-size:var(--fs-xs);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
+.label::before{content:"";width:18px;height:2px;border-radius:2px;background:var(--accent)}
 
-/* nav */
-header.nav{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.nav .wrap{display:flex;align-items:center;gap:20px;height:64px}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font:700 17px/1 var(--display)}
-.logo svg{flex:none}
-.logo small{display:block;font:500 11px/1.2 var(--body);color:var(--muted);letter-spacing:.02em;margin-top:3px}
-.logo b{font-weight:600;color:var(--brand)}
-.nav ul{display:flex;gap:4px;list-style:none;margin:0 0 0 auto;padding:0}
-.nav ul a{display:block;padding:8px 12px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;color:var(--muted)}
-.nav ul a:hover{color:var(--ink);background:var(--tint)}
-.theme{border:1px solid var(--line);background:var(--surface);color:var(--ink);width:38px;height:38px;border-radius:10px;cursor:pointer;display:grid;place-items:center}
+/* ================= TOP BAR + NAV ================= */
+.topbar{background:var(--navy);color:#c9d6e3;font-size:13px}
+.topbar .wrap{display:flex;justify-content:space-between;gap:16px;height:36px;align-items:center}
+.topbar a{color:#fff;text-decoration:none}
+.topbar a:hover{text-decoration:underline}
+header.nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:24px;height:72px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo img{flex:none;display:block}
+.logo b{display:block;font-size:var(--fs-md);font-weight:700;line-height:1.2;color:var(--brand)}
+.logo small{display:block;font-size:var(--fs-xs);color:var(--muted);line-height:1.3;margin-top:2px}
+.nav ul{display:flex;gap:2px;list-style:none;margin:0 0 0 auto;padding:0}
+.nav ul a{display:block;padding:9px 14px;border-radius:var(--r-sm);text-decoration:none;font-size:15px;font-weight:500;color:var(--muted);transition:color .15s,background .15s}
+.nav ul a:hover{color:var(--brand);background:var(--tint)}
+.theme{border:1px solid var(--line);background:var(--surface);color:var(--ink);width:40px;height:40px;border-radius:var(--r-sm);cursor:pointer;display:grid;place-items:center;flex:none}
+.theme:hover{border-color:var(--brand);color:var(--brand)}
 
-/* hero */
-.hero{padding:72px 0 56px;border-bottom:1px solid var(--line);overflow:hidden}
-.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:40px;align-items:center}
-.hero-art{width:340px;height:auto;color:var(--brand)}
-.motto{font:italic 400 16px/1.4 var(--display);color:var(--accent);margin:-8px 0 24px}
-.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:10px}
-.eyebrow::before{content:"";width:28px;height:2px;background:var(--accent)}
-.hero h1{font:700 clamp(36px,5.6vw,68px)/1.08 var(--display);letter-spacing:-.025em;margin:18px 0 20px;max-width:14ch}
-.hero h1 em{font-style:normal;color:var(--brand)}
-.hero p.lead{font-size:18px;color:var(--muted);max-width:56ch;margin:0 0 32px}
-.search{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r);padding:6px 6px 6px 18px;max-width:640px;box-shadow:6px 6px 0 var(--brand)}
-.search input{flex:1;border:0;background:transparent;font:inherit;font-size:17px;color:var(--ink);padding:12px 0;min-width:0}
+/* ================= HERO ================= */
+.hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(135deg,var(--hero-a) 0%,var(--hero-b) 100%)}
+.hero::before,.hero::after{content:"";position:absolute;border:2px solid rgb(255 255 255 / .08);transform:rotate(45deg);pointer-events:none}
+.hero::before{width:520px;height:520px;right:-140px;top:-220px}
+.hero::after{width:300px;height:300px;right:220px;bottom:-200px;border-color:rgb(255 255 255 / .06)}
+.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:56px;align-items:center;padding-top:64px;padding-bottom:72px}
+.hero .label{color:#fff}
+.hero .label::before{background:#ff8a80}
+.hero h1{font-size:var(--fs-xl);line-height:1.18;letter-spacing:-.025em;margin:16px 0 12px;max-width:20ch}
+.hero h1 span{color:#bfe2ff}
+.motto{font-style:italic;font-size:var(--fs-base);color:#ffd4d0;margin-bottom:20px}
+.lead{font-size:var(--fs-md);line-height:1.6;color:rgb(255 255 255 / .86);max-width:54ch;margin-bottom:28px}
+.search{display:flex;align-items:center;gap:12px;background:var(--surface);color:var(--ink);border-radius:var(--r);padding:6px 6px 6px 18px;max-width:600px;box-shadow:0 18px 40px -16px rgb(0 0 0 / .45);border:2px solid transparent;transition:border-color .15s}
+.search:focus-within{border-color:#ff8a80}
+.search svg{color:var(--muted);flex:none}
+.search input{flex:1;border:0;background:transparent;font:inherit;font-size:var(--fs-base);color:var(--ink);padding:12px 0;min-width:0}
+.search input::placeholder{color:var(--muted)}
 .search input:focus{outline:none}
-.search:focus-within{box-shadow:6px 6px 0 var(--accent)}
-.search kbd{font:500 12px var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
-.hint{font-size:13px;color:var(--muted);margin-top:14px}
-.hint button{font:inherit;color:var(--brand);background:none;border:0;padding:0 2px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.search kbd{font:600 12px var(--font);color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:4px 9px}
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px;font-size:var(--fs-sm);color:rgb(255 255 255 / .75)}
+.chips button{font:500 var(--fs-xs)/1 var(--font);color:#fff;background:rgb(255 255 255 / .12);border:1px solid rgb(255 255 255 / .22);border-radius:99px;padding:7px 12px;cursor:pointer;transition:background .15s}
+.chips button:hover{background:rgb(255 255 255 / .22)}
 
-/* sections */
-section{padding:64px 0;border-bottom:1px solid var(--line)}
-.sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:28px;flex-wrap:wrap}
-.sec-head .num{font:500 13px var(--mono);color:var(--accent)}
-.sec-head h2{font:700 clamp(26px,3.2vw,36px)/1.15 var(--display);margin:0;letter-spacing:-.02em}
-.sec-head p{margin:0 0 0 auto;color:var(--muted);font-size:15px;max-width:42ch}
+/* quick panel */
+.quick{background:var(--surface);color:var(--ink);border-radius:var(--r-lg);box-shadow:0 24px 48px -20px rgb(0 0 0 / .5);overflow:hidden}
+.quick-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line)}
+.quick-head h2{font-size:var(--fs-base);font-weight:700;letter-spacing:0}
+.quick-head span{font-size:var(--fs-xs);color:var(--muted)}
+.quick ul{list-style:none;margin:0;padding:6px}
+.quick a{display:grid;grid-template-columns:40px 1fr auto;gap:14px;align-items:center;padding:10px 14px;border-radius:var(--r-sm);text-decoration:none;transition:background .15s}
+.quick a:hover{background:var(--tint)}
+.quick .ico{width:40px;height:40px}
+.quick b{font-size:15px;font-weight:600;line-height:1.35}
+.quick .arr{color:var(--muted);transition:transform .15s,color .15s}
+.quick a:hover .arr{color:var(--brand);transform:translateX(3px)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);background:var(--surface-2)}
+.stats div{padding:14px 10px;text-align:center}
+.stats div+div{border-left:1px solid var(--line)}
+.stats b{display:block;font-size:22px;font-weight:700;line-height:1.2;color:var(--brand)}
+.stats small{font-size:var(--fs-xs);color:var(--muted)}
+
+/* ================= SECTIONS ================= */
+section{padding:80px 0}
+section+section{border-top:1px solid var(--line)}
+.sec-head{max-width:640px;margin-bottom:36px}
+.sec-head h2{font-size:var(--fs-lg);margin:12px 0 10px}
+.sec-head p{color:var(--muted);font-size:var(--fs-base)}
+.ico{width:46px;height:46px;border-radius:12px;background:var(--tint);color:var(--brand);display:grid;place-items:center;flex:none}
 
 /* tools */
-.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
-.tool{position:relative;display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;text-decoration:none;transition:transform .18s,border-color .18s,box-shadow .18s;min-height:180px}
-.tool:hover{transform:translateY(-3px);border-color:var(--brand);box-shadow:0 10px 24px -14px color-mix(in srgb,var(--brand) 60%,transparent)}
-.tool .ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--brand);display:grid;place-items:center}
-.tool h3{font:600 18px/1.3 var(--body);margin:4px 0 0}
-.tool p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
-.tool .go{margin-top:auto;font:500 13px var(--mono);color:var(--brand);display:flex;align-items:center;gap:6px}
-.tool.soon{cursor:default}
-.tool.soon:hover{transform:none;border-color:var(--line);box-shadow:none}
-.tool.soon .go{color:var(--muted)}
-.tag{position:absolute;top:18px;right:18px;font:500 11px var(--mono);padding:3px 8px;border-radius:99px;background:var(--accent);color:#fff}
-.empty{display:none;padding:28px;border:1px dashed var(--line);border-radius:var(--r);color:var(--muted);text-align:center}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.tool{position:relative;display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px;text-decoration:none;box-shadow:var(--shadow-sm);transition:transform .2s,box-shadow .2s,border-color .2s}
+.tool:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
+.tool h3{font-size:var(--fs-md);font-weight:600;line-height:1.35;letter-spacing:-.01em;margin-top:6px}
+.tool p{color:var(--muted);font-size:var(--fs-sm);line-height:1.6}
+.tool .go{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);font-size:var(--fs-sm);font-weight:600;color:var(--brand);display:flex;align-items:center;justify-content:space-between}
+.tool .go i{font-style:normal;transition:transform .2s}
+.tool:hover .go i{transform:translateX(4px)}
+.tool.soon{cursor:default;background:var(--surface-2);box-shadow:none}
+.tool.soon:hover{transform:none;box-shadow:none;border-color:var(--line)}
+.tool.soon .ico{background:var(--line);color:var(--muted)}
+.tool.soon .go{color:var(--muted);font-weight:500}
+.tag{position:absolute;top:22px;right:22px;font-size:var(--fs-xs);font-weight:600;padding:4px 10px;border-radius:99px;background:var(--accent-tint);color:var(--accent)}
+.empty{display:none;padding:32px;border:1px dashed var(--line);border-radius:var(--r);color:var(--muted);text-align:center;font-size:var(--fs-sm)}
 
-/* docs */
-.split{display:grid;grid-template-columns:1fr 1fr;gap:40px}
-.list{list-style:none;margin:0;padding:0;border-top:1.5px solid var(--ink)}
-.list li a,.list li div{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:18px 4px;border-bottom:1px solid var(--line);text-decoration:none}
-.list li a:hover{background:var(--tint)}
-.list .k{font:500 12px var(--mono);color:var(--accent);min-width:52px}
-.list b{font-weight:600;display:block}
-.list small{color:var(--muted);font-size:13px}
+/* docs + videos */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:48px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm);overflow:hidden}
+.list{list-style:none;margin:0;padding:0}
+.list li+li{border-top:1px solid var(--line)}
+.list a,.list div{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:18px 20px;text-decoration:none}
+.list a:hover{background:var(--tint)}
+.list .ico{width:42px;height:42px;border-radius:10px;background:var(--accent-tint);color:var(--accent)}
+.list b{display:block;font-size:var(--fs-base);font-weight:600;line-height:1.4}
+.list small{display:block;color:var(--muted);font-size:var(--fs-xs);margin-top:2px}
+.list .state{font-size:var(--fs-xs);font-weight:600;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:3px 10px;white-space:nowrap}
 .list .arr{color:var(--brand)}
-.vids{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.vid{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;text-decoration:none;display:flex;flex-direction:column;gap:10px}
-.vid:hover{border-color:var(--brand)}
-.vid .play{width:34px;height:34px;border-radius:50%;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center}
-.vid b{font-size:15px}
-.vid small{color:var(--muted);font-size:12px}
-h3.sub{font:700 20px var(--display);margin:0 0 16px}
+.vids{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.vid{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;text-decoration:none;box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s}
+.vid:hover{border-color:color-mix(in srgb,var(--brand) 45%,var(--line));box-shadow:var(--shadow)}
+.vid .play{width:38px;height:38px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;flex:none;transition:transform .2s}
+.vid:hover .play{transform:scale(1.08)}
+.vid b{display:block;font-size:15px;font-weight:600;line-height:1.35}
+.vid small{display:block;color:var(--muted);font-size:var(--fs-xs)}
 
-/* contact */
-.contact{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:start}
-.contact p{color:var(--muted);margin:0 0 20px}
-.card{background:var(--brand);color:var(--brand-ink);border-radius:var(--r);padding:28px}
-.card dl{margin:0;display:grid;gap:16px}
-.card dt{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;opacity:.75}
-.card dd{margin:2px 0 0;font-size:17px;font-weight:500;word-break:break-word}
-.card a{text-decoration-thickness:1px;text-underline-offset:4px}
-.note{margin-top:24px;padding:16px 18px;border-left:3px solid var(--accent);background:var(--surface);font-size:14px;color:var(--muted);border-radius:0 10px 10px 0}
+/* about + contact */
+.contact{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:48px;align-items:start}
+.contact .sec-head{margin-bottom:20px}
+.about p{color:var(--muted);font-size:var(--fs-base)}
+.note{display:flex;gap:14px;margin-top:24px;padding:18px 20px;background:var(--accent-tint);border-radius:var(--r);font-size:var(--fs-sm);line-height:1.6;color:var(--ink)}
+.note svg{color:var(--accent);flex:none;margin-top:2px}
+.card{background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:#fff;border-radius:var(--r-lg);padding:32px;box-shadow:var(--shadow)}
+.card h3{font-size:var(--fs-md);margin-bottom:20px}
+.card .cl{list-style:none;padding:0;margin:0;display:grid;gap:18px}
+.card .cl li{display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:center}
+.card .ci{width:40px;height:40px;border-radius:10px;background:rgb(255 255 255 / .14);display:grid;place-items:center}
+.card .dt{display:block;font-size:var(--fs-xs);font-weight:500;color:rgb(255 255 255 / .72)}
+.card .dd{display:block;margin-top:1px;font-size:var(--fs-base);font-weight:600;word-break:break-word}
+.card a{text-decoration:none;border-bottom:1px solid rgb(255 255 255 / .4)}
+.card a:hover{border-color:#fff}
 
-footer{padding:28px 0 40px;font-size:13px;color:var(--muted)}
-footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-.brand-full{flex-basis:100%;display:inline-flex;margin-bottom:8px}
-.brand-full img{display:block;max-width:100%;height:auto;background:#fff;border-radius:10px;padding:8px 12px;border:1px solid var(--line)}
-.logo img{flex:none;display:block}
+/* ================= FOOTER ================= */
+footer{background:var(--navy);color:#b7c6d6;font-size:var(--fs-sm);margin-top:0}
+.foot{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(0,1fr));gap:40px;padding-top:56px;padding-bottom:40px}
+.foot img{display:block;max-width:100%;height:auto;background:#fff;border-radius:var(--r-sm);padding:10px 14px}
+.foot p{margin-top:16px;line-height:1.6}
+.foot h4{font-size:var(--fs-xs);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#fff;margin-bottom:14px}
+.foot ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.foot a{color:#dbe5ef;text-decoration:none}
+.foot a:hover{color:#fff;text-decoration:underline}
+.copy{border-top:1px solid rgb(255 255 255 / .1)}
+.copy .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:18px;padding-bottom:22px;font-size:var(--fs-xs);color:#8fa3b8}
 
-@media (max-width:820px){
+/* ================= RESPONSIVE ================= */
+@media (max-width:980px){
+  .hero .wrap{grid-template-columns:1fr;gap:40px}
+  .quick{max-width:600px}
+  .split,.contact{grid-template-columns:1fr}
+  .foot{grid-template-columns:1fr 1fr}
+  .foot>div:first-child{grid-column:1/-1}
+}
+@media (max-width:760px){
+  .topbar{display:none}
   .nav ul{display:none}
   .theme{margin-left:auto}
-  .split,.contact{grid-template-columns:1fr}
-  .sec-head p{margin-left:0}
-  .hero{padding:48px 0 40px}
-  .hero .wrap{grid-template-columns:1fr}
-  .hero-art{display:none}
+  .nav .wrap{height:64px}
+  .hero .wrap{padding-top:44px;padding-bottom:48px}
+  section{padding:56px 0}
   .search kbd{display:none}
+  .foot{grid-template-columns:1fr;gap:28px}
+}
+@media (max-width:420px){
+  .wrap{padding:0 16px}
+  .logo small{display:none}
+  .tool{padding:20px}
+  .card{padding:24px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
 
+<div class="topbar"><div class="wrap">
+  <span>Bệnh viện Đa khoa Hùng Vương · Khoa Dược</span>
+  <span>Email: <a href="mailto:khoaduochv@gmail.com">khoaduochv@gmail.com</a></span>
+</div></div>
+
 <header class="nav">
   <div class="wrap">
     <a class="logo" href="#top" aria-label="Khoa Dược – BVĐK Hùng Vương, trang chủ">
       <!-- Biểu trưng chính thức BVĐK Hùng Vương (đã được phép sử dụng) -->
-      <img src="assets/favicon-bvhv.png" width="40" height="40" alt="">
-      <span><b>Khoa Dược</b><small>BVĐK Hùng Vương · HV-Pharmacy</small></span>
+      <img src="assets/favicon-bvhv.png" width="44" height="44" alt="">
+      <span><b>Khoa Dược</b><small>Bệnh viện Đa khoa Hùng Vương</small></span>
     </a>
     <ul>
       <li><a href="#tra-cuu">Tra cứu</a></li>
@@ -153,49 +246,44 @@ footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:1
 
 <main id="top">
   <div class="hero">
-    <div class="wrap"><div>
-      <div class="eyebrow">Khoa Dược · Bệnh viện Đa khoa Hùng Vương</div>
-      <h1>Tra cứu thuốc <em>nhanh, đúng</em> ngay tại khoa.</h1>
-      <p class="motto">Thân thiện – Chuyên nghiệp – Chu đáo</p>
-      <p class="lead">Danh mục thuốc, thuốc tiêm truyền &amp; nguy cơ cao, tương tác, tương kỵ và mã ICD-10 — gom về một nơi cho bác sĩ, dược sĩ và điều dưỡng.</p>
-      <label class="search" for="q">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-        <input id="q" type="search" placeholder="Tìm công cụ hoặc tài liệu… (vd: tương tác, LASA)" autocomplete="off">
-        <kbd>/</kbd>
-      </label>
-      <div class="hint">Gợi ý: <button data-q="tiêm truyền">tiêm truyền</button> · <button data-q="tương kỵ">tương kỵ</button> · <button data-q="ICD">ICD-10</button> · <button data-q="insulin">insulin</button></div>
-    </div>
-      <!-- Minh hoạ SVG: hình thoi BV, viên nang, lọ thuốc, vỉ thuốc -->
-      <svg class="hero-art" viewBox="0 0 340 340" aria-hidden="true">
-        <path d="M170 14 326 170 170 326 14 170z" fill="var(--tint)"/>
-        <path d="M170 44 296 170 170 296 44 170z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 7" opacity=".5"/>
-        <path d="M236 216 216 236M252 222 222 252M268 228 228 268" stroke="currentColor" stroke-width="5" stroke-linecap="round" opacity=".85"/>
-        <!-- lọ thuốc -->
-        <rect x="128" y="112" width="70" height="104" rx="14" fill="var(--surface)" stroke="currentColor" stroke-width="3"/>
-        <rect x="136" y="92" width="54" height="24" rx="6" fill="currentColor"/>
-        <rect x="128" y="142" width="70" height="44" fill="currentColor" opacity=".12"/>
-        <path d="M157 150h12v10h10v12h-10v10h-12v-10h-10v-12h10z" fill="var(--accent)"/>
-        <!-- viên nang -->
-        <g transform="rotate(-35 236 128)">
-          <rect x="206" y="114" width="60" height="28" rx="14" fill="var(--surface)" stroke="currentColor" stroke-width="3"/>
-          <path d="M236 114h16a14 14 0 0 1 0 28h-16z" fill="var(--accent)"/>
-        </g>
-        <!-- vỉ thuốc -->
-        <g transform="rotate(12 96 230)">
-          <rect x="60" y="206" width="76" height="48" rx="8" fill="var(--surface)" stroke="currentColor" stroke-width="3"/>
-          <circle cx="80" cy="222" r="7" fill="currentColor" opacity=".25"/><circle cx="98" cy="222" r="7" fill="currentColor" opacity=".25"/><circle cx="116" cy="222" r="7" fill="currentColor" opacity=".25"/>
-          <circle cx="80" cy="239" r="7" fill="currentColor" opacity=".25"/><circle cx="98" cy="239" r="7" fill="var(--accent)" opacity=".8"/><circle cx="116" cy="239" r="7" fill="currentColor" opacity=".25"/>
-        </g>
-        <circle cx="96" cy="120" r="9" fill="var(--accent)" opacity=".9"/>
-        <circle cx="250" cy="66" r="5" fill="currentColor" opacity=".6"/>
-        <circle cx="70" cy="170" r="4" fill="currentColor" opacity=".5"/>
-      </svg>
+    <div class="wrap">
+      <div>
+        <span class="label">HV-Pharmacy · Thông tin thuốc</span>
+        <h1>Tra cứu thuốc <span>nhanh, chính xác</span> cho nhân viên y tế</h1>
+        <p class="motto">Thân thiện – Chuyên nghiệp – Chu đáo</p>
+        <p class="lead">Danh mục thuốc, thuốc tiêm truyền &amp; nguy cơ cao, tương tác, tương kỵ và mã ICD-10 – gom về một nơi cho bác sĩ, dược sĩ và điều dưỡng.</p>
+        <label class="search" for="q">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <input id="q" type="search" placeholder="Tìm công cụ, tài liệu, video…" autocomplete="off">
+          <kbd>/</kbd>
+        </label>
+        <div class="chips">Gợi ý:
+          <button data-q="tiêm truyền">Tiêm truyền</button>
+          <button data-q="tương tác">Tương tác</button>
+          <button data-q="ICD">ICD-10</button>
+          <button data-q="insulin">Insulin</button>
+        </div>
+      </div>
+
+      <aside class="quick" aria-labelledby="quick-title">
+        <div class="quick-head"><h2 id="quick-title">Truy cập nhanh</h2><span>Công cụ dùng nhiều</span></div>
+        <ul id="quick"></ul>
+        <div class="stats">
+          <div><b id="n-tools">0</b><small>Công cụ</small></div>
+          <div><b id="n-vids">0</b><small>Video</small></div>
+          <div><b id="n-docs">0</b><small>Tài liệu</small></div>
+        </div>
+      </aside>
     </div>
   </div>
 
   <section id="tra-cuu">
     <div class="wrap">
-      <div class="sec-head"><span class="num">01</span><h2>Công cụ tra cứu</h2><p>Mở trực tiếp công cụ của Khoa Dược. Dữ liệu cập nhật theo danh mục bệnh viện.</p></div>
+      <div class="sec-head">
+        <span class="label">01 · Công cụ</span>
+        <h2>Công cụ tra cứu</h2>
+        <p>Mở trực tiếp công cụ của Khoa Dược. Dữ liệu cập nhật theo danh mục thuốc của bệnh viện.</p>
+      </div>
       <div class="tools" id="tools"></div>
       <div class="empty" id="tools-empty">Không có công cụ khớp từ khoá.</div>
     </div>
@@ -204,12 +292,20 @@ footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:1
   <section id="tai-lieu">
     <div class="wrap split">
       <div>
-        <div class="sec-head"><span class="num">02</span><h2>Tài liệu dược</h2></div>
-        <ul class="list" id="docs"></ul>
+        <div class="sec-head">
+          <span class="label">02 · Tài liệu</span>
+          <h2>Tài liệu dược</h2>
+          <p>Bản tin thông tin thuốc và các danh mục cảnh báo.</p>
+        </div>
+        <div class="panel"><ul class="list" id="docs"></ul></div>
         <div class="empty" id="docs-empty">Không có tài liệu khớp từ khoá.</div>
       </div>
       <div id="video">
-        <div class="sec-head"><span class="num">03</span><h2>Hướng dẫn dùng thuốc</h2></div>
+        <div class="sec-head">
+          <span class="label">03 · Hướng dẫn</span>
+          <h2>Hướng dẫn dùng thuốc</h2>
+          <p>Video hướng dẫn kỹ thuật dùng insulin và các dạng thuốc hít.</p>
+        </div>
         <div class="vids" id="vids"></div>
         <div class="empty" id="vids-empty">Không có video khớp từ khoá.</div>
       </div>
@@ -218,33 +314,67 @@ footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:1
 
   <section id="lien-he">
     <div class="wrap contact">
-      <div>
-        <div class="sec-head"><span class="num">04</span><h2>Về Khoa Dược</h2></div>
+      <div class="about">
+        <div class="sec-head">
+          <span class="label">04 · Giới thiệu</span>
+          <h2>Về Khoa Dược</h2>
+        </div>
         <p>Khoa Dược – Bệnh viện Đa khoa Hùng Vương cung cấp thông tin thuốc, giám sát sử dụng thuốc an toàn – hợp lý và hỗ trợ chuyên môn cho các khoa lâm sàng.</p>
-        <div class="note"><strong>Lưu ý:</strong> Thông tin trên trang chỉ mang tính tham khảo cho nhân viên y tế. Luôn đối chiếu với tờ hướng dẫn sử dụng, Dược thư Quốc gia và hướng dẫn chẩn đoán – điều trị của Bộ Y tế trước khi chỉ định.</div>
+        <div class="note">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>
+          <span><strong>Lưu ý:</strong> Thông tin trên trang chỉ mang tính tham khảo cho nhân viên y tế. Luôn đối chiếu với tờ hướng dẫn sử dụng, Dược thư Quốc gia và hướng dẫn chẩn đoán – điều trị của Bộ Y tế trước khi chỉ định.</span>
+        </div>
       </div>
       <div class="card">
-        <dl>
-          <div><dt>Email</dt><dd><a href="mailto:khoaduochv@gmail.com">khoaduochv@gmail.com</a></dd></div>
-          <div><dt>Website bệnh viện</dt><dd><a href="https://benhvienhungvuong.vn/" target="_blank" rel="noopener">benhvienhungvuong.vn</a></dd></div>
-          <div><dt>Góp ý</dt><dd>Gửi qua email — sẽ thay bằng Google Form</dd></div>
-        </dl>
+        <h3>Liên hệ Khoa Dược</h3>
+        <ul class="cl">
+          <li><span class="ci"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+            <span><small class="dt">Email</small><span class="dd"><a href="mailto:khoaduochv@gmail.com">khoaduochv@gmail.com</a></span></span></li>
+          <li><span class="ci"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
+            <span><small class="dt">Website bệnh viện</small><span class="dd"><a href="https://benhvienhungvuong.vn/" target="_blank" rel="noopener">benhvienhungvuong.vn</a></span></span></li>
+          <li><span class="ci"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+            <span><small class="dt">Góp ý</small><span class="dd">Gửi qua email – sẽ có biểu mẫu góp ý</span></span></li>
+        </ul>
       </div>
     </div>
   </section>
 </main>
 
-<footer><div class="wrap"><a class="brand-full" href="https://benhvienhungvuong.vn/" target="_blank" rel="noopener"><img src="assets/logo-bvhv.png" width="272" height="45" alt="Bệnh viện Đa khoa Hùng Vương – Thân thiện, Chuyên nghiệp, Chu đáo"></a><span>Design by Khoa Dược &amp; CNTT – Bệnh viện Hùng Vương © 2026</span><span>Cập nhật: 11/2026</span></div></footer>
+<footer>
+  <div class="wrap foot">
+    <div>
+      <a href="https://benhvienhungvuong.vn/" target="_blank" rel="noopener"><img src="assets/logo-bvhv.png" width="272" height="45" alt="Bệnh viện Đa khoa Hùng Vương – Thân thiện, Chuyên nghiệp, Chu đáo"></a>
+      <p>HV-Pharmacy – cổng tra cứu thông tin thuốc của Khoa Dược, dành cho nhân viên y tế Bệnh viện Đa khoa Hùng Vương.</p>
+    </div>
+    <div>
+      <h4>Truy cập</h4>
+      <ul>
+        <li><a href="#tra-cuu">Công cụ tra cứu</a></li>
+        <li><a href="#tai-lieu">Tài liệu dược</a></li>
+        <li><a href="#video">Video hướng dẫn</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Liên hệ</h4>
+      <ul>
+        <li><a href="mailto:khoaduochv@gmail.com">khoaduochv@gmail.com</a></li>
+        <li><a href="https://benhvienhungvuong.vn/" target="_blank" rel="noopener">benhvienhungvuong.vn</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span>Cập nhật: 11/2026</span></div></div>
+</footer>
 
 <script>
 /* ====== CẤU HÌNH: chỉ cần sửa phần này ======
-   url: "" = chưa có link (hiện "Đang cập nhật") */
+   url: "" = chưa có link (hiện "Đang cập nhật")
+   quick: true = hiện ở khung "Truy cập nhanh" đầu trang */
 const TOOLS = [
-  {name:"Danh mục thuốc", desc:"Tra cứu thuốc trong danh mục bệnh viện: hoạt chất, biệt dược, hàm lượng.", url:"https://script.google.com/macros/s/AKfycbxLWXEYzsWc-umv52YUcyf0GfwBan-uOv0RznLsoR3NuZ9COP887WWk3I_vGpHpmrUL/exec", icon:"pill"},
-  {name:"Thông tin thuốc BVHV", desc:"Tra cứu nhanh thông tin thuốc đang sử dụng tại bệnh viện.", url:"https://script.google.com/macros/s/AKfycbw0rOd8davPK5fL-vFp8-aj3DEPztAGZ8WfGx-9Joi0q9zcZ37hXxZigjjtA6xWlhP7/exec", icon:"book"},
+  {name:"Danh mục thuốc", desc:"Tra cứu thuốc trong danh mục bệnh viện: hoạt chất, biệt dược, hàm lượng.", url:"https://script.google.com/macros/s/AKfycbxLWXEYzsWc-umv52YUcyf0GfwBan-uOv0RznLsoR3NuZ9COP887WWk3I_vGpHpmrUL/exec", icon:"pill", quick:true},
+  {name:"Thông tin thuốc BVHV", desc:"Tra cứu nhanh thông tin thuốc đang sử dụng tại bệnh viện.", url:"https://script.google.com/macros/s/AKfycbw0rOd8davPK5fL-vFp8-aj3DEPztAGZ8WfGx-9Joi0q9zcZ37hXxZigjjtA6xWlhP7/exec", icon:"book", quick:true},
   {name:"Người bệnh đặc biệt", desc:"Sử dụng thuốc trên phụ nữ có thai, cho con bú, suy gan, suy thận.", url:"https://script.google.com/macros/s/AKfycby3vjTeG5v3SB346sQMbt0KdzA9ufm2CoFXmUB0EJV8K9aP2Sl2NFU3c1CM_bOlWMh_ZQ/exec", icon:"user"},
-  {name:"Thuốc tiêm truyền & nguy cơ cao", desc:"Pha loãng, tốc độ truyền, độ ổn định và cảnh báo thuốc nguy cơ cao.", url:"https://script.google.com/macros/s/AKfycbzzTYnZqhwLdG7ZC_CO_xzSoFzMoCABXwwYPPV9DoHxjEROSdMpC4dZrjOJcp0apwFHyg/exec", icon:"drip", tag:"Nguy cơ cao"},
-  {name:"Tương tác thuốc – thuốc", desc:"Kiểm tra tương tác giữa các thuốc trong đơn và mức độ ý nghĩa lâm sàng.", url:"https://script.google.com/macros/s/AKfycbwAg5vPUjoQN09Z9jHior8LD2C1DoXVgvuhE75ziTfa3MUZ-Vzs1fPHooodNLT5rPktbQ/exec", icon:"swap"},
+  {name:"Thuốc tiêm truyền & nguy cơ cao", desc:"Pha loãng, tốc độ truyền, độ ổn định và cảnh báo thuốc nguy cơ cao.", url:"https://script.google.com/macros/s/AKfycbzzTYnZqhwLdG7ZC_CO_xzSoFzMoCABXwwYPPV9DoHxjEROSdMpC4dZrjOJcp0apwFHyg/exec", icon:"drip", tag:"Nguy cơ cao", quick:true},
+  {name:"Tương tác thuốc – thuốc", desc:"Kiểm tra tương tác giữa các thuốc trong đơn và mức độ ý nghĩa lâm sàng.", url:"https://script.google.com/macros/s/AKfycbwAg5vPUjoQN09Z9jHior8LD2C1DoXVgvuhE75ziTfa3MUZ-Vzs1fPHooodNLT5rPktbQ/exec", icon:"swap", quick:true},
   {name:"Tương hợp – tương kỵ", desc:"Khả năng phối hợp các thuốc tiêm trong cùng dây truyền, bơm tiêm.", url:"", icon:"flask"},
   {name:"Mã ICD-10", desc:"Tra cứu mã bệnh ICD-10 theo Thông tư 06/2026/TT-BYT.", url:"https://script.google.com/macros/s/AKfycbzanNT1412mvrTDSlufOC9s5KzUbTcJ1z1EFODgs0d5YTSHiSrstalJC6qRPa0Uyoc9dA/exec", icon:"code"},
 ];
@@ -270,33 +400,42 @@ const ICONS={
   drip:'<path d="M8 3h8v7a4 4 0 0 1-8 0z"/><path d="M12 14v4m0 0-2 3m2-3 2 3"/>',
   swap:'<path d="M7 7h13l-4-4M17 17H4l4 4"/>',
   flask:'<path d="M9 3h6M10 3v6L4 19a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3L14 9V3"/><path d="M7 15h10"/>',
-  code:'<path d="M4 6h16M4 12h10M4 18h7"/><circle cx="18" cy="17" r="3"/>'
+  code:'<path d="M4 6h16M4 12h10M4 18h7"/><circle cx="18" cy="17" r="3"/>',
+  doc:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>'
 };
 const svg=(p,s=22)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const ext=u=>u?` href="${u}" target="_blank" rel="noopener"`:'';
 const norm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/gi,'d').toLowerCase();
+const $=id=>document.getElementById(id);
+
+/* Khung truy cập nhanh + số liệu */
+$('quick').innerHTML=TOOLS.filter(x=>x.quick&&x.url).map(x=>`<li><a${ext(x.url)}><span class="ico">${svg(ICONS[x.icon],20)}</span><b>${x.name}</b><span class="arr">→</span></a></li>`).join('');
+$('n-tools').textContent=TOOLS.filter(x=>x.url).length;
+$('n-vids').textContent=VIDEOS.filter(x=>x.url).length;
+$('n-docs').textContent=DOCS.length;
 
 function render(q=''){
   const k=norm(q.trim());
   const hit=o=>!k||norm(Object.values(o).join(' ')).includes(k);
   const t=TOOLS.filter(hit), d=DOCS.filter(hit), v=VIDEOS.filter(hit);
-  tools.innerHTML=t.map(x=>`<a class="tool${x.url?'':' soon'}"${ext(x.url)}${x.url?'':' aria-disabled="true"'}>
+  $('tools').innerHTML=t.map(x=>`<a class="tool${x.url?'':' soon'}"${ext(x.url)}${x.url?'':' aria-disabled="true"'}>
     ${x.tag?`<span class="tag">${x.tag}</span>`:''}
     <span class="ico">${svg(ICONS[x.icon])}</span><h3>${x.name}</h3><p>${x.desc}</p>
-    <span class="go">${x.url?'Mở công cụ →':'Đang cập nhật'}</span></a>`).join('');
-  docs.innerHTML=d.map(x=>{const tag=x.url?'a':'div';return `<li><${tag}${ext(x.url)}><span class="k">${x.kind}</span><span><b>${x.name}</b><small>${x.note}${x.url?'':' · đang cập nhật'}</small></span><span class="arr">${x.url?'↗':''}</span></${tag}></li>`}).join('');
-  vids.innerHTML=v.map(x=>`<a class="vid"${ext(x.url)}><span class="play">${svg('<path d="M8 5v14l11-7z" fill="currentColor"/>',14)}</span><b>${x.name}</b><small>${x.note}</small></a>`).join('');
-  document.getElementById('tools-empty').style.display=t.length?'none':'block';
-  document.getElementById('docs-empty').style.display=d.length?'none':'block';
-  document.getElementById('vids-empty').style.display=v.length?'none':'block';
+    <span class="go">${x.url?'Mở công cụ <i>→</i>':'Đang cập nhật'}</span></a>`).join('');
+  $('docs').innerHTML=d.map(x=>{const tag=x.url?'a':'div';return `<li><${tag}${ext(x.url)}><span class="ico">${svg(ICONS.doc,20)}</span><span><b>${x.name}</b><small>${x.kind} · ${x.note}</small></span>${x.url?'<span class="arr">↗</span>':'<span class="state">Đang cập nhật</span>'}</${tag}></li>`}).join('');
+  $('docs').parentElement.style.display=d.length?'':'none';
+  $('vids').innerHTML=v.map(x=>`<a class="vid"${ext(x.url)}><span class="play">${svg('<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',16)}</span><span><b>${x.name}</b><small>${x.note}</small></span></a>`).join('');
+  $('tools-empty').style.display=t.length?'none':'block';
+  $('docs-empty').style.display=d.length?'none':'block';
+  $('vids-empty').style.display=v.length?'none':'block';
 }
-const qi=document.getElementById('q');
+const qi=$('q');
 qi.addEventListener('input',()=>render(qi.value));
-document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{qi.value=b.dataset.q;render(qi.value);document.getElementById('tra-cuu').scrollIntoView()});
+document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{qi.value=b.dataset.q;render(qi.value);$('tra-cuu').scrollIntoView()});
 addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==qi){e.preventDefault();qi.focus()}});
 const root=document.documentElement;
 try{const s=localStorage.getItem('hv-theme');if(s)root.dataset.theme=s}catch(e){}
-document.getElementById('theme').onclick=()=>{
+$('theme').onclick=()=>{
   const dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
   root.dataset.theme=dark?'light':'dark';try{localStorage.setItem('hv-theme',root.dataset.theme)}catch(e){}
 };

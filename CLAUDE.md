@@ -19,7 +19,11 @@ Nội dung nằm trong 3 mảng cấu hình ở cuối file, trong `<script>`:
 - `VIDEOS` – video hướng dẫn `{name, note, url}`.
 Ô tìm kiếm lọc cả 3 mảng, không phân biệt dấu.
 
-Thiết kế: font **Be Vietnam Pro** cho toàn trang (tiêu đề đậm 700, nội dung 400–600), dự phòng **Arial**; JetBrains Mono cho nhãn nhỏ. Không dùng font có chân (Times/Fraunces) – chốt 20/11/2026 để hợp nhận diện BV (Myriad Pro, không chân); có dark mode; responsive tới ~400px. Giữ nguyên phong cách này khi thêm trang.
+Thiết kế: font **Be Vietnam Pro** cho toàn trang (kể cả nhãn nhỏ), dự phòng **Arial**. Không dùng font có chân (Times/Fraunces) hay font mono – chốt 20/11/2026 để hợp nhận diện BV (Myriad Pro, không chân); có dark mode; responsive tới ~390px. Giữ nguyên phong cách này khi thêm trang.
+- **Thang cỡ chữ** (biến CSS, chỉ dùng các biến này): `--fs-xs` 12.5px (nhãn, chú thích) · `--fs-sm` 14.5px (mô tả thẻ) · `--fs-base` 16px (nội dung) · `--fs-md` 18px (đoạn dẫn, tiêu đề thẻ) · `--fs-lg` 24→32px (h2) · `--fs-xl` 30→46px (h1).
+- Bố cục: thanh trên navy → header trắng dính → hero dải xanh BV (tiêu đề + ô tìm + khung "Truy cập nhanh" có số liệu) → các mục 01–04 (nhãn đỏ-xanh + h2 + mô tả) → footer navy 3 cột.
+- Khung "Truy cập nhanh" lấy công cụ có `quick:true` trong mảng `TOOLS`; số liệu tự đếm.
+- Xem thử trên máy: `python -m http.server 5173 --directory hv-pharmacy` rồi mở http://localhost:5173.
 
 ## Nhận diện thương hiệu (chốt 20/11/2026)
 - Theo nhận diện BVĐK Hùng Vương (benhvienhungvuong.vn): `--brand` xanh dương **#1577BC** (dark: #5AAEE8), `--accent` đỏ chữ thập **#D7262E** (dark: #FF7A6B), nền #F5F8FB.
