@@ -13,7 +13,7 @@ Phần lớn dữ liệu nằm trong **Google Sheets của tài khoản khoaduoc
 | **Thuốc mới** – thông tin chung | **"Thông tin thuốc"** → trang tính **Sheet1** | Thêm 1 dòng, điền cột A–O (hoạt chất, biệt dược, bảo quản, chỉ định, liều, chống chỉ định, cảnh báo, PNCT/CCB, ADR, tương tác, quá liều, dược lực, dược động, ATC, link tờ HDSD) | Danh mục thuốc |
 | **Thuốc mới** – suy gan, suy thận, có thai | Cùng file → trang tính **Sheet2** | Thêm 1 dòng, cột A–S; chú ý cột F (liều suy gan), G (liều suy thận), I (CCĐ suy gan), J (CCĐ suy thận), L (PNCT & CCB) | Người bệnh đặc biệt |
 | **Thuốc tiêm truyền** | **"Pha truyền"** | Thêm dòng **bên dưới đúng nhóm** ("Thuốc kháng sinh" / "Thuốc tiêm truyền khác"), cột A–N | Tiêm truyền |
-| **Cặp tương tác** | **"Copy of DANH MỤC TƯƠNG TÁC THUỐC"** → trang tính **DANH MỤC** | Thêm 1 dòng: C hoạt chất 1 · E hoạt chất 2 · F điều kiện tuổi · G mã bệnh · H eGFR · I khoảng cách dùng · J mức độ cảnh báo · K cơ chế · L hậu quả · M xử trí | Tương tác thuốc (công cụ Apps Script) |
+| **Cặp tương tác** | **"Copy of DANH MỤC TƯƠNG TÁC THUỐC"** → trang tính **DANH MỤC** | Thêm 1 dòng: B/D tên Việt · C hoạt chất 1 · E hoạt chất 2 · F điều kiện tuổi · G mã bệnh · H eGFR · I khoảng cách dùng · J mức độ cảnh báo · K cơ chế · L hậu quả · M xử trí. Cột C/E (tên chuẩn) phải viết giống nhau cho cùng 1 hoạt chất. Cột J ghi đúng "Chống chỉ định tuyệt đối" hoặc "Chống chỉ định tương đối". Mã bệnh cột G cách nhau dấu phẩy, eGFR/tuổi ghi dạng "<30 ml/phút/1,73m2", "<28 ngày tuổi" | Trang Tương tác thuốc (và công cụ Apps Script cũ) |
 | **Góp ý đã nhận** | **"Góp ý HV-Pharmacy (câu trả lời)"** | Chỉ đọc / xử lý | – |
 
 ### Quy tắc khi sửa bảng (để website không lỗi)

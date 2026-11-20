@@ -23,9 +23,15 @@
   - `icd10.html` – Mã ICD-10 (TT 06/2026/TT-BYT). Công cụ Apps Script cũ **đã hỏng** (lỗi "Không tìm thấy tệp HTML Index") → thay hẳn. Nguồn: file Excel **"Danh muc ICD TT06 2026.xlsx"** trên Drive (`19fzxO5eW7AC71tWp_E-qkrRWKYIoA1V6`) → chạy `python tools/build-icd.py <file.xlsx>` tạo `data/icd10.json` (15.844 mã, ~2,1MB, ~300KB nén) và `data/icd10-hd.json` (hướng dẫn mã hoá WHO, tải khi mở chi tiết). Dữ liệu TĨNH trong repo – khi BYT cập nhật: tải Excel mới, chạy lại script, commit.
     - Cờ mã (bit): 1 không dùng làm bệnh chính · 2 không khuyến khích làm BC · 4 có mã chi tiết hơn · 8 chỉ mã hoá tử vong · 16 nữ · 32 nam.
     - Tìm: mã (bỏ dấu chấm được, "j189"), tên Việt không dấu, tên Anh. Xếp hạng: khớp mã > cụm từ ở đầu một từ > chứa > từng từ; mã cờ 1/2 bị đẩy xuống. Sao chép mã bỏ ký hiệu †/* (để dán HIS). Link `icd10.html#m=J18.9`.
-- Công cụ **Tương tác thuốc** (Apps Script `AKfycbwAg5…/exec`, dự án "Untitled project" 1NszVmnSeUMofKY3pn4e2qBGJ1jBavVKr67aHot_v4w0Ytu-Yye3IsD0H của khoaduochv) đọc Sheet **"Copy of DANH MỤC TƯƠNG TÁC THUỐC"** `1HkVvMD7qrwI3BvvCqPe-bW_gduQwBf4BE181XRh0l6o`, trang tính `DANH MỤC`, từ dòng 2: C hoạt chất 1 · E hoạt chất 2 · F điều kiện tuổi · G mã bệnh · H eGFR · I khoảng cách · J mức độ · K cơ chế · L hậu quả · M xử trí. Giữ Apps Script (có logic ghép cặp). Đã kiểm tra chạy tốt 20/11/2026.
+- `tuong-tac.html` – **Tương tác thuốc** (thay Apps Script `AKfycbwAg5…/exec`; công cụ cũ vẫn chạy, làm dự phòng). Nguồn: Sheet **"Copy of DANH MỤC TƯƠNG TÁC THUỐC"** `1HkVvMD7qrwI3BvvCqPe-bW_gduQwBf4BE181XRh0l6o`, trang tính `DANH MỤC` (đọc bằng `&sheet=`), dòng 1 tiêu đề: A STT · B/D tên Việt · **C/E hoạt chất chuẩn (khoá nhận diện)** · F tuổi · G mã bệnh ICD · H eGFR · I khoảng cách (thuốc 2 sau thuốc 1; số trơn = ngày) · J mức độ · K cơ chế · L hậu quả · M xử trí. 767 cặp / 248 hoạt chất, ~393KB (~0,5s), cache `hv-tt2-v1`.
+    - Nhập nhiều hoạt chất → dò mọi cặp; 1 hoạt chất → mọi thuốc tương tác với nó. Người bệnh (tuỳ chọn): tuổi, eGFR, mã ICD (gõ, đối chiếu tên từ data/icd10.json).
+    - Điều kiện xét theo AND: tất cả khớp → "Áp dụng"; có điều kiện không khớp → "Không áp dụng" (vẫn hiện, mờ); thiếu số liệu → "Cần kiểm tra". Không có điều kiện → "Luôn áp dụng". KHÔNG ẩn cặp nào.
+    - Mức độ "1"/"2"/trống (30 dòng) → hiện "Chưa phân loại" – không tự đoán. Lỗi gõ ICD "E12..9" tự sửa khi đọc.
+    - Tên Việt lấy tên xuất hiện nhiều nhất cho mỗi hoạt chất chuẩn (cột B/D có lỗi gõ kiểu "Lopinavir/rito avir").
+    - (Sau) tìm theo biệt dược: cần cột ánh xạ biệt dược → hoạt chất chuẩn (bảng Thông tin thuốc ghi INN kiểu Việt).
+    - Dự án Apps Script cũ: "Untitled project" `1NszVmnSeUMofKY3pn4e2qBGJ1jBavVKr67aHot_v4w0Ytu-Yye3IsD0H` (khoaduochv).
 - Hướng dẫn khoa tự cập nhật dữ liệu: **README.md** mục "Cập nhật dữ liệu".
-- CSS trang con dùng chung (page-hero, crumb, dialog chi tiết, nút…) nằm trong `assets/site.css` mục "TRANG CON". Menu trang con: Danh mục thuốc · Tiêm truyền · Người bệnh đặc biệt · ICD-10.
+- CSS trang con dùng chung (page-hero, crumb, dialog chi tiết, nút…) nằm trong `assets/site.css` mục "TRANG CON". Menu trang con: Danh mục thuốc · Tương tác · Tiêm truyền · Người bệnh đặc biệt · ICD-10.
 - Lưu ý CSS: `site.css` có rule chung cho thẻ `section` (padding 80px) → trong trang con KHÔNG dùng `<section>` cho khối nhỏ, dùng `<div>`.
 - Tài liệu PDF để trên Google Drive; video trên YouTube; góp ý dùng Google Form.
 - Giai đoạn sau: đọc danh sách tài liệu/tin từ **Google Sheets** (publish CSV) để khoa tự cập nhật không cần sửa code.

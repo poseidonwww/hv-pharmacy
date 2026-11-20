@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tương tác thuốc · Khoa Dược BVĐK Hùng Vương</title>
+<meta name="description" content="Kiểm tra tương tác thuốc chống chỉ định trong đơn: nhập nhiều thuốc, đối chiếu tuổi, eGFR và mã bệnh ICD của người bệnh.">
+<meta name="theme-color" content="#1577bc">
+<link rel="icon" type="image/png" href="assets/favicon-bvhv.png">
+<link rel="apple-touch-icon" href="assets/favicon-bvhv.png">
+<link rel="preconnect" href="https://docs.google.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* ===== Riêng trang Tương tác thuốc ===== */
+.page-hero .lead{margin-bottom:0;max-width:66ch}
+.layout{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:32px;align-items:start;padding-top:36px;padding-bottom:72px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm)}
+.side{position:sticky;top:88px;max-height:calc(100vh - 104px);overflow:auto}
+.ph{padding:16px 20px;border-bottom:1px solid var(--line)}
+.ph h2{font-size:var(--fs-base);font-weight:700;letter-spacing:0}
+.ph p{font-size:var(--fs-xs);color:var(--muted);margin-top:2px}
+.blk{padding:16px 20px}
+.blk+.blk{border-top:1px solid var(--line)}
+.blk h3{font-size:var(--fs-sm);font-weight:700;margin-bottom:10px}
+.ac{position:relative}
+.ac input,.fld input,.fld select{font:inherit;font-size:var(--fs-sm);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-width:0}
+.ac input:focus,.fld input:focus,.fld select:focus{outline:2px solid var(--brand);outline-offset:0;border-color:transparent}
+.sug{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);max-height:300px;overflow:auto;list-style:none;margin:0;padding:4px}
+.sug li{padding:9px 12px;border-radius:8px;cursor:pointer;font-size:var(--fs-sm)}
+.sug li small{display:block;color:var(--muted);font-size:var(--fs-xs)}
+.sug li[aria-selected=true],.sug li:hover{background:var(--tint)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-sm);font-weight:600;background:var(--tint);color:var(--brand);border-radius:99px;padding:6px 6px 6px 12px}
+.chip button{width:22px;height:22px;border-radius:50%;border:0;background:rgb(0 0 0 / .08);color:inherit;cursor:pointer;display:grid;place-items:center;font-size:14px;line-height:1}
+.chip.na{background:var(--surface-2);color:var(--muted);border:1px dashed var(--line)}
+.mini{font-size:var(--fs-xs);color:var(--muted);margin-top:8px;line-height:1.5}
+.mini a,.mini button{color:var(--brand);font:inherit;background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:var(--fs-xs);color:var(--muted);font-weight:500}
+.fld.full{grid-column:1/-1}
+.unit{display:grid;grid-template-columns:1fr auto;gap:6px}
+.unit select{width:auto}
+.icdok{font-size:var(--fs-xs);margin-top:6px;line-height:1.5;color:var(--muted)}
+.icdok b{color:var(--ink);font-weight:600}
+.ref{font-size:11.5px;color:var(--muted);padding:12px 20px 16px;border-top:1px solid var(--line);line-height:1.5}
+
+.sum{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.stat{flex:1 1 140px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px}
+.stat b{display:block;font-size:22px;line-height:1.2}
+.stat small{font-size:var(--fs-xs);color:var(--muted)}
+.stat.red b{color:var(--accent)}
+.stat.amb b{color:#b26a00}
+.ok{display:flex;gap:12px;padding:18px 20px;border-radius:var(--r);background:var(--tint);line-height:1.6}
+.ok svg{flex:none;color:var(--brand);margin-top:2px}
+.ix{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm);overflow:hidden}
+.ix+.ix{margin-top:14px}
+.ix.lv1{border-left:5px solid var(--accent)}
+.ix.lv2{border-left:5px solid #e69500}
+.ix.lv0{border-left:5px solid var(--muted)}
+.ix.off{opacity:.62}
+.ixh{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.ixh h3{font-size:var(--fs-md);margin-right:auto}
+.ixh h3 span{color:var(--muted);font-weight:500;margin:0 4px}
+.bd{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.bd.lv1{background:var(--accent);color:#fff}
+.bd.lv2{background:#fff4e0;color:#a15c00}
+.bd.lv0{background:var(--surface);border:1px solid var(--line);color:var(--muted)}
+.bd.ap{background:var(--accent-tint);color:var(--accent)}
+.bd.chk{background:#fff4e0;color:#a15c00}
+.bd.no{background:var(--surface);border:1px solid var(--line);color:var(--muted)}
+:root[data-theme=dark] .bd.lv2,:root[data-theme=dark] .bd.chk{background:#3a2a10;color:#ffc46b}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .bd.lv2,:root:not([data-theme=light]) .bd.chk{background:#3a2a10;color:#ffc46b}}
+.ixb{padding:14px 18px}
+.ixb .hq{font-weight:600;line-height:1.55}
+.ixb dl{margin:12px 0 0;display:grid;gap:10px}
+.ixb dt{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.ixb dd{margin:2px 0 0;line-height:1.6;white-space:pre-line}
+.ixb dd.xt{background:var(--tint);border-radius:8px;padding:10px 12px}
+.conds{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cd{font-size:var(--fs-xs);padding:4px 10px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line)}
+.cd.yes{background:var(--accent-tint);border-color:transparent;color:var(--accent);font-weight:600}
+.cd.no{text-decoration:line-through;color:var(--muted)}
+.ixf{display:flex;justify-content:flex-end;padding:0 18px 14px}
+.ixf a{font-size:var(--fs-xs);color:var(--muted)}
+.hint{padding:18px 20px;border-radius:var(--r);background:var(--surface);border:1px dashed var(--line);color:var(--muted);line-height:1.7}
+.hint button{font:600 var(--fs-sm) var(--font);color:var(--brand);background:var(--tint);border:0;border-radius:99px;padding:6px 12px;cursor:pointer;margin:6px 6px 0 0}
+.tools-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:14px}
+.tools-row .btn{font-size:var(--fs-xs);padding:7px 12px}
+@media (max-width:980px){.layout{grid-template-columns:1fr}.side{position:static;max-height:none}}
+@media (max-width:760px){.layout{padding-top:24px}.ixh h3{flex-basis:100%}}
+@media print{.topbar,header.nav,.page-hero,.side .ref,footer,.tools-row .btn,.ixf{display:none!important}.layout{grid-template-columns:1fr}.side{position:static}}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <span>Bệnh viện Đa khoa Hùng Vương · Khoa Dược</span>
+  <span>Email: <a href="mailto:khoaduochv@gmail.com">khoaduochv@gmail.com</a></span>
+</div></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="./" aria-label="Khoa Dược – BVĐK Hùng Vương, trang chủ">
+      <img src="assets/favicon-bvhv.png" width="44" height="44" alt="">
+      <span><b>Khoa Dược</b><small>Bệnh viện Đa khoa Hùng Vương</small></span>
+    </a>
+    <ul>
+      <li><a href="danh-muc.html">Danh mục thuốc</a></li>
+      <li><a href="tuong-tac.html" aria-current="page">Tương tác</a></li>
+      <li><a href="tiem-truyen.html">Tiêm truyền</a></li>
+      <li><a href="dac-biet.html">Người bệnh đặc biệt</a></li>
+      <li><a href="icd10.html">ICD-10</a></li>
+    </ul>
+    <button class="theme" id="theme" aria-label="Đổi giao diện sáng/tối">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="hero page-hero">
+    <div class="wrap">
+      <nav class="crumb" aria-label="Đường dẫn"><a href="./">Trang chủ</a><span>/</span><span>Tương tác thuốc</span></nav>
+      <h1>Kiểm tra tương tác thuốc trong đơn</h1>
+      <p class="lead">Nhập các hoạt chất trong đơn – trang dò mọi cặp tương tác <strong>chống chỉ định</strong> theo danh mục của bệnh viện. Thêm tuổi, eGFR, mã bệnh để biết tương tác nào áp dụng cho người bệnh này.</p>
+    </div>
+  </div>
+
+  <div class="wrap layout">
+    <aside class="panel side" aria-label="Đơn thuốc và người bệnh">
+      <div class="ph"><h2>Đơn thuốc</h2><p>Gõ tên hoạt chất (Việt hoặc Anh, không cần dấu), chọn trong danh sách.</p></div>
+      <div class="blk">
+        <div class="ac">
+          <input id="q" type="search" placeholder="vd: metformin, iohexol, clarithromycin…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="sug" aria-autocomplete="list">
+          <ul class="sug" id="sug" role="listbox" hidden></ul>
+        </div>
+        <div class="chips" id="chips"></div>
+        <p class="mini" id="chipnote">Chưa chọn thuốc nào.</p>
+      </div>
+      <div class="blk">
+        <h3>Người bệnh <span style="font-weight:500;color:var(--muted)">(tuỳ chọn)</span></h3>
+        <div class="grid2">
+          <label class="fld">Tuổi<span class="unit"><input id="age" type="number" min="0" inputmode="numeric"><select id="age-u"><option value="365">năm</option><option value="30">tháng</option><option value="1">ngày</option></select></span></label>
+          <label class="fld">eGFR / CrCl (ml/phút)<input id="egfr" type="number" min="0" inputmode="decimal"></label>
+          <label class="fld full">Mã bệnh ICD-10 (cách nhau bằng dấu phẩy)<input id="icd" type="text" placeholder="vd: E11.9, N18" autocomplete="off"></label>
+        </div>
+        <div class="icdok" id="icdok"></div>
+        <p class="mini">Chưa có eGFR? <a href="dac-biet.html">Tính độ thanh thải creatinin</a>. Số liệu chỉ tính trên máy, không lưu, không gửi đi.</p>
+      </div>
+      <div class="ref">Nguồn: bảng “Danh mục tương tác thuốc” của Khoa Dược (Google Sheets). Danh mục chỉ gồm các tương tác <b>chống chỉ định</b> – không tìm thấy cặp nào <b>không có nghĩa là an toàn tuyệt đối</b>; vẫn cần đánh giá lâm sàng.</div>
+    </aside>
+
+    <section class="results" aria-live="polite" id="res" style="padding:0">
+      <div class="hint">Đang tải danh mục tương tác…</div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span><a href="./" style="color:inherit">← Về trang chủ</a></span></div></div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script>
+/* ====== CẤU HÌNH ======
+   Bảng "Copy of DANH MỤC TƯƠNG TÁC THUỐC" (chủ: khoaduochv), trang tính "DANH MỤC", dòng 1 là tiêu đề.
+   Cột: A STT · B Hoạt chất 1 · C Hoạt chất chuẩn 1 · D Hoạt chất 2 · E Hoạt chất chuẩn 2 · F Điều kiện tuổi
+        G Mã bệnh (ICD, cách nhau dấu phẩy) · H eGFR · I Khoảng cách (thuốc 2 dùng sau thuốc 1) · J Mức độ
+        K Cơ chế · L Hậu quả · M Xử trí.  Nhận diện thuốc theo cột "hoạt chất chuẩn" (C, E). */
+const SHEET_ID="1HkVvMD7qrwI3BvvCqPe-bW_gduQwBf4BE181XRh0l6o", SHEET_NAME="DANH MỤC";
+const OLD_TOOL="https://script.google.com/macros/s/AKfycbwAg5vPUjoQN09Z9jHior8LD2C1DoXVgvuhE75ziTfa3MUZ-Vzs1fPHooodNLT5rPktbQ/exec";
+/* ====================== */
+const $=id=>document.getElementById(id);
+const CACHE_KEY="hv-tt2-v1";
+const URL_CSV=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(SHEET_NAME)}`;
+const norm=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/gi,"d").toLowerCase().replace(/\s+/g," ").trim();
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function parseCSV(t){const rows=[];let row=[],f="",q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}else if(c==='"')q=true;else if(c===','){row.push(f);f=""}else if(c==='\n'){row.push(f);rows.push(row);row=[];f=""}else if(c!=='\r')f+=c}if(f||row.length){row.push(f);rows.push(row)}return rows}
+
+let PAIRS=[], DRUGS=new Map(), SEL=[], ICD=null;
+/* Mức độ: 1 = CCĐ tuyệt đối, 2 = CCĐ tương đối, 0 = chưa phân loại (ô trống hoặc ghi "1"/"2" – không tự đoán) */
+const lvOf=s=>/tuyệt đối/i.test(s)?1:/tương đối/i.test(s)?2:0;
+const LV=["Chưa phân loại","CCĐ tuyệt đối","CCĐ tương đối"];
+const icdNorm=s=>s.toUpperCase().replace(/\s/g,"").replace(/\.+/g,".").replace(/\.$/,"");
+const icdBare=s=>icdNorm(s).replace(/\./g,"");
+
+function setData(csv){
+  const rows=parseCSV(csv).slice(1).filter(r=>(r[2]||"").trim()&&(r[4]||"").trim());
+  const names=new Map(); // chuẩn → {tên Việt: số lần}
+  const addName=(std,vi)=>{vi=(vi||"").trim();if(!vi)return;const m=names.get(std)||new Map();m.set(vi,(m.get(vi)||0)+1);names.set(std,m)};
+  PAIRS=rows.map((r,i)=>{
+    const a=norm(r[2]),b=norm(r[4]); addName(a,r[1]); addName(b,r[3]);
+    const egm=(r[7]||"").match(/<\s*(\d+(?:[.,]\d+)?)/), agm=(r[5]||"").match(/<\s*(\d+)\s*(ngày|tháng|năm)?/i);
+    const gap=(r[8]||"").trim();
+    return {i,a,b,stt:(r[0]||"").trim(),lv:lvOf(r[9]||""),lvRaw:(r[9]||"").trim(),cc:(r[10]||"").trim(),hq:(r[11]||"").trim(),xt:(r[12]||"").trim(),
+      ageTxt:(r[5]||"").trim(), ageMaxDays:agm?(+agm[1])*({"ngày":1,"tháng":30,"năm":365}[(agm[2]||"ngày").toLowerCase()]):null,
+      egTxt:(r[7]||"").trim(), egMax:egm?parseFloat(egm[1].replace(",",".")):null,
+      icd:(r[6]||"").split(/[,;]/).map(s=>icdBare(s)).filter(Boolean),
+      gap:gap?(/^\d+$/.test(gap)?gap+" ngày":gap):""};
+  });
+  DRUGS=new Map();
+  for(const [std,m] of names){const vi=[...m.entries()].sort((x,y)=>y[1]-x[1])[0][0];
+    DRUGS.set(std,{std,vi,key:norm([...m.keys()].join(" ")+" "+std),n:PAIRS.filter(p=>p.a===std||p.b===std).length});}
+}
+
+/* ---------- chọn thuốc ---------- */
+let sugIdx=-1, sugList=[];
+function suggest(){
+  const k=norm($("q").value); if(!k){closeSug();return}
+  const ws=k.split(" ");
+  sugList=[...DRUGS.values()].filter(d=>!SEL.includes(d.std)&&ws.every(w=>d.key.includes(w)))
+    .map(d=>[norm(d.vi).startsWith(k)||d.std.startsWith(k)?0:1,d]).sort((x,y)=>x[0]-y[0]||x[1].vi.localeCompare(y[1].vi,"vi")).slice(0,12).map(x=>x[1]);
+  sugIdx=sugList.length?0:-1;
+  $("sug").innerHTML=sugList.length?sugList.map((d,i)=>`<li role="option" data-i="${i}" aria-selected="${i===sugIdx}">${esc(d.vi)}<small>${esc(d.std)} · ${d.n} cặp tương tác</small></li>`).join("")
+    :`<li aria-disabled="true">Không có trong danh mục tương tác<small>Hoạt chất này không có cặp chống chỉ định nào được ghi nhận</small></li>`;
+  $("sug").hidden=false; $("q").setAttribute("aria-expanded","true");
+}
+function closeSug(){$("sug").hidden=true;$("q").setAttribute("aria-expanded","false");sugIdx=-1}
+function pick(d){if(!d)return;SEL.push(d.std);$("q").value="";closeSug();render();$("q").focus()}
+$("q").addEventListener("input",suggest);
+$("q").addEventListener("keydown",e=>{
+  if($("sug").hidden)return;
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();sugIdx=(sugIdx+(e.key==="ArrowDown"?1:-1)+sugList.length)%sugList.length;[...$("sug").children].forEach((li,i)=>li.setAttribute("aria-selected",i===sugIdx))}
+  else if(e.key==="Enter"){e.preventDefault();pick(sugList[sugIdx])}
+  else if(e.key==="Escape")closeSug();
+});
+$("sug").addEventListener("mousedown",e=>{const li=e.target.closest("li[data-i]");if(li){e.preventDefault();pick(sugList[+li.dataset.i])}});
+$("q").addEventListener("blur",()=>setTimeout(closeSug,120));
+$("chips").addEventListener("click",e=>{const b=e.target.closest("button[data-s]");if(b){SEL=SEL.filter(s=>s!==b.dataset.s);render()}});
+
+/* ---------- người bệnh ---------- */
+function patient(){
+  const age=+$("age").value, eg=+$("egfr").value;
+  const codes=$("icd").value.split(/[,;\s]+/).map(icdBare).filter(c=>/^[A-Z]\d\d/.test(c));
+  return {ageDays:$("age").value!==""?age*(+$("age-u").value):null, egfr:$("egfr").value!==""?eg:null, icd:codes};
+}
+async function showIcd(){
+  const codes=patient().icd; if(!codes.length){$("icdok").innerHTML="";return}
+  try{ if(!ICD){$("icdok").textContent="Đang tải danh mục ICD…";const d=await (await fetch("data/icd10.json")).json();ICD=new Map(d.c.map(c=>[c[0].replace(/[.†*]/g,""),c[1]]))}
+    $("icdok").innerHTML=codes.map(c=>ICD.has(c)?`<b>${c}</b> ${esc(ICD.get(c))}`:`<b>${c}</b> <span style="color:var(--accent)">không có trong ICD-10</span>`).join("<br>");
+  }catch(e){$("icdok").innerHTML=""}
+}
+["age","age-u","egfr"].forEach(id=>$(id).addEventListener("input",render));
+let ti;$("icd").addEventListener("input",()=>{clearTimeout(ti);ti=setTimeout(()=>{render();showIcd()},250)});
+
+/* Đánh giá điều kiện: trả về {st:"always"|"yes"|"no"|"check", items:[{txt,ok}]} */
+function evalCond(p,pt){
+  const items=[];
+  if(p.ageTxt) items.push({txt:"Tuổi "+p.ageTxt, ok:pt.ageDays==null||p.ageMaxDays==null?null:pt.ageDays<p.ageMaxDays});
+  if(p.egTxt) items.push({txt:"eGFR "+p.egTxt.replace(/^e?gfr\s*/i,""), ok:pt.egfr==null||p.egMax==null?null:pt.egfr<p.egMax});
+  if(p.icd.length){const hit=pt.icd.length?pt.icd.some(c=>p.icd.some(r=>c.startsWith(r)||r.startsWith(c))):null;
+    const sh=p.icd.length>6?[...new Set(p.icd.map(c=>c.slice(0,3)))].join(", ")+` (${p.icd.length} mã)`:p.icd.map(c=>c.length>3?c.slice(0,3)+"."+c.slice(3):c).join(", ");
+    items.push({txt:"Bệnh: "+sh, ok:hit});}
+  if(!items.length) return {st:"always",items};
+  if(items.some(x=>x.ok===false)) return {st:"no",items};
+  if(items.every(x=>x.ok===true)) return {st:"yes",items};
+  return {st:"check",items};
+}
+const ST={always:["ap","Luôn áp dụng"],yes:["ap","Áp dụng với người bệnh này"],check:["chk","Cần kiểm tra điều kiện"],no:["no","Không áp dụng với người bệnh này"]};
+
+/* ---------- kết quả ---------- */
+function card(p,pt){
+  const A=DRUGS.get(p.a),B=DRUGS.get(p.b),c=evalCond(p,pt),[sc,sl]=ST[c.st];
+  const lvTxt=p.lv?LV[p.lv]:`Chưa phân loại${p.lvRaw?` (ghi “${esc(p.lvRaw)}”)`:""}`;
+  return `<article class="ix lv${p.lv}${c.st==="no"?" off":""}">
+    <div class="ixh"><h3>${esc(A.vi)}<span>+</span>${esc(B.vi)}</h3><span class="bd lv${p.lv}">${lvTxt}</span><span class="bd ${sc}">${sl}</span></div>
+    <div class="ixb">
+      ${p.hq?`<p class="hq">${esc(p.hq)}</p>`:""}
+      ${c.items.length||p.gap?`<div class="conds">${c.items.map(x=>`<span class="cd ${x.ok===true?"yes":x.ok===false?"no":""}">${esc(x.txt)}${x.ok===null?" – chưa nhập":""}</span>`).join("")}${p.gap?`<span class="cd">Khoảng cách: ${esc(A.vi)} → ${esc(B.vi)} ${esc(p.gap)}</span>`:""}</div>`:""}
+      <dl>${p.cc?`<div><dt>Cơ chế</dt><dd>${esc(p.cc)}</dd></div>`:""}${p.xt?`<div><dt>Xử trí</dt><dd class="xt">${esc(p.xt)}</dd></div>`:""}</dl>
+    </div>
+    <div class="ixf"><a href="${gopYUrl({loai:GOP_Y_SAI,trang:"Tương tác thuốc – thuốc",thuoc:A.vi+" + "+B.vi+(p.stt?" (STT "+p.stt+")":"")})}" target="_blank" rel="noopener">Báo thông tin chưa đúng</a></div>
+  </article>`;
+}
+const order={always:0,yes:0,check:1,no:2};
+function render(){
+  if(DRUGS.size) SEL=SEL.filter(s=>DRUGS.has(s));
+  $("chips").innerHTML=SEL.map(s=>{const d=DRUGS.get(s);return `<span class="chip">${esc(d?d.vi:s)}<button data-s="${esc(s)}" aria-label="Bỏ ${esc(d?d.vi:s)}">×</button></span>`}).join("");
+  $("chipnote").textContent=SEL.length?`${SEL.length} hoạt chất · bấm × để bỏ`:"Chưa chọn thuốc nào.";
+  if(!PAIRS.length) return;
+  history.replaceState(null,"",SEL.length?"#d="+SEL.map(encodeURIComponent).join(","):location.pathname);
+  const pt=patient(), set=new Set(SEL);
+  let list, title;
+  if(!SEL.length){
+    $("res").innerHTML=`<div class="hint"><b style="color:var(--ink)">Danh mục có ${PAIRS.length.toLocaleString("vi-VN")} cặp tương tác chống chỉ định giữa ${DRUGS.size} hoạt chất.</b><br>Nhập các hoạt chất trong đơn ở khung bên trái. Chọn 1 thuốc để xem mọi thuốc tương tác với nó; chọn từ 2 thuốc để kiểm tra cả đơn.<br>Thử nhanh:
+      <br><button data-ex="metformin,iohexol">Metformin + Iohexol</button><button data-ex="clarithromycin,simvastatin,colchicine">Clarithromycin + Simvastatin + Colchicin</button><button data-ex="ceftriaxone,calcium chloride">Ceftriaxon + Calci clorid</button></div>`;
+    return;
+  }
+  if(SEL.length===1){ list=PAIRS.filter(p=>set.has(p.a)||set.has(p.b)); title=`Các thuốc chống chỉ định phối hợp với ${esc(DRUGS.get(SEL[0]).vi)}`; }
+  else { list=PAIRS.filter(p=>set.has(p.a)&&set.has(p.b)); title=`Tương tác trong đơn (${SEL.length} hoạt chất)`; }
+  const ev=list.map(p=>[p,evalCond(p,pt).st]).sort((x,y)=>order[x[1]]-order[y[1]]||(x[0].lv||9)-(y[0].lv||9));
+  const nAp=ev.filter(x=>x[1]==="always"||x[1]==="yes").length, nChk=ev.filter(x=>x[1]==="check").length, nNo=ev.filter(x=>x[1]==="no").length;
+  let h=`<div class="tools-row"><div class="rhead" style="margin:0"><h2>${title}</h2></div><span><button class="btn" id="share">Sao chép link</button> <button class="btn" onclick="print()">In</button></span></div>`;
+  if(!list.length){
+    h+=`<div class="ok"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg><div><b>Không có cặp nào trong danh mục tương tác chống chỉ định.</b><br><span style="color:var(--muted)">Điều này không có nghĩa là an toàn tuyệt đối – danh mục chỉ gồm tương tác chống chỉ định. Vẫn đánh giá liều, chức năng gan thận và tương tác mức độ khác.</span></div></div>`;
+  }else{
+    h+=`<div class="sum"><div class="stat red"><b>${nAp}</b><small>Áp dụng</small></div><div class="stat amb"><b>${nChk}</b><small>Cần kiểm tra điều kiện</small></div><div class="stat"><b>${nNo}</b><small>Không áp dụng (theo số liệu đã nhập)</small></div></div>`;
+    h+=ev.map(([p])=>card(p,pt)).join("");
+  }
+  if(SEL.length>=2){const solo=SEL.filter(s=>!list.some(p=>p.a===s||p.b===s));if(solo.length)h+=`<p class="mini" style="margin-top:14px">Không có tương tác trong đơn: ${solo.map(s=>esc(DRUGS.get(s).vi)).join(", ")}.</p>`}
+  $("res").innerHTML=h;
+  $("share").onclick=async e=>{try{await navigator.clipboard.writeText(location.href);e.target.textContent="Đã sao chép ✓"}catch(_){e.target.textContent=location.href}};
+}
+$("res").addEventListener("click",e=>{const b=e.target.closest("button[data-ex]");if(b){SEL=b.dataset.ex.split(",").filter(s=>DRUGS.has(s));render()}});
+
+function fromHash(){const m=location.hash.match(/^#d=(.+)$/);if(m)SEL=[...new Set(m[1].split(",").map(decodeURIComponent))].filter(s=>DRUGS.has(s))}
+
+(async()=>{
+  let cached=null;try{cached=JSON.parse(localStorage.getItem(CACHE_KEY)||"null")}catch(e){}
+  if(cached&&cached.csv){setData(cached.csv);fromHash();render()}
+  try{
+    const r=await fetch(URL_CSV,{credentials:"omit"});if(!r.ok)throw new Error(r.status);
+    const csv=await r.text();
+    if(!cached||cached.csv!==csv){setData(csv);if(!cached)fromHash();render()}
+    try{localStorage.setItem(CACHE_KEY,JSON.stringify({t:Date.now(),csv}))}catch(e){}
+  }catch(e){
+    if(!cached)$("res").innerHTML=`<div class="hint">Không tải được danh mục tương tác. Kiểm tra kết nối mạng rồi tải lại trang, hoặc <a href="${OLD_TOOL}" target="_blank" rel="noopener">mở công cụ cũ</a>.</div>`;
+  }
+})();
+
+const root=document.documentElement;
+try{const s=localStorage.getItem("hv-theme");if(s)root.dataset.theme=s}catch(e){}
+$("theme").onclick=()=>{const dark=root.dataset.theme?root.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;root.dataset.theme=dark?"light":"dark";try{localStorage.setItem("hv-theme",root.dataset.theme)}catch(e){}};
+</script>
+</body>
+</html>
