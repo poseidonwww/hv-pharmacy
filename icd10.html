@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mã ICD-10 · Khoa Dược BVĐK Hùng Vương</title>
+<meta name="description" content="Tra cứu mã bệnh ICD-10 theo Thông tư 06/2026/TT-BYT: tìm theo mã, tên tiếng Việt không dấu hoặc tiếng Anh; cảnh báo mã không dùng làm bệnh chính.">
+<meta name="theme-color" content="#1577bc">
+<link rel="icon" type="image/png" href="assets/favicon-bvhv.png">
+<link rel="apple-touch-icon" href="assets/favicon-bvhv.png">
+<link rel="preload" href="data/icd10.json" as="fetch" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* ===== Riêng trang ICD-10 ===== */
+.page-hero .lead{margin-bottom:24px;max-width:64ch}
+.page-hero .search{max-width:720px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:14px;font-size:var(--fs-sm);color:rgb(255 255 255 / .8)}
+.meta b{color:#fff}
+.results{padding:36px 0 72px}
+.chaps{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.chap{display:grid;grid-template-columns:52px 1fr;gap:14px;align-items:center;text-align:left;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;cursor:pointer;box-shadow:var(--shadow-sm);transition:border-color .15s,box-shadow .15s}
+.chap:hover{border-color:color-mix(in srgb,var(--brand) 45%,var(--line));box-shadow:var(--shadow)}
+.chap .no{font-weight:700;color:var(--brand);background:var(--tint);border-radius:10px;height:44px;display:grid;place-items:center}
+.chap b{display:block;font-size:var(--fs-sm);font-weight:600;line-height:1.4}
+.chap small{display:block;color:var(--muted);font-size:var(--fs-xs);margin-top:2px}
+.back{font:600 var(--fs-sm) var(--font);color:var(--brand);background:none;border:0;padding:0;cursor:pointer;margin-bottom:12px}
+.blk-title{font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px}
+.ilist{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm);overflow:hidden}
+.ilist li+li{border-top:1px solid var(--line)}
+.irow{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:16px;align-items:center;padding:12px 16px}
+.irow:hover{background:var(--tint)}
+.irow.cat{background:var(--surface-2)}
+.code{font:700 var(--fs-base)/1.2 var(--font);color:var(--brand);letter-spacing:.02em;background:none;border:0;padding:0;text-align:left;cursor:pointer}
+.irow .nm{cursor:pointer;min-width:0}
+.irow b{display:block;font-size:var(--fs-base);font-weight:500;line-height:1.45}
+.irow.cat b{font-weight:700}
+.irow small{display:block;color:var(--muted);font-size:var(--fs-xs);line-height:1.45;margin-top:1px}
+.flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.fg{font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.fg.red{background:var(--accent-tint);border-color:transparent;color:var(--accent)}
+.fg.amb{background:#fff4e0;border-color:transparent;color:#a15c00}
+:root[data-theme=dark] .fg.amb{background:#3a2a10;color:#ffc46b}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .fg.amb{background:#3a2a10;color:#ffc46b}}
+.cp{font:600 var(--fs-xs) var(--font);color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap}
+.cp:hover{color:var(--brand);border-color:var(--brand)}
+.cp.ok{color:#fff;background:var(--brand);border-color:var(--brand)}
+.src{margin-top:28px;font-size:var(--fs-xs);color:var(--muted);text-align:center}
+
+/* chi tiết */
+.dtop .code{font-size:clamp(22px,1vw + 18px,28px);cursor:default}
+.dtop .en{color:var(--muted);font-size:var(--fs-sm);margin-top:4px}
+.dbody{padding-top:16px}
+.path{font-size:var(--fs-sm);color:var(--muted);line-height:1.6}
+.path b{color:var(--ink);font-weight:600}
+.alert{margin-top:14px;padding:12px 14px;border-radius:var(--r-sm);font-size:var(--fs-sm);line-height:1.55}
+.alert.red{background:var(--accent-tint);border-left:4px solid var(--accent)}
+.alert.amb{background:#fff4e0;border-left:4px solid #e69500}
+:root[data-theme=dark] .alert.amb{background:#3a2a10}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .alert.amb{background:#3a2a10}}
+.alert.info{background:var(--tint);border-left:4px solid var(--brand)}
+.hd{margin-top:16px}
+.hd h3,.kids h3{font-size:var(--fs-base);margin-bottom:8px}
+.hd div{white-space:pre-line;line-height:1.65;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2)}
+.kids{margin-top:18px}
+.kids .ilist{box-shadow:none}
+@media (max-width:760px){
+  .irow{grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 14px;align-items:start}
+  .irow .code{padding-top:2px}
+  .irow .cp{grid-column:2;justify-self:start}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <span>Bệnh viện Đa khoa Hùng Vương · Khoa Dược</span>
+  <span>Email: <a href="mailto:khoaduochv@gmail.com">khoaduochv@gmail.com</a></span>
+</div></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="./" aria-label="Khoa Dược – BVĐK Hùng Vương, trang chủ">
+      <img src="assets/favicon-bvhv.png" width="44" height="44" alt="">
+      <span><b>Khoa Dược</b><small>Bệnh viện Đa khoa Hùng Vương</small></span>
+    </a>
+    <ul>
+      <li><a href="danh-muc.html">Danh mục thuốc</a></li>
+      <li><a href="tiem-truyen.html">Tiêm truyền</a></li>
+      <li><a href="dac-biet.html">Người bệnh đặc biệt</a></li>
+      <li><a href="icd10.html" aria-current="page">ICD-10</a></li>
+    </ul>
+    <button class="theme" id="theme" aria-label="Đổi giao diện sáng/tối">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="hero page-hero">
+    <div class="wrap">
+      <nav class="crumb" aria-label="Đường dẫn"><a href="./">Trang chủ</a><span>/</span><span>Mã ICD-10</span></nav>
+      <h1>Tra cứu mã ICD-10</h1>
+      <p class="lead">Danh mục mã bệnh theo Thông tư 06/2026/TT-BYT. Tìm theo mã, tên tiếng Việt (không cần dấu) hoặc tiếng Anh. Bấm vào mã để sao chép.</p>
+      <label class="search" for="q">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="q" type="search" placeholder="Nhập mã hoặc tên bệnh… (vd: J18, viem phoi, pneumonia)" autocomplete="off">
+        <kbd>/</kbd>
+      </label>
+      <div class="meta"><span><b id="total">…</b> mã</span><span><b>22</b> chương</span><span>Nguồn: Thông tư 06/2026/TT-BYT</span></div>
+    </div>
+  </div>
+
+  <section class="results" aria-live="polite">
+    <div class="wrap">
+      <div id="view"><div class="chaps"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div></div>
+      <p class="src">Dữ liệu chuyển từ file “Danh mục ICD TT06 2026” (Excel) – xem <code>tools/build-icd.py</code> để cập nhật.</p>
+    </div>
+  </section>
+</main>
+
+<dialog class="detail" id="detail" aria-labelledby="d-code">
+  <div class="dwrap">
+    <div class="dtop">
+      <div><div class="code" id="d-code"></div><h2 id="d-vi" style="margin-top:6px"></h2><div class="en" id="d-en"></div></div>
+      <button class="x" id="d-close" aria-label="Đóng"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="dbody" id="d-body"></div>
+  </div>
+</dialog>
+
+<footer>
+  <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span><a href="./" style="color:inherit">← Về trang chủ</a></span></div></div>
+</footer>
+
+<script>
+/* Dữ liệu: data/icd10.json {v, ch:[[số La Mã, phạm vi, tên VI, tên EN]], bl:[[mã khối, tên VI, tên EN]],
+   c:[[mã, tên VI, tên EN, cờ, chỉ số chương, chỉ số khối]]} · data/icd10-hd.json: hướng dẫn mã hoá (cùng thứ tự c).
+   Cờ: 1 không dùng làm bệnh chính · 2 không khuyến khích làm bệnh chính · 4 không dùng vì có mã chi tiết hơn
+       8 chỉ mã hoá nguyên nhân tử vong · 16 chỉ/chủ yếu ở nữ · 32 chỉ/chủ yếu ở nam */
+const $=id=>document.getElementById(id);
+const PAGE=100;
+const norm=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/gi,"d").toLowerCase();
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+/* Mã có ký hiệu † (nguyên nhân) hoặc * (biểu hiện): khi sao chép bỏ ký hiệu để dán vào HIS */
+const bare=c=>c.replace(/[†*]/g,"");
+const FLAGS=[[1,"Không dùng làm bệnh chính","red"],[2,"Không khuyến khích làm bệnh chính","amb"],[4,"Có mã chi tiết hơn","amb"],[8,"Chỉ mã hoá tử vong","red"],[16,"Nữ",""],[32,"Nam",""]];
+let D=null, HD=null, IDX=[], BYCODE=new Map(), view=[], shown=0, mode="chaps", curChap=-1;
+
+function flagsHTML(f){const t=FLAGS.filter(([b])=>f&b).map(([,l,c])=>`<span class="fg ${c}">${l}</span>`);return t.length?`<span class="flags">${t.join("")}</span>`:""}
+function rowHTML(i){const c=D.c[i], cat=c[0].length===3;
+  return `<li><div class="irow${cat?" cat":""}"><button class="code" data-i="${i}" title="Xem chi tiết">${c[0]}</button><div class="nm" data-i="${i}"><b>${esc(c[1])}</b><small>${esc(c[2])}</small>${flagsHTML(c[3])}</div><button class="cp" data-c="${bare(c[0])}" aria-label="Sao chép mã ${bare(c[0])}">Sao chép</button></div></li>`}
+
+function showChaps(){
+  mode="chaps";curChap=-1;
+  $("view").innerHTML=`<div class="rhead"><h2>Duyệt theo chương</h2><span>${D.ch.length} chương</span></div><div class="chaps">${D.ch.map((h,i)=>`<button class="chap" data-ch="${i}"><span class="no">${h[0]}</span><span><b>${esc(h[2])}</b><small>${h[1]} · ${D.c.filter(c=>c[4]===i).length.toLocaleString("vi-VN")} mã</small></span></button>`).join("")}</div>`;
+}
+function showChap(ci){
+  mode="chap";curChap=ci;const h=D.ch[ci];
+  view=D.c.map((c,i)=>i).filter(i=>D.c[i][4]===ci);
+  $("view").innerHTML=`<button class="back" id="back">← Tất cả chương</button><div class="rhead"><h2>Chương ${h[0]}: ${esc(h[2])}</h2><span>${h[1]} · ${view.length.toLocaleString("vi-VN")} mã</span></div><div id="lst"></div><button class="more" id="more" hidden></button>`;
+  shown=0;moreChap();
+}
+function moreChap(){
+  const part=view.slice(shown,shown+PAGE);let html="",last=shown?D.c[view[shown-1]][5]:-1;
+  for(const i of part){const b=D.c[i][5];if(b!==last){if(html)html+="</ul>";html+=`<h3 class="blk-title">${esc(D.bl[b][0])} · ${esc(D.bl[b][1])}</h3><ul class="ilist">`;last=b}else if(!html)html+='<ul class="ilist">';html+=rowHTML(i)}
+  $("lst").insertAdjacentHTML("beforeend",html+"</ul>");shown+=part.length;
+  $("more").hidden=shown>=view.length;$("more").textContent=`Xem thêm (${(view.length-shown).toLocaleString("vi-VN")} mã)`;
+}
+function search(raw){
+  const q=norm(raw.trim()); if(!q){showChaps();return}
+  mode="search";
+  const qc=q.replace(/[.\s]/g,"").toUpperCase(), isCode=/^[A-Z]\d{0,2}[0-9A-Z]{0,2}$/.test(qc);
+  const ws=q.split(/\s+/).filter(Boolean), res=[];
+  for(let i=0;i<IDX.length;i++){
+    const x=IDX[i];let s=-1;
+    if(isCode&&x.cc.startsWith(qc)) s=x.cc===qc?0:1+x.cc.length-qc.length;
+    else if(ws.every(w=>x.t.includes(w))){
+      /* cụm từ đứng đầu một từ trong tên > chứa cụm từ > chỉ khớp từng từ;
+         mã không dùng / không khuyến khích làm bệnh chính bị đẩy xuống; cùng hạng giữ thứ tự mã */
+      s=(" "+x.vi).includes(" "+q)?10:x.vi.includes(q)?20:30;
+      const f=D.c[i][3]; if(f&3)s+=8; if(f&4)s+=2;
+    }
+    if(s>=0)res.push([s,i]);
+  }
+  res.sort((a,b)=>a[0]-b[0]||a[1]-b[1]); view=res.map(r=>r[1]);
+  $("view").innerHTML=`<div class="rhead"><h2>Kết quả cho “${esc(raw.trim())}”</h2><span>${view.length.toLocaleString("vi-VN")} mã</span></div>${view.length?'<ul class="ilist" id="lst"></ul>':`<div class="state">Không tìm thấy mã phù hợp. Thử từ khoá ngắn hơn, ví dụ “viem phoi” hoặc “J18”.</div>`}<button class="more" id="more" hidden></button>`;
+  shown=0;if(view.length)moreSearch();
+}
+function moreSearch(){const part=view.slice(shown,shown+PAGE);$("lst").insertAdjacentHTML("beforeend",part.map(rowHTML).join(""));shown+=part.length;$("more").hidden=shown>=view.length;$("more").textContent=`Xem thêm (${(view.length-shown).toLocaleString("vi-VN")} mã)`}
+
+async function openDetail(i,push=true){
+  const c=D.c[i],h=D.ch[c[4]],b=D.bl[c[5]];
+  $("d-code").textContent=c[0];$("d-vi").textContent=c[1];$("d-en").textContent=c[2];
+  const al=[];
+  if(c[3]&1)al.push('<div class="alert red"><strong>Không dùng làm bệnh chính.</strong> Mã này chỉ dùng làm bệnh kèm theo / mã bổ sung.</div>');
+  if(c[3]&2)al.push('<div class="alert amb"><strong>Không khuyến khích dùng làm bệnh chính.</strong> Nên tìm mã phản ánh đúng bệnh chính hơn.</div>');
+  if(c[3]&4)al.push('<div class="alert amb"><strong>Không dùng mã này</strong> vì đã có mã chi tiết hơn (4–5 ký tự) – chọn một mã bên dưới.</div>');
+  if(c[3]&8)al.push('<div class="alert red"><strong>Chỉ dùng để mã hoá nguyên nhân tử vong.</strong></div>');
+  if(c[3]&16)al.push('<div class="alert info">Bệnh chỉ có hoặc chủ yếu có ở <strong>nữ giới</strong>.</div>');
+  if(c[3]&32)al.push('<div class="alert info">Bệnh chỉ có hoặc chủ yếu có ở <strong>nam giới</strong>.</div>');
+  const p3=c[0].slice(0,3), kids=[];for(let j=0;j<D.c.length;j++){if(j!==i&&D.c[j][0].startsWith(p3))kids.push(j)}
+  $("d-body").innerHTML=`<div class="dactions" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" id="d-copy">Sao chép mã ${bare(c[0])}</button><button class="btn" id="d-share">Sao chép link</button></div>
+    <p class="path" style="margin-top:14px">Chương <b>${h[0]}</b> · ${esc(h[2])} (${h[1]})<br>Khối <b>${esc(b[0])}</b> · ${esc(b[1])}</p>
+    ${al.join("")}<div class="hd" id="d-hd"></div>
+    ${kids.length?`<div class="kids"><h3>${c[0].length===3?"Các mã chi tiết":"Cùng nhóm "+p3}</h3><ul class="ilist">${kids.map(rowHTML).join("")}</ul></div>`:""}`;
+  $("d-copy").onclick=e=>copy(bare(c[0]),e.currentTarget,`Đã sao chép ${bare(c[0])} ✓`);
+  $("d-share").onclick=e=>copy(location.href,e.currentTarget,"Đã sao chép link ✓");
+  if(!$("detail").open)$("detail").showModal();$("d-body").scrollTop=0;
+  if(push)history.replaceState(null,"","#m="+encodeURIComponent(bare(c[0])));
+  try{ if(!HD) HD=await (await fetch("data/icd10-hd.json")).json();
+    const g=(HD[i]||"").trim(); if(g&&$("d-code").textContent===c[0]) $("d-hd").innerHTML=`<h3>Hướng dẫn mã hoá (WHO 2019)</h3><div>${esc(g)}</div>`;
+  }catch(e){}
+}
+async function copy(text,btn,ok){try{await navigator.clipboard.writeText(text)}catch(e){const t=document.createElement("textarea");t.value=text;document.body.append(t);t.select();document.execCommand("copy");t.remove()}
+  const old=btn.textContent;btn.textContent=ok||"Đã chép ✓";btn.classList.add("ok");setTimeout(()=>{btn.textContent=old;btn.classList.remove("ok")},1400)}
+
+document.addEventListener("click",e=>{
+  const cp=e.target.closest(".cp");if(cp){copy(cp.dataset.c,cp,"Đã chép ✓");return}
+  const o=e.target.closest(".code[data-i],.nm[data-i]");if(o){openDetail(+o.dataset.i);return}
+  const ch=e.target.closest(".chap");if(ch){showChap(+ch.dataset.ch);scrollTo({top:$("view").offsetTop-90});return}
+  if(e.target.id==="back"){showChaps();return}
+  if(e.target.id==="more"){mode==="chap"?moreChap():moreSearch()}
+});
+let tm;$("q").addEventListener("input",()=>{clearTimeout(tm);tm=setTimeout(()=>D&&search($("q").value),150)});
+$("d-close").onclick=()=>$("detail").close();
+$("detail").addEventListener("click",e=>{if(e.target===$("detail"))$("detail").close()});
+$("detail").addEventListener("close",()=>history.replaceState(null,"",location.pathname+location.search));
+addEventListener("keydown",e=>{if(e.key==="/"&&document.activeElement!==$("q")&&!$("detail").open){e.preventDefault();$("q").focus()}});
+function openFromHash(){const m=location.hash.match(/^#m=(.+)$/);if(!m||!D)return;const i=BYCODE.get(decodeURIComponent(m[1]).toUpperCase());if(i!==undefined)openDetail(i,false)}
+addEventListener("hashchange",openFromHash);
+
+(async()=>{
+  try{
+    D=await (await fetch("data/icd10.json")).json();
+    IDX=D.c.map(c=>({cc:bare(c[0]).replace(".",""),vi:norm(c[1]),t:norm(c[0]+" "+c[0].replace(".","")+" "+c[1]+" "+c[2])}));
+    D.c.forEach((c,i)=>BYCODE.set(bare(c[0]),i));
+    $("total").textContent=D.c.length.toLocaleString("vi-VN");
+    $("q").value.trim()?search($("q").value):showChaps(); openFromHash();
+  }catch(e){$("view").innerHTML='<div class="state">Không tải được dữ liệu ICD-10. Tải lại trang để thử lại.</div>'}
+})();
+
+const root=document.documentElement;
+try{const s=localStorage.getItem("hv-theme");if(s)root.dataset.theme=s}catch(e){}
+$("theme").onclick=()=>{const dark=root.dataset.theme?root.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;root.dataset.theme=dark?"light":"dark";try{localStorage.setItem("hv-theme",root.dataset.theme)}catch(e){}};
+</script>
+</body>
+</html>
