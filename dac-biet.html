@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Người bệnh đặc biệt · Khoa Dược BVĐK Hùng Vương</title>
+<meta name="description" content="Tra cứu thuốc cho người bệnh suy thận, suy gan, phụ nữ có thai và cho con bú. Tính độ thanh thải creatinin và điểm Child-Pugh.">
+<meta name="theme-color" content="#1577bc">
+<link rel="icon" type="image/png" href="assets/favicon-bvhv.png">
+<link rel="apple-touch-icon" href="assets/favicon-bvhv.png">
+<link rel="preconnect" href="https://docs.google.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* ===== Riêng trang Người bệnh đặc biệt ===== */
+.page-hero .wrap{display:block;padding-top:40px;padding-bottom:44px}
+.crumb{display:flex;gap:8px;font-size:var(--fs-sm);color:rgb(255 255 255 / .75);margin-bottom:14px}
+.crumb a{color:#fff;text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.page-hero h1{font-size:clamp(28px,2vw + 18px,40px);margin:0 0 10px;max-width:none}
+.page-hero .lead{margin-bottom:0;max-width:64ch}
+
+.layout{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:32px;align-items:start;padding-top:36px;padding-bottom:72px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm)}
+.side{position:sticky;top:88px;max-height:calc(100vh - 104px);overflow:auto}
+.ph{padding:18px 20px;border-bottom:1px solid var(--line)}
+.ph h2{font-size:var(--fs-base);font-weight:700;letter-spacing:0}
+.ph p{font-size:var(--fs-xs);color:var(--muted);margin-top:2px}
+.conds{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:16px 20px}
+.cond{position:relative}
+.cond input{position:absolute;opacity:0;pointer-events:none}
+.cond span{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:var(--fs-sm);font-weight:600;cursor:pointer;user-select:none;transition:border-color .15s,background .15s}
+.cond span::before{content:"";width:16px;height:16px;border-radius:5px;border:1.5px solid var(--muted);flex:none}
+.cond input:checked+span{border-color:var(--brand);background:var(--tint);color:var(--brand)}
+.cond input:checked+span::before{background:var(--brand) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5 12 5 5L20 7' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat;border-color:var(--brand)}
+.cond input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.calc{border-top:1px solid var(--line);padding:16px 20px}
+.calc h3{font-size:var(--fs-sm);font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:var(--fs-xs);color:var(--muted);font-weight:500}
+.fld.full{grid-column:1/-1}
+.fld input,.fld select{font:inherit;font-size:var(--fs-sm);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 10px;min-width:0;width:100%}
+.fld input:focus,.fld select:focus{outline:2px solid var(--brand);outline-offset:0;border-color:transparent}
+.unit{display:grid;grid-template-columns:1fr auto;gap:6px}
+.unit select{width:auto}
+.out{margin-top:12px;padding:12px 14px;border-radius:var(--r-sm);background:var(--surface-2);border:1px dashed var(--line);font-size:var(--fs-sm);color:var(--muted)}
+.out b{display:block;font-size:20px;color:var(--ink);line-height:1.3}
+.out.ok{border-style:solid;border-color:color-mix(in srgb,var(--brand) 40%,var(--line));background:var(--tint)}
+.out .lvl{display:inline-block;margin-top:4px;font-size:var(--fs-xs);font-weight:700;padding:2px 9px;border-radius:99px;background:var(--surface);color:var(--brand)}
+.out .lvl.bad{background:var(--accent-tint);color:var(--accent)}
+.ref{font-size:11.5px;color:var(--muted);padding:12px 20px 16px;border-top:1px solid var(--line);line-height:1.5}
+
+.main .search{max-width:none;box-shadow:var(--shadow-sm);border:1px solid var(--line);margin-bottom:16px}
+.main .search:focus-within{border-color:var(--brand)}
+.rhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.rhead h2{font-size:var(--fs-md);font-weight:600;letter-spacing:0}
+.rhead span{font-size:var(--fs-sm);color:var(--muted)}
+.dlist{list-style:none;margin:0;padding:0;overflow:hidden}
+.dlist li+li{border-top:1px solid var(--line)}
+.drow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;width:100%;padding:14px 18px;background:none;border:0;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:background .15s}
+.drow:hover{background:var(--tint)}
+.drow b{display:block;font-size:var(--fs-base);font-weight:600;line-height:1.4}
+.drow .inn{display:block;color:var(--brand);font-size:var(--fs-sm);font-weight:500;margin-top:2px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tg{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tg.red{background:var(--accent-tint);border-color:transparent;color:var(--accent)}
+.tg.amb{background:#fff4e0;border-color:transparent;color:#a15c00}
+:root[data-theme=dark] .tg.amb{background:#3a2a10;color:#ffc46b}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .tg.amb{background:#3a2a10;color:#ffc46b}}
+.drow .arr{color:var(--muted)}
+.more{display:block;margin:16px auto 0;font:600 var(--fs-sm) var(--font);color:var(--brand);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:10px 22px;cursor:pointer}
+.more[hidden]{display:none}
+.state{padding:36px 20px;text-align:center;color:var(--muted)}
+.state a{color:var(--brand)}
+.skel{height:72px;background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 50%,var(--surface) 100%);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.hint-box{padding:16px 18px;margin-bottom:16px;border-radius:var(--r);background:var(--tint);font-size:var(--fs-sm);color:var(--ink)}
+
+/* chi tiết */
+dialog.detail{width:min(820px,calc(100% - 32px));max-height:calc(100dvh - 48px);padding:0;border:0;border-radius:var(--r-lg);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgb(0 0 0 / .55);overflow:hidden}
+dialog.detail::backdrop{background:rgb(8 20 32 / .55);backdrop-filter:blur(2px)}
+.dwrap{display:flex;flex-direction:column;max-height:calc(100dvh - 48px)}
+.dtop{display:flex;gap:16px;align-items:flex-start;padding:22px 24px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.dtop h2{font-size:clamp(20px,1vw + 16px,24px);line-height:1.3}
+.dtop .inn{color:var(--brand);font-weight:600;margin-top:4px}
+.dtop .pt{font-size:var(--fs-xs);color:var(--muted);margin-top:6px}
+.x{margin-left:auto;flex:none;width:40px;height:40px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:grid;place-items:center}
+.x:hover{border-color:var(--brand);color:var(--brand)}
+.dbody{overflow:auto;padding:16px 24px 24px}
+.blk{border:1px solid var(--line);border-radius:var(--r);margin-top:14px;overflow:hidden}
+.blk h3{display:flex;align-items:center;gap:10px;font-size:var(--fs-base);padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.blk h3 small{margin-left:auto;font-size:var(--fs-xs);font-weight:600;color:var(--brand)}
+.blk .row{padding:12px 16px}
+.blk .row+.row{border-top:1px solid var(--line)}
+.blk .k{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.blk .k.red{color:var(--accent)}
+.blk .k.amb{color:#a15c00}
+:root[data-theme=dark] .blk .k.amb{color:#ffc46b}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .blk .k.amb{color:#ffc46b}}
+.blk ul{margin:0;padding-left:18px;line-height:1.6}
+.blk li+li{margin-top:4px}
+.blk p{line-height:1.6}
+.na{color:var(--muted);font-style:italic}
+.dactions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;font:600 var(--fs-sm) var(--font);text-decoration:none;border-radius:var(--r-sm);padding:9px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn:hover{border-color:var(--brand)}
+.dnote{margin-top:16px;padding:12px 14px;border-radius:var(--r-sm);background:var(--accent-tint);font-size:var(--fs-xs);line-height:1.55}
+.nav ul a[aria-current]{color:var(--brand);background:var(--tint)}
+
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr}
+  .side{position:static;max-height:none}
+}
+@media (max-width:760px){
+  dialog.detail{width:100%;max-width:100%;height:100dvh;max-height:100dvh;border-radius:0;margin:0}
+  .dwrap{max-height:100dvh;height:100%}
+  .dtop,.dbody{padding-left:16px;padding-right:16px}
+  .layout{padding-top:24px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <span>Bệnh viện Đa khoa Hùng Vương · Khoa Dược</span>
+  <span>Email: <a href="mailto:khoaduochv@gmail.com">khoaduochv@gmail.com</a></span>
+</div></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="./" aria-label="Khoa Dược – BVĐK Hùng Vương, trang chủ">
+      <img src="assets/favicon-bvhv.png" width="44" height="44" alt="">
+      <span><b>Khoa Dược</b><small>Bệnh viện Đa khoa Hùng Vương</small></span>
+    </a>
+    <ul>
+      <li><a href="./#tra-cuu">Tra cứu</a></li>
+      <li><a href="danh-muc.html">Danh mục thuốc</a></li>
+      <li><a href="dac-biet.html" aria-current="page">Người bệnh đặc biệt</a></li>
+      <li><a href="./#lien-he">Liên hệ</a></li>
+    </ul>
+    <button class="theme" id="theme" aria-label="Đổi giao diện sáng/tối">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="hero page-hero">
+    <div class="wrap">
+      <nav class="crumb" aria-label="Đường dẫn"><a href="./">Trang chủ</a><span>/</span><span>Người bệnh đặc biệt</span></nav>
+      <h1>Dùng thuốc cho người bệnh đặc biệt</h1>
+      <p class="lead">Chọn tình trạng người bệnh (suy thận, suy gan, có thai, cho con bú), nhập chỉ số để tính chức năng thận, gan, rồi tra thuốc. Trang hiển thị chống chỉ định và khuyến cáo liều theo tờ hướng dẫn sử dụng.</p>
+    </div>
+  </div>
+
+  <div class="wrap layout">
+    <!-- Bảng thông tin người bệnh -->
+    <aside class="panel side" aria-labelledby="pt-title">
+      <div class="ph"><h2 id="pt-title">Tình trạng người bệnh</h2><p>Chỉ tính trên máy của bạn, không lưu, không gửi đi đâu.</p></div>
+      <div class="conds">
+        <label class="cond"><input type="checkbox" id="c-than"><span>Suy thận</span></label>
+        <label class="cond"><input type="checkbox" id="c-gan"><span>Suy gan</span></label>
+        <label class="cond"><input type="checkbox" id="c-thai"><span>Có thai</span></label>
+        <label class="cond"><input type="checkbox" id="c-bu"><span>Cho con bú</span></label>
+      </div>
+
+      <div class="calc" id="calc-than" hidden>
+        <h3>Độ thanh thải creatinin</h3>
+        <div class="grid2">
+          <label class="fld">Tuổi (năm)<input id="age" type="number" inputmode="numeric" min="0" max="120"></label>
+          <label class="fld">Giới<select id="sex"><option value="m">Nam</option><option value="f">Nữ</option></select></label>
+          <label class="fld">Cân nặng (kg)<input id="wt" type="number" inputmode="decimal" min="1" max="300" step="0.1"></label>
+          <label class="fld">Chiều cao (cm)<input id="ht" type="number" inputmode="decimal" min="30" max="230" placeholder="Trẻ < 16 tuổi"></label>
+          <label class="fld full">Creatinin huyết thanh
+            <span class="unit"><input id="scr" type="number" inputmode="decimal" min="0" step="0.01"><select id="scr-u"><option value="umol">µmol/L</option><option value="mg">mg/dL</option></select></span></label>
+        </div>
+        <div class="out" id="out-than">Nhập tuổi, cân nặng và creatinin để tính.</div>
+      </div>
+
+      <div class="calc" id="calc-gan" hidden>
+        <h3>Điểm Child-Pugh</h3>
+        <div class="grid2">
+          <label class="fld full">Bilirubin toàn phần<select id="cp-bil"><option value="1">&lt; 34 µmol/L (&lt; 2 mg/dL)</option><option value="2">34 – 50 µmol/L (2 – 3 mg/dL)</option><option value="3">&gt; 50 µmol/L (&gt; 3 mg/dL)</option></select></label>
+          <label class="fld full">Albumin huyết thanh<select id="cp-alb"><option value="1">&gt; 35 g/L (&gt; 3,5 g/dL)</option><option value="2">28 – 35 g/L (2,8 – 3,5 g/dL)</option><option value="3">&lt; 28 g/L (&lt; 2,8 g/dL)</option></select></label>
+          <label class="fld">INR<select id="cp-inr"><option value="1">&lt; 1,7</option><option value="2">1,7 – 2,3</option><option value="3">&gt; 2,3</option></select></label>
+          <label class="fld">Cổ trướng<select id="cp-asc"><option value="1">Không</option><option value="2">Nhẹ</option><option value="3">Vừa – nặng</option></select></label>
+          <label class="fld full">Bệnh não gan<select id="cp-enc"><option value="1">Không</option><option value="2">Độ 1 – 2</option><option value="3">Độ 3 – 4</option></select></label>
+        </div>
+        <div class="out ok" id="out-gan"></div>
+      </div>
+
+      <div class="ref">
+        Công thức: Cockcroft–Gault (người ≥ 16 tuổi): CrCl = (140 − tuổi) × cân nặng / (72 × creatinin mg/dL), nhân 0,85 nếu là nữ. Trẻ &lt; 16 tuổi: Schwartz cải tiến (bedside, 2009) = 0,413 × chiều cao (cm) / creatinin (mg/dL). Child-Pugh: A 5–6 điểm, B 7–9, C 10–15. Kết quả chỉ để tham khảo, không thay thế đánh giá lâm sàng.
+      </div>
+    </aside>
+
+    <!-- Tra thuốc -->
+    <section class="main" aria-live="polite">
+      <label class="search" for="q">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="q" type="search" placeholder="Nhập hoạt chất hoặc biệt dược… (vd: clarithromycin)" autocomplete="off">
+        <kbd>/</kbd>
+      </label>
+      <div class="hint-box" id="hint">Chọn tình trạng người bệnh ở khung bên để lọc ra các thuốc có chống chỉ định hoặc cần chỉnh liều. Bạn cũng có thể gõ tên thuốc để tra trực tiếp.</div>
+      <div class="rhead"><h2 id="rtitle">Tất cả thuốc</h2><span id="rcount"></span></div>
+      <ul class="panel dlist" id="list"><li class="skel"></li><li class="skel"></li><li class="skel"></li></ul>
+      <button class="more" id="more" hidden>Xem thêm</button>
+    </section>
+  </div>
+</main>
+
+<dialog class="detail" id="detail" aria-labelledby="d-name">
+  <div class="dwrap">
+    <div class="dtop">
+      <div><h2 id="d-name"></h2><div class="inn" id="d-inn"></div><div class="pt" id="d-pt"></div></div>
+      <button class="x" id="d-close" aria-label="Đóng"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="dbody" id="d-body"></div>
+  </div>
+</dialog>
+
+<footer>
+  <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span><a href="./" style="color:inherit">← Về trang chủ</a></span></div></div>
+</footer>
+
+<script>
+/* ====== CẤU HÌNH ======
+   Bảng "Thông tin thuốc", trang tính Sheet2 (gid 545322599).
+   Cột: A Hoạt chất · B Biệt dược · F Liều suy gan · G Liều suy thận · H Chống chỉ định
+        I CCĐ suy gan · J CCĐ suy thận · L PNCT & CCB · R ATC · S Link HDSD */
+const SHEET_ID="1mFGQKHG6SrsI9V4O6YgNWhxnuIOtr6Fmj4pARdzhdi0", GID=545322599;
+const OLD_TOOL="https://script.google.com/macros/s/AKfycby3vjTeG5v3SB346sQMbt0KdzA9ufm2CoFXmUB0EJV8K9aP2Sl2NFU3c1CM_bOlWMh_ZQ/exec";
+/* ====================== */
+
+const $=id=>document.getElementById(id);
+const PAGE=50, CACHE_KEY="hv-db-list-v1";
+const gviz=tq=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&gid=${GID}&tq=${encodeURIComponent(tq)}`;
+const norm=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/gi,"d").toLowerCase();
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const has=s=>{s=(s||"").trim();return !!s&&s!=="-"};
+function parseCSV(t){const rows=[];let row=[],f="",q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}else if(c==='"')q=true;else if(c===','){row.push(f);f=""}else if(c==='\n'){row.push(f);rows.push(row);row=[];f=""}else if(c!=='\r')f+=c}if(f||row.length){row.push(f);rows.push(row)}return rows}
+const list=t=>{t=(t||"").trim();if(!has(t))return null;const p=t.split(/\s*[|;]\s+(?=\S)|\s+\|\s*/).map(s=>s.trim()).filter(Boolean);return p.length>1?`<ul>${p.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:`<p>${esc(t)}</p>`};
+
+/* ---------- tình trạng người bệnh ---------- */
+const C={than:$("c-than"),gan:$("c-gan"),thai:$("c-thai"),bu:$("c-bu")};
+const P={crcl:null,crclTxt:"",cp:null,cpTxt:""};
+function renal(){
+  const age=+$("age").value, wt=+$("wt").value, ht=+$("ht").value, v=+$("scr").value;
+  const scr=$("scr-u").value==="umol"?v/88.4:v; // mg/dL
+  const o=$("out-than");
+  if(!age||!v||(age>=16&&!wt)||(age<16&&!ht)){o.className="out";o.innerHTML=age&&age<16?"Trẻ dưới 16 tuổi: nhập chiều cao và creatinin (công thức Schwartz).":"Nhập tuổi, cân nặng và creatinin để tính.";P.crcl=null;P.crclTxt="";return}
+  let val,unit,how;
+  if(age<16){val=0.413*ht/scr;unit="ml/phút/1,73m²";how="Schwartz"}
+  else{val=(140-age)*wt/(72*scr)*($("sex").value==="f"?0.85:1);unit="ml/phút";how="Cockcroft–Gault"}
+  val=Math.max(0,Math.round(val));
+  const lv=val>=90?["Chức năng thận bình thường",0]:val>=60?["Giảm nhẹ (60–89)",0]:val>=30?["Suy thận trung bình (30–59)",1]:val>=15?["Suy thận nặng (15–29)",1]:["Suy thận giai đoạn cuối (< 15)",1];
+  P.crcl=val;P.crclTxt=`CrCl ≈ ${val} ${unit} · ${lv[0]}`;
+  o.className="out ok";o.innerHTML=`<b>${val} ${unit}</b>${how} · creatinin ${scr.toFixed(2)} mg/dL<br><span class="lvl${lv[1]?" bad":""}">${lv[0]}</span>`;
+}
+function hepatic(){
+  const s=["cp-bil","cp-alb","cp-inr","cp-asc","cp-enc"].reduce((a,id)=>a+ +$(id).value,0);
+  const cls=s<=6?"A":s<=9?"B":"C", txt=cls==="A"?"Suy gan nhẹ":cls==="B"?"Suy gan trung bình":"Suy gan nặng";
+  P.cp=cls;P.cpTxt=`Child-Pugh ${cls} (${s} điểm) · ${txt}`;
+  $("out-gan").innerHTML=`<b>Child-Pugh ${cls} · ${s} điểm</b><span class="lvl${cls!=="A"?" bad":""}">${txt}</span>`;
+}
+["age","sex","wt","ht","scr","scr-u"].forEach(id=>$(id).addEventListener("input",renal));
+["cp-bil","cp-alb","cp-inr","cp-asc","cp-enc"].forEach(id=>$(id).addEventListener("input",hepatic));
+Object.values(C).forEach(c=>c.addEventListener("change",()=>{$("calc-than").hidden=!C.than.checked;$("calc-gan").hidden=!C.gan.checked;filter()}));
+hepatic();
+
+/* ---------- danh sách thuốc ---------- */
+let ALL=[],view=[],shown=0;
+function setData(csv){
+  ALL=parseCSV(csv).slice(1).filter(r=>r[1]&&r[1].trim()).map(r=>{
+    const d={inn:r[0].trim(),name:r[1].trim(),lgan:r[2],lthan:r[3],cgan:r[4],cthan:r[5],atc:r[6],hdsd:(r[7]||"").trim()};
+    d.f={cthan:has(d.cthan),lthan:has(d.lthan),cgan:has(d.cgan),lgan:has(d.lgan)};
+    d.ni=norm(d.inn);d.nn=norm(d.name);d.key=norm(d.inn+" "+d.name+" "+d.atc);return d;
+  }).sort((a,b)=>a.inn.localeCompare(b.inn,"vi")||a.name.localeCompare(b.name,"vi"));
+  filter();
+}
+function tagsOf(d){
+  const t=[];
+  if(C.than.checked||!anyCond()){if(d.f.cthan)t.push('<span class="tg red">CCĐ suy thận</span>');if(d.f.lthan)t.push('<span class="tg amb">Chỉnh liều suy thận</span>')}
+  if(C.gan.checked||!anyCond()){if(d.f.cgan)t.push('<span class="tg red">CCĐ suy gan</span>');if(d.f.lgan)t.push('<span class="tg amb">Chỉnh liều suy gan</span>')}
+  return t.join("");
+}
+const anyCond=()=>C.than.checked||C.gan.checked||C.thai.checked||C.bu.checked;
+function filter(){
+  const raw=$("q").value.trim(), words=norm(raw).split(/\s+/).filter(Boolean);
+  let v=ALL;
+  if(words.length){
+    const w=words[0], rank=d=>d.ni.startsWith(w)?0:d.nn.startsWith(w)?1:(d.ni.includes(w)||d.nn.includes(w))?2:3;
+    v=v.filter(d=>words.every(x=>d.key.includes(x))).map(d=>[rank(d),d]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+  }else if(C.than.checked||C.gan.checked){
+    /* Không gõ tên: chỉ hiện thuốc có lưu ý cho tình trạng đã chọn, chống chỉ định lên trước */
+    const sc=d=>(C.than.checked&&d.f.cthan||C.gan.checked&&d.f.cgan?0:1);
+    v=v.filter(d=>(C.than.checked&&(d.f.cthan||d.f.lthan))||(C.gan.checked&&(d.f.cgan||d.f.lgan))).map(d=>[sc(d),d]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+  }
+  view=v;
+  const cs=[C.than.checked&&"suy thận",C.gan.checked&&"suy gan",C.thai.checked&&"có thai",C.bu.checked&&"cho con bú"].filter(Boolean);
+  $("hint").hidden=anyCond()||!!words.length;
+  $("rtitle").textContent=words.length?`Kết quả cho “${raw}”`:(C.than.checked||C.gan.checked)?`Thuốc cần lưu ý ở người ${cs.filter(x=>x.startsWith("suy")).join(" và ")}`:"Tất cả thuốc";
+  $("rcount").textContent=`${view.length.toLocaleString("vi-VN")} thuốc`;
+  shown=0;$("list").innerHTML="";more();
+  if(!view.length)$("list").innerHTML=`<li class="state">Không tìm thấy thuốc phù hợp.</li>`;
+}
+function more(){
+  const part=view.slice(shown,shown+PAGE);
+  $("list").insertAdjacentHTML("beforeend",part.map((d,i)=>{const tg=tagsOf(d);return `<li><button class="drow" data-i="${shown+i}"><span><b>${esc(d.name)}</b><span class="inn">${esc(d.inn)}</span>${tg?`<span class="tags">${tg}</span>`:""}</span><span class="arr">→</span></button></li>`}).join(""));
+  shown+=part.length;$("more").hidden=shown>=view.length;$("more").textContent=`Xem thêm (${(view.length-shown).toLocaleString("vi-VN")} thuốc)`;
+}
+
+/* ---------- chi tiết ---------- */
+const pnctCache=new Map();
+const q1=s=>!s.includes("'")?`'${s}'`:!s.includes('"')?`"${s}"`:null;
+async function loadPNCT(d){
+  if(pnctCache.has(d.name))return pnctCache.get(d.name);
+  const b=q1(d.name); if(!b) return "";
+  const r=await fetch(gviz(`select L where B = ${b}`),{credentials:"omit"}); if(!r.ok) throw new Error(r.status);
+  const v=(parseCSV(await r.text())[1]||[""])[0]; pnctCache.set(d.name,v); return v;
+}
+/* Ô PNCT thường viết "Phụ nữ có thai: … | Phụ nữ cho con bú: …" → tách 2 phần; không tách được thì hiện nguyên văn */
+function splitPNCT(t){
+  const m=t.match(/(Phụ nữ cho con bú|Thời kỳ cho con bú|Phụ nữ đang cho con bú)\s*:/i);
+  if(m){const i=t.indexOf(m[0]);return{thai:t.slice(0,i).replace(/[|;.\s]+$/,""),bu:t.slice(i)}}
+  return{same:true};
+}
+function blk(title,sub,rows){return `<div class="blk"><h3>${title}${sub?`<small>${esc(sub)}</small>`:""}</h3>${rows.join("")}</div>`}
+function row(k,cls,html){return `<div class="row"><div class="k ${cls}">${k}</div>${html}</div>`}
+async function openDetail(d){
+  $("d-name").textContent=d.name;$("d-inn").textContent=d.inn;
+  $("d-pt").textContent=[C.than.checked&&P.crclTxt,C.gan.checked&&P.cpTxt].filter(Boolean).join("  ·  ");
+  const showThan=C.than.checked||!anyCond(), showGan=C.gan.checked||!anyCond(), showThai=C.thai.checked||!anyCond(), showBu=C.bu.checked||!anyCond();
+  const none='<p class="na">Tờ hướng dẫn sử dụng không ghi khuyến cáo riêng. Đánh giá theo lâm sàng và thông tin chung của thuốc.</p>';
+  let h=`<div class="dactions">${/^https?:/.test(d.hdsd)?`<a class="btn primary" href="${esc(d.hdsd)}" target="_blank" rel="noopener">Tờ hướng dẫn sử dụng</a>`:""}<a class="btn" href="danh-muc.html#t=${encodeURIComponent(d.name)}">Xem toàn bộ thông tin thuốc</a></div>`;
+  if(showThan) h+=blk("Suy thận",C.than.checked?P.crclTxt.split(" · ")[0]:"",[row("Chống chỉ định","red",list(d.cthan)||'<p class="na">Không ghi chống chỉ định riêng.</p>'),row("Liều dùng","amb",list(d.lthan)||none)]);
+  if(showGan) h+=blk("Suy gan",C.gan.checked?P.cpTxt.split(" · ")[0]:"",[row("Chống chỉ định","red",list(d.cgan)||'<p class="na">Không ghi chống chỉ định riêng.</p>'),row("Liều dùng","amb",list(d.lgan)||none)]);
+  if(showThai||showBu) h+=`<div id="pn">${blk(showThai&&showBu?"Phụ nữ có thai & cho con bú":showThai?"Phụ nữ có thai":"Phụ nữ cho con bú","",['<div class="row"><div class="skel" style="height:60px;border-radius:8px"></div></div>'])}</div>`;
+  h+=`<div class="dnote"><strong>Lưu ý:</strong> Nội dung trích từ tờ hướng dẫn sử dụng, chỉ để tham khảo. Đối chiếu Dược thư Quốc gia và hướng dẫn của Bộ Y tế; quyết định cuối cùng theo đánh giá lâm sàng.</div>`;
+  $("d-body").innerHTML=h;
+  if(!$("detail").open)$("detail").showModal();
+  if(showThai||showBu){
+    try{
+      const t=(await loadPNCT(d)||"").trim(), s=splitPNCT(t);
+      let rows;
+      if(!has(t)) rows=[row("Thông tin","",'<p class="na">Chưa có thông tin trong tờ hướng dẫn sử dụng.</p>')];
+      else if(s.same) rows=[row("Theo tờ hướng dẫn sử dụng","",list(t))];
+      else rows=[showThai&&row("Phụ nữ có thai","",list(s.thai)||'<p class="na">Không ghi riêng.</p>'),showBu&&row("Cho con bú","",list(s.bu)||'<p class="na">Không ghi riêng.</p>')].filter(Boolean);
+      $("pn").innerHTML=blk(showThai&&showBu?"Phụ nữ có thai & cho con bú":showThai?"Phụ nữ có thai":"Phụ nữ cho con bú","",rows);
+    }catch(e){$("pn").innerHTML=blk("Phụ nữ có thai & cho con bú","",[row("","",'<p class="na">Không tải được (kiểm tra kết nối mạng).</p>')])}
+  }
+}
+$("d-close").onclick=()=>$("detail").close();
+$("detail").addEventListener("click",e=>{if(e.target===$("detail"))$("detail").close()});
+$("list").addEventListener("click",e=>{const b=e.target.closest(".drow");if(b)openDetail(view[+b.dataset.i])});
+$("more").onclick=more;
+let tm;$("q").addEventListener("input",()=>{clearTimeout(tm);tm=setTimeout(filter,120)});
+addEventListener("keydown",e=>{if(e.key==="/"&&!/INPUT|SELECT/.test(document.activeElement.tagName)&&!$("detail").open){e.preventDefault();$("q").focus()}});
+
+(async()=>{
+  let cached=null;try{cached=JSON.parse(localStorage.getItem(CACHE_KEY)||"null")}catch(e){}
+  if(cached&&cached.csv)setData(cached.csv);
+  try{
+    const r=await fetch(gviz("select A,B,F,G,I,J,R,S where B is not null"),{credentials:"omit"});
+    if(!r.ok)throw new Error(r.status);
+    const csv=await r.text();
+    if(!cached||cached.csv!==csv)setData(csv);
+    try{localStorage.setItem(CACHE_KEY,JSON.stringify({t:Date.now(),csv}))}catch(e){}
+  }catch(e){
+    if(!cached)$("list").innerHTML=`<li class="state">Không tải được dữ liệu. Kiểm tra kết nối mạng rồi tải lại trang,<br>hoặc <a href="${OLD_TOOL}" target="_blank" rel="noopener">mở công cụ tra cứu cũ</a>.</li>`;
+  }
+})();
+
+const root=document.documentElement;
+try{const s=localStorage.getItem("hv-theme");if(s)root.dataset.theme=s}catch(e){}
+$("theme").onclick=()=>{const dark=root.dataset.theme?root.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;root.dataset.theme=dark?"light":"dark";try{localStorage.setItem("hv-theme",root.dataset.theme)}catch(e){}};
+</script>
+</body>
+</html>

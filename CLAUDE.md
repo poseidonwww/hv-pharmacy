@@ -13,7 +13,11 @@
   **Không** đưa lên Sheet công khai các cột giá, nhà thầu, tồn kho, dữ liệu người bệnh.
 - Trang con đã làm:
   - `danh-muc.html` – Danh mục thuốc. Nguồn: Sheet "Thông tin thuốc" `1mFGQKHG6SrsI9V4O6YgNWhxnuIOtr6Fmj4pARdzhdi0` (chủ: khoaduochv), `Sheet1` (gid 0), cột A–O (INN, biệt dược, bảo quản, chỉ định, liều, CCĐ, cảnh báo, PNCT/CCB, ADR, tương tác, quá liều, dược lực, dược động, ATC, link HDSD). ~930 thuốc; danh sách 147KB/~0,5s, chi tiết ~2KB/~0,3s. Danh sách lưu localStorage `hv-dm-list-v1` để mở lại tức thì. Link chia sẻ: `danh-muc.html#t=<tên biệt dược>`. Ô trong Sheet ngăn ý bằng ` | ` → hiển thị thành gạch đầu dòng.
-  - `Sheet2` cùng file có thêm cột liều/CCĐ cho suy gan, suy thận → dùng cho trang "Người bệnh đặc biệt" sau này.
+  - `dac-biet.html` – Người bệnh đặc biệt. Nguồn: cùng file, `Sheet2` (gid 545322599): A INN · B biệt dược · F liều suy gan · G liều suy thận · I CCĐ suy gan · J CCĐ suy thận · L PNCT & CCB · R ATC · S link HDSD. Danh sách tải cột A,B,F,G,I,J,R,S (~324KB, ~0,4s, cache `hv-db-list-v1`); cột L tải theo từng thuốc.
+    - Tính CrCl: Cockcroft–Gault (≥16 tuổi, ×0,85 nữ), Schwartz bedside 0,413×cao/creatinin (<16 tuổi); creatinin µmol/L ÷ 88,4 = mg/dL. Mức: ≥90 / 60–89 / 30–59 / 15–29 / <15. Child-Pugh 5 tiêu chí: A 5–6, B 7–9, C 10–15. Đã đối chiếu tay: nam 70t 60kg Cr 150 µmol/L → 34 ml/ph.
+    - Chọn suy thận/suy gan mà không gõ tên → chỉ hiện thuốc có ghi CCĐ/chỉnh liều (CCĐ lên trước). Ô trống → hiện "Tờ HDSD không ghi khuyến cáo riêng" (KHÔNG ghi "an toàn").
+    - Số liệu người bệnh chỉ tính trên trình duyệt, không lưu, không gửi đi.
+    - Sheet1 và Sheet2 là 2 bản riêng – khoa sửa thông tin chung cần sửa cả hai (hoặc gộp về 1 trang tính sau).
 - Tài liệu PDF để trên Google Drive; video trên YouTube; góp ý dùng Google Form.
 - Giai đoạn sau: đọc danh sách tài liệu/tin từ **Google Sheets** (publish CSV) để khoa tự cập nhật không cần sửa code.
 
