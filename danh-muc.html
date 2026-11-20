@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Danh mục thuốc · Khoa Dược BVĐK Hùng Vương</title>
+<meta name="description" content="Tra cứu danh mục thuốc Bệnh viện Đa khoa Hùng Vương: hoạt chất, biệt dược, chỉ định, liều dùng, chống chỉ định.">
+<meta name="theme-color" content="#1577bc">
+<link rel="icon" type="image/png" href="assets/favicon-bvhv.png">
+<link rel="apple-touch-icon" href="assets/favicon-bvhv.png">
+<link rel="preconnect" href="https://docs.google.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* ===== Riêng trang Danh mục thuốc ===== */
+.page-hero .wrap{display:block;padding-top:40px;padding-bottom:44px}
+.crumb{display:flex;gap:8px;font-size:var(--fs-sm);color:rgb(255 255 255 / .75);margin-bottom:14px}
+.crumb a{color:#fff;text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.page-hero h1{font-size:clamp(28px,2vw + 18px,40px);margin:0 0 10px;max-width:none}
+.page-hero .lead{margin-bottom:24px}
+.page-hero .search{max-width:720px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:14px;font-size:var(--fs-sm);color:rgb(255 255 255 / .8)}
+.meta b{color:#fff}
+
+.results{padding:40px 0 72px}
+.rhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.rhead h2{font-size:var(--fs-md);font-weight:600;letter-spacing:0}
+.rhead span{font-size:var(--fs-sm);color:var(--muted)}
+.dlist{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm);overflow:hidden}
+.dlist li+li{border-top:1px solid var(--line)}
+.drow{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:16px;align-items:center;width:100%;padding:16px 20px;background:none;border:0;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:background .15s}
+.drow:hover{background:var(--tint)}
+.drow .ico{width:44px;height:44px}
+.drow b{display:block;font-size:var(--fs-base);font-weight:600;line-height:1.4}
+.drow .inn{display:block;color:var(--brand);font-size:var(--fs-sm);font-weight:500;margin-top:2px}
+.drow small{display:block;color:var(--muted);font-size:var(--fs-xs);margin-top:2px}
+.drow .arr{color:var(--muted)}
+.more{display:block;margin:20px auto 0;font:600 var(--fs-sm) var(--font);color:var(--brand);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:10px 22px;cursor:pointer}
+.more:hover{border-color:var(--brand)}
+.more[hidden]{display:none}
+.state{padding:40px 20px;text-align:center;color:var(--muted);font-size:var(--fs-base)}
+.state a{color:var(--brand)}
+.skel{height:76px;background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 50%,var(--surface) 100%);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.src{margin-top:28px;font-size:var(--fs-xs);color:var(--muted);text-align:center}
+
+/* chi tiết thuốc */
+dialog.detail{width:min(820px,calc(100% - 32px));max-height:calc(100dvh - 48px);padding:0;border:0;border-radius:var(--r-lg);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgb(0 0 0 / .55);overflow:hidden}
+dialog.detail::backdrop{background:rgb(8 20 32 / .55);backdrop-filter:blur(2px)}
+.dwrap{display:flex;flex-direction:column;max-height:calc(100dvh - 48px)}
+.dtop{display:flex;gap:16px;align-items:flex-start;padding:22px 24px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.dtop h2{font-size:clamp(20px,1vw + 16px,24px);line-height:1.3}
+.dtop .inn{color:var(--brand);font-weight:600;margin-top:4px}
+.dtop .atc{font-size:var(--fs-xs);color:var(--muted);margin-top:4px}
+.x{margin-left:auto;flex:none;width:40px;height:40px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:grid;place-items:center}
+.x:hover{border-color:var(--brand);color:var(--brand)}
+.dbody{overflow:auto;padding:8px 24px 24px}
+.dactions{display:flex;flex-wrap:wrap;gap:10px;padding:16px 0 8px}
+.btn{display:inline-flex;align-items:center;gap:8px;font:600 var(--fs-sm) var(--font);text-decoration:none;border-radius:var(--r-sm);padding:9px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn:hover{border-color:var(--brand)}
+.sec{border-top:1px solid var(--line)}
+.sec:first-of-type{border-top:0}
+.sec summary{display:flex;align-items:center;gap:10px;padding:14px 0;font-size:var(--fs-base);font-weight:600;cursor:pointer;list-style:none}
+.sec summary::-webkit-details-marker{display:none}
+.sec summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s}
+.sec[open] summary::after{transform:rotate(-135deg)}
+.sec summary i{width:6px;height:6px;border-radius:50%;background:var(--brand);flex:none}
+.sec.warn summary i{background:var(--accent)}
+.sec .ct{padding:0 0 16px 16px;font-size:var(--fs-base);line-height:1.65}
+.sec ul{margin:0;padding-left:18px}
+.sec li+li{margin-top:6px}
+.sec .na{color:var(--muted);font-style:italic}
+.dnote{margin-top:16px;padding:12px 14px;border-radius:var(--r-sm);background:var(--accent-tint);font-size:var(--fs-xs);line-height:1.55}
+.nav ul a[aria-current]{color:var(--brand);background:var(--tint)}
+@media (max-width:760px){
+  dialog.detail{width:100%;max-width:100%;height:100dvh;max-height:100dvh;border-radius:0;margin:0}
+  .dwrap{max-height:100dvh;height:100%}
+  .dtop,.dbody{padding-left:16px;padding-right:16px}
+  .drow{grid-template-columns:minmax(0,1fr) auto;padding:14px 16px}
+  .drow .ico{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <span>Bệnh viện Đa khoa Hùng Vương · Khoa Dược</span>
+  <span>Email: <a href="mailto:khoaduochv@gmail.com">khoaduochv@gmail.com</a></span>
+</div></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="./" aria-label="Khoa Dược – BVĐK Hùng Vương, trang chủ">
+      <img src="assets/favicon-bvhv.png" width="44" height="44" alt="">
+      <span><b>Khoa Dược</b><small>Bệnh viện Đa khoa Hùng Vương</small></span>
+    </a>
+    <ul>
+      <li><a href="./#tra-cuu">Tra cứu</a></li>
+      <li><a href="danh-muc.html" aria-current="page">Danh mục thuốc</a></li>
+      <li><a href="./#video">Hướng dẫn</a></li>
+      <li><a href="./#lien-he">Liên hệ</a></li>
+    </ul>
+    <button class="theme" id="theme" aria-label="Đổi giao diện sáng/tối">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="hero page-hero">
+    <div class="wrap">
+      <nav class="crumb" aria-label="Đường dẫn"><a href="./">Trang chủ</a><span>/</span><span>Danh mục thuốc</span></nav>
+      <h1>Danh mục thuốc</h1>
+      <p class="lead">Tra cứu thuốc đang sử dụng tại bệnh viện theo hoạt chất hoặc biệt dược. Bấm vào thuốc để xem chỉ định, liều dùng, chống chỉ định và tờ hướng dẫn sử dụng.</p>
+      <label class="search" for="q">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="q" type="search" placeholder="Nhập hoạt chất hoặc biệt dược… (vd: amoxicilin, nitro)" autocomplete="off">
+        <kbd>/</kbd>
+      </label>
+      <div class="meta"><span>Tổng số: <b id="total">…</b> thuốc</span><span>Tìm không cần gõ dấu</span></div>
+    </div>
+  </div>
+
+  <section class="results" aria-live="polite">
+    <div class="wrap">
+      <div class="rhead"><h2 id="rtitle">Tất cả thuốc</h2><span id="rcount"></span></div>
+      <ul class="dlist" id="list"><li class="skel"></li><li class="skel"></li><li class="skel"></li><li class="skel"></li></ul>
+      <button class="more" id="more" hidden>Xem thêm</button>
+      <p class="src">Nguồn dữ liệu: bảng “Thông tin thuốc” của Khoa Dược (Google Sheets), tự cập nhật khi khoa sửa bảng.</p>
+    </div>
+  </section>
+</main>
+
+<dialog class="detail" id="detail" aria-labelledby="d-name">
+  <div class="dwrap">
+    <div class="dtop">
+      <div>
+        <h2 id="d-name"></h2>
+        <div class="inn" id="d-inn"></div>
+        <div class="atc" id="d-atc"></div>
+      </div>
+      <button class="x" id="d-close" aria-label="Đóng"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="dbody" id="d-body"></div>
+  </div>
+</dialog>
+
+<footer>
+  <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span><a href="./" style="color:inherit">← Về trang chủ</a></span></div></div>
+</footer>
+
+<script>
+/* ====== CẤU HÌNH ======
+   Bảng "Thông tin thuốc" (chủ sở hữu: khoaduochv@gmail.com), chia sẻ "Bất kỳ ai có đường liên kết – Người xem".
+   Cột: A Hoạt chất · B Biệt dược · C Bảo quản · D Chỉ định · E Liều · F Chống chỉ định · G Cảnh báo
+        H PNCT/CCB · I ADR · J Tương tác · K Quá liều · L Dược lực · M Dược động · N ATC · O Link HDSD */
+const SHEET_ID = "1mFGQKHG6SrsI9V4O6YgNWhxnuIOtr6Fmj4pARdzhdi0";
+const GID = 0;
+const OLD_TOOL = "https://script.google.com/macros/s/AKfycbxLWXEYzsWc-umv52YUcyf0GfwBan-uOv0RznLsoR3NuZ9COP887WWk3I_vGpHpmrUL/exec";
+const SECTIONS = [ // [chỉ số cột, tiêu đề, mở sẵn?, cảnh báo?]
+  [3,"Chỉ định",1],[4,"Liều lượng & Cách dùng",1],[5,"Chống chỉ định",1,1],[6,"Cảnh báo & Thận trọng",0,1],
+  [7,"Phụ nữ có thai & Cho con bú",0,1],[8,"Tác dụng không mong muốn (ADR)"],[9,"Tương tác thuốc",0,1],
+  [10,"Quá liều & Xử trí"],[2,"Bảo quản & Hạn dùng"],[11,"Dược lực học"],[12,"Dược động học"]
+];
+/* ====================== */
+
+const $=id=>document.getElementById(id);
+const PAGE=60, CACHE_KEY="hv-dm-list-v1";
+const gviz=tq=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&gid=${GID}&tq=${encodeURIComponent(tq)}`;
+const norm=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/gi,"d").toLowerCase();
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* CSV có ngoặc kép, dấu phẩy và xuống dòng trong ô */
+function parseCSV(t){
+  const rows=[];let row=[],f="",q=false;
+  for(let i=0;i<t.length;i++){const c=t[i];
+    if(q){ if(c==='"'){ if(t[i+1]==='"'){f+='"';i++} else q=false } else f+=c }
+    else if(c==='"') q=true;
+    else if(c===','){row.push(f);f=""}
+    else if(c==='\n'){row.push(f);rows.push(row);row=[];f=""}
+    else if(c!=='\r') f+=c;
+  }
+  if(f||row.length){row.push(f);rows.push(row)}
+  return rows;
+}
+
+let ALL=[], view=[], shown=0;
+const ICON='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-35 12 12)"/><path d="m9.5 8.5 5 7"/></svg>';
+
+function setData(csv){
+  const rows=parseCSV(csv).slice(1).filter(r=>r[1]&&r[1].trim());
+  ALL=rows.map(r=>({inn:r[0].trim(),name:r[1].trim(),atc:(r[2]||"").trim()}))
+          .map(d=>({...d,ni:norm(d.inn),nn:norm(d.name),key:norm(d.inn+" "+d.name+" "+d.atc)}))
+          .sort((a,b)=>a.inn.localeCompare(b.inn,"vi")||a.name.localeCompare(b.name,"vi"));
+  $("total").textContent=ALL.length.toLocaleString("vi-VN");
+  filter();
+}
+
+function filter(){
+  const k=norm($("q").value.trim());
+  const words=k.split(/\s+/).filter(Boolean);
+  /* Xếp hạng: hoạt chất bắt đầu bằng từ khoá > biệt dược bắt đầu > có trong tên > chỉ khớp phân loại */
+  const rank=d=>{const w=words[0];return d.ni.startsWith(w)?0:d.nn.startsWith(w)?1:(d.ni.includes(w)||d.nn.includes(w))?2:3};
+  view=words.length?ALL.filter(d=>words.every(w=>d.key.includes(w))).map(d=>[rank(d),d]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]):ALL;
+  $("rtitle").textContent=words.length?`Kết quả cho “${$("q").value.trim()}”`:"Tất cả thuốc";
+  $("rcount").textContent=`${view.length.toLocaleString("vi-VN")} thuốc`;
+  shown=0; $("list").innerHTML=""; more();
+  if(!view.length) $("list").innerHTML=`<li class="state">Không tìm thấy thuốc phù hợp. Thử gõ tên hoạt chất ngắn hơn, ví dụ “amox”.</li>`;
+}
+function more(){
+  const part=view.slice(shown,shown+PAGE);
+  $("list").insertAdjacentHTML("beforeend",part.map((d,i)=>`<li><button class="drow" data-i="${shown+i}">
+    <span class="ico">${ICON}</span><span><b>${esc(d.name)}</b><span class="inn">${esc(d.inn)}</span>${d.atc&&d.atc!=="-"?`<small>${esc(d.atc)}</small>`:""}</span><span class="arr">→</span></button></li>`).join(""));
+  shown+=part.length; $("more").hidden=shown>=view.length;
+  $("more").textContent=`Xem thêm (${(view.length-shown).toLocaleString("vi-VN")} thuốc)`;
+}
+
+/* chi tiết */
+const detailCache=new Map();
+function q1(s){ // chuỗi trong truy vấn gviz
+  return !s.includes("'")?`'${s}'`:!s.includes('"')?`"${s}"`:null;
+}
+async function loadDetail(d){
+  const id=d.inn+"\u0001"+d.name;
+  if(detailCache.has(id)) return detailCache.get(id);
+  const a=q1(d.inn), b=q1(d.name);
+  const tq=b?(a?`select * where A = ${a} and B = ${b}`:`select * where B = ${b}`):`select * where A = ${a}`;
+  const r=await fetch(gviz(tq),{credentials:"omit"}); if(!r.ok) throw new Error(r.status);
+  const rows=parseCSV(await r.text()).slice(1);
+  const row=rows.find(x=>x[1]&&x[1].trim()===d.name)||rows[0];
+  if(!row) throw new Error("notfound");
+  detailCache.set(id,row); return row;
+}
+function fmt(t){
+  t=(t||"").trim();
+  if(!t||t==="-") return '<p class="na">Chưa có thông tin trong tờ hướng dẫn sử dụng.</p>';
+  const parts=t.split(/\s*\|\s*/).filter(Boolean);
+  return parts.length>1?`<ul>${parts.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:`<p style="margin:0">${esc(t)}</p>`;
+}
+async function openDetail(d,push=true){
+  $("d-name").textContent=d.name; $("d-inn").textContent=d.inn; $("d-atc").textContent=d.atc&&d.atc!=="-"?d.atc:"";
+  $("d-body").innerHTML='<div class="skel" style="height:220px;margin-top:16px;border-radius:12px"></div>';
+  if(!$("detail").open) $("detail").showModal();
+  if(push) history.replaceState(null,"","#t="+encodeURIComponent(d.name));
+  try{
+    const r=await loadDetail(d);
+    const link=(r[14]||"").trim();
+    $("d-body").innerHTML=`<div class="dactions">
+        ${/^https?:/.test(link)?`<a class="btn primary" href="${esc(link)}" target="_blank" rel="noopener">${'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>'}Tờ hướng dẫn sử dụng</a>`:""}
+        <button class="btn" id="d-share">Sao chép link thuốc này</button>
+      </div>`+
+      SECTIONS.map(([c,t,open,warn])=>`<details class="sec${warn?" warn":""}"${open?" open":""}><summary><i></i>${t}</summary><div class="ct">${fmt(r[c])}</div></details>`).join("")+
+      `<div class="dnote"><strong>Lưu ý:</strong> Thông tin chỉ mang tính tham khảo cho nhân viên y tế. Luôn đối chiếu tờ hướng dẫn sử dụng, Dược thư Quốc gia và hướng dẫn của Bộ Y tế trước khi chỉ định.</div>`;
+    $("d-share").onclick=async e=>{try{await navigator.clipboard.writeText(location.href);e.target.textContent="Đã sao chép ✓"}catch(_){e.target.textContent=location.href}};
+  }catch(e){
+    $("d-body").innerHTML=`<div class="state">Không tải được chi tiết thuốc (kiểm tra kết nối mạng).<br><a href="${OLD_TOOL}" target="_blank" rel="noopener">Mở công cụ tra cứu cũ</a></div>`;
+  }
+}
+function closeDetail(){ $("detail").close(); }
+$("detail").addEventListener("close",()=>history.replaceState(null,"",location.pathname+location.search));
+$("d-close").onclick=closeDetail;
+$("detail").addEventListener("click",e=>{if(e.target===$("detail"))closeDetail()});
+$("list").addEventListener("click",e=>{const b=e.target.closest(".drow");if(b)openDetail(view[+b.dataset.i])});
+$("more").onclick=more;
+let t; $("q").addEventListener("input",()=>{clearTimeout(t);t=setTimeout(filter,120)});
+addEventListener("keydown",e=>{if(e.key==="/"&&document.activeElement!==$("q")&&!$("detail").open){e.preventDefault();$("q").focus()}});
+
+function openFromHash(){
+  const m=location.hash.match(/^#t=(.+)$/); if(!m||!ALL.length) return;
+  const name=decodeURIComponent(m[1]); const d=ALL.find(x=>x.name===name); if(d) openDetail(d,false);
+}
+
+addEventListener("hashchange",openFromHash);
+
+/* tải danh sách: hiện bản lưu trên máy ngay, rồi cập nhật bản mới nhất */
+(async()=>{
+  let cached=null; try{cached=JSON.parse(localStorage.getItem(CACHE_KEY)||"null")}catch(e){}
+  if(cached&&cached.csv){ setData(cached.csv); openFromHash(); }
+  try{
+    const r=await fetch(gviz("select A,B,N where B is not null"),{credentials:"omit"});
+    if(!r.ok) throw new Error(r.status);
+    const csv=await r.text();
+    if(!cached||cached.csv!==csv){ setData(csv); if(!cached) openFromHash(); }
+    try{localStorage.setItem(CACHE_KEY,JSON.stringify({t:Date.now(),csv}))}catch(e){}
+  }catch(e){
+    if(!cached) $("list").innerHTML=`<li class="state">Không tải được danh mục thuốc. Kiểm tra kết nối mạng rồi tải lại trang,<br>hoặc <a href="${OLD_TOOL}" target="_blank" rel="noopener">mở công cụ tra cứu cũ</a>.</li>`;
+  }
+})();
+
+/* giao diện sáng/tối dùng chung với trang chủ */
+const root=document.documentElement;
+try{const s=localStorage.getItem("hv-theme");if(s)root.dataset.theme=s}catch(e){}
+$("theme").onclick=()=>{
+  const dark=root.dataset.theme?root.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;
+  root.dataset.theme=dark?"light":"dark";try{localStorage.setItem("hv-theme",root.dataset.theme)}catch(e){}
+};
+</script>
+</body>
+</html>

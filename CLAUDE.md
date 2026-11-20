@@ -6,15 +6,20 @@
 - Chủ dự án muốn trả lời bằng tiếng Việt, ngắn gọn, có ví dụ cụ thể. Thông tin y khoa phải dẫn nguồn BYT hoặc hiệp hội chuyên khoa uy tín (kèm link).
 
 ## Kiến trúc đã chốt
-- Web tĩnh: HTML/CSS/JS thuần, **không framework, không build step**. Mọi thứ trong `index.html`.
+- Web tĩnh: HTML/CSS/JS thuần, **không framework, không build step**. CSS dùng chung ở `assets/site.css`; mỗi trang là 1 file `.html` ở thư mục gốc (`index.html`, `danh-muc.html`), CSS/JS riêng của trang để inline trong trang đó.
 - Hosting: **Cloudflare Pages** (miễn phí, không giới hạn băng thông), deploy từ GitHub repo. Tên miền tạm `*.pages.dev`; sau xin subdomain từ CNTT bệnh viện.
-- Các công cụ tra cứu hiện có là **Google Apps Script web app** → giữ nguyên, chỉ link sang.
+- Các công cụ tra cứu cũ là **Google Apps Script web app** (chậm 3–5s, có dải cảnh báo Google, khác giao diện).
+  **Hướng chốt (20/11/2026):** chuyển dần sang trang con trong site, **Google Sheets vẫn là nơi khoa sửa dữ liệu**. Trang con đọc Sheet qua endpoint gviz (`/gviz/tq?tqx=out:csv&headers=1&gid=..&tq=<truy vấn>`), Sheet chỉ cần chia sẻ "Bất kỳ ai có link – Người xem" (không cần "Xuất bản lên web"). Danh sách chỉ lấy vài cột (nhẹ), chi tiết lấy 1 dòng khi bấm. Công cụ có logic phức tạp (Tương tác thuốc) giữ Apps Script.
+  **Không** đưa lên Sheet công khai các cột giá, nhà thầu, tồn kho, dữ liệu người bệnh.
+- Trang con đã làm:
+  - `danh-muc.html` – Danh mục thuốc. Nguồn: Sheet "Thông tin thuốc" `1mFGQKHG6SrsI9V4O6YgNWhxnuIOtr6Fmj4pARdzhdi0` (chủ: khoaduochv), `Sheet1` (gid 0), cột A–O (INN, biệt dược, bảo quản, chỉ định, liều, CCĐ, cảnh báo, PNCT/CCB, ADR, tương tác, quá liều, dược lực, dược động, ATC, link HDSD). ~930 thuốc; danh sách 147KB/~0,5s, chi tiết ~2KB/~0,3s. Danh sách lưu localStorage `hv-dm-list-v1` để mở lại tức thì. Link chia sẻ: `danh-muc.html#t=<tên biệt dược>`. Ô trong Sheet ngăn ý bằng ` | ` → hiển thị thành gạch đầu dòng.
+  - `Sheet2` cùng file có thêm cột liều/CCĐ cho suy gan, suy thận → dùng cho trang "Người bệnh đặc biệt" sau này.
 - Tài liệu PDF để trên Google Drive; video trên YouTube; góp ý dùng Google Form.
 - Giai đoạn sau: đọc danh sách tài liệu/tin từ **Google Sheets** (publish CSV) để khoa tự cập nhật không cần sửa code.
 
 ## Cấu trúc nội dung (`index.html`)
 Nội dung nằm trong 3 mảng cấu hình ở cuối file, trong `<script>`:
-- `TOOLS` – công cụ tra cứu `{name, desc, url, icon, tag?}`. `url:""` → hiện "Đang cập nhật".
+- `TOOLS` – công cụ tra cứu `{name, desc, url, icon, tag?, quick?}`. `url:""` → hiện "Đang cập nhật". `url` là trang trong site (vd `danh-muc.html`) thì mở cùng tab, link `http…` mở tab mới.
 - `DOCS` – tài liệu `{kind, name, note, url}`.
 - `VIDEOS` – video hướng dẫn `{name, note, url}`.
 Ô tìm kiếm lọc cả 3 mảng, không phân biệt dấu.
