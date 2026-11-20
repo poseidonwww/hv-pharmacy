@@ -64,7 +64,7 @@ Thiết kế: font **Be Vietnam Pro** cho toàn trang (kể cả nhãn nhỏ), d
   – có các trang nhúng Apps Script: "THÔNG TIN THUỐC BVHV", "THUỐC VÀ BIỆT DƯỢC" → lấy link /exec từ đó.
 
 ## Việc cần làm (TODO)
-1. [~] Điền link công cụ: ĐÃ XONG Danh mục thuốc, Người bệnh đặc biệt, Thuốc tiêm truyền, Tương tác thuốc–thuốc, ICD-10 (lấy từ Google Sites 20/11/2026). CÒN THIẾU: Tương hợp–tương kỵ (Sites cũ không có trang riêng).
+1. [~] Điền link công cụ: ĐÃ XONG Danh mục thuốc, Người bệnh đặc biệt, Thuốc tiêm truyền, Tương tác thuốc–thuốc, ICD-10 (lấy từ Google Sites 20/11/2026). Tương hợp–tương kỵ: **tạm ẩn khỏi trang chủ** (chưa có dữ liệu; chủ dự án sẽ bổ sung). Hướng đã bàn: Sheet theo cặp thuốc (Thuốc A, Thuốc B, Y-site/bơm tiêm/túi dịch, kết quả, điều kiện, nguồn, ngày, DS duyệt) + trang ma trận; "chưa có dữ liệu" = không trộn chung.
 2. [ ] Điền link PDF: Bản tin thông tin thuốc số 1/2025; Danh mục LASA 2026. (20/11/2026: tìm trên Drive không thấy – chỉ có "LASA 2019.pdf" của BV khác và "BẢN TIN TTT số 1_2026" của kimlanbvdkbt, không phải của khoa. Cần chủ dự án gửi file/link.)
 3. [x] Link 7 video: dùng file MP4 trên Google Drive của khoaduochv@gmail.com (chế độ "ai có link đều xem được"), lấy từ trang "Hướng dẫn sử dụng thuốc" trên Sites cũ. (Sau) có thể đưa lên YouTube để xem mượt hơn – Rapihaler & Turbuhaler nặng ~460MB/file.
 4. [x] Google Form góp ý (20/11/2026, chủ: khoaduochv@gmail.com):
