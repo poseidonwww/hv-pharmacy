@@ -127,6 +127,7 @@ dialog.detail{width:min(880px,calc(100% - 32px))}
   <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span><a href="./" style="color:inherit">← Về trang chủ</a></span></div></div>
 </footer>
 
+<script src="assets/site.js"></script>
 <script>
 /* ====== CẤU HÌNH ======
    Bảng "Pha truyền" (chủ sở hữu: khoaduochv@gmail.com), trang tính đầu tiên.
@@ -182,14 +183,14 @@ function render(){
 }
 function openDetail(d,push=true){
   $("d-name").textContent=d.ten||d.bd; $("d-bd").textContent=d.ten?d.bd:""; $("d-df").textContent=d.g;
-  let h=`<div class="dactions"><button class="btn" id="d-share">Sao chép link</button><button class="btn" onclick="print()">In hướng dẫn</button><a class="btn" href="danh-muc.html" >Tra Danh mục thuốc</a></div>`;
+  let h=`<div class="dactions"><button class="btn" id="d-share">Sao chép link</button><button class="btn" onclick="print()">In hướng dẫn</button><a class="btn" href="${gopYUrl({loai:GOP_Y_SAI,trang:"Thuốc tiêm truyền",thuoc:d.id})}" target="_blank" rel="noopener">Báo thông tin chưa đúng</a></div>`;
   let n=0;
   for(const [title,fields] of GROUPS){
     const fs=fields.filter(([c])=>d.r[c]); if(!fs.length) continue; n++;
     h+=`<div class="grp"><h3><span>${n}</span>${title}</h3><dl class="fields">${fs.map(([c,l,k])=>`<div class="fl${k?" key":""}"><dt>${l}</dt><dd>${esc(d.r[c])}</dd></div>`).join("")}</dl></div>`;
   }
   if(d.r[13]) h+=`<div class="warn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg><div><strong>Lưu ý: </strong>${esc(d.r[13])}</div></div>`;
-  h+=`<div class="dnote"><strong>Tham khảo:</strong> Luôn đối chiếu tờ hướng dẫn sử dụng của lô thuốc đang dùng. Báo Khoa Dược khi thấy thông tin chưa khớp.</div>`;
+  h+=`<div class="dnote"><strong>Tham khảo:</strong> Luôn đối chiếu tờ hướng dẫn sử dụng của lô thuốc đang dùng. Thấy thông tin chưa khớp, bấm “Báo thông tin chưa đúng” ở trên.</div>`;
   $("d-body").innerHTML=h;
   $("d-share").onclick=async e=>{try{await navigator.clipboard.writeText(location.href);e.target.textContent="Đã sao chép ✓"}catch(_){e.target.textContent=location.href}};
   if(!$("detail").open) $("detail").showModal();

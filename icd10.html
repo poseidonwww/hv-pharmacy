@@ -135,6 +135,7 @@
   <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span><a href="./" style="color:inherit">← Về trang chủ</a></span></div></div>
 </footer>
 
+<script src="assets/site.js"></script>
 <script>
 /* Dữ liệu: data/icd10.json {v, ch:[[số La Mã, phạm vi, tên VI, tên EN]], bl:[[mã khối, tên VI, tên EN]],
    c:[[mã, tên VI, tên EN, cờ, chỉ số chương, chỉ số khối]]} · data/icd10-hd.json: hướng dẫn mã hoá (cùng thứ tự c).
@@ -202,7 +203,7 @@ async function openDetail(i,push=true){
   if(c[3]&16)al.push('<div class="alert info">Bệnh chỉ có hoặc chủ yếu có ở <strong>nữ giới</strong>.</div>');
   if(c[3]&32)al.push('<div class="alert info">Bệnh chỉ có hoặc chủ yếu có ở <strong>nam giới</strong>.</div>');
   const p3=c[0].slice(0,3), kids=[];for(let j=0;j<D.c.length;j++){if(j!==i&&D.c[j][0].startsWith(p3))kids.push(j)}
-  $("d-body").innerHTML=`<div class="dactions" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" id="d-copy">Sao chép mã ${bare(c[0])}</button><button class="btn" id="d-share">Sao chép link</button></div>
+  $("d-body").innerHTML=`<div class="dactions" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" id="d-copy">Sao chép mã ${bare(c[0])}</button><button class="btn" id="d-share">Sao chép link</button><a class="btn" href="${gopYUrl({loai:GOP_Y_SAI,trang:"Mã ICD-10",thuoc:bare(c[0])+" "+c[1]})}" target="_blank" rel="noopener">Báo thông tin chưa đúng</a></div>
     <p class="path" style="margin-top:14px">Chương <b>${h[0]}</b> · ${esc(h[2])} (${h[1]})<br>Khối <b>${esc(b[0])}</b> · ${esc(b[1])}</p>
     ${al.join("")}<div class="hd" id="d-hd"></div>
     ${kids.length?`<div class="kids"><h3>${c[0].length===3?"Các mã chi tiết":"Cùng nhóm "+p3}</h3><ul class="ilist">${kids.map(rowHTML).join("")}</ul></div>`:""}`;

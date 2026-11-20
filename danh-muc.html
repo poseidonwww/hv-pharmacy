@@ -121,6 +121,7 @@
   <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span><a href="./" style="color:inherit">← Về trang chủ</a></span></div></div>
 </footer>
 
+<script src="assets/site.js"></script>
 <script>
 /* ====== CẤU HÌNH ======
    Bảng "Thông tin thuốc" (chủ sở hữu: khoaduochv@gmail.com), chia sẻ "Bất kỳ ai có đường liên kết – Người xem".
@@ -220,6 +221,7 @@ async function openDetail(d,push=true){
     $("d-body").innerHTML=`<div class="dactions">
         ${/^https?:/.test(link)?`<a class="btn primary" href="${esc(link)}" target="_blank" rel="noopener">${'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>'}Tờ hướng dẫn sử dụng</a>`:""}
         <button class="btn" id="d-share">Sao chép link thuốc này</button>
+        <a class="btn" href="${gopYUrl({loai:GOP_Y_SAI,trang:"Danh mục thuốc",thuoc:d.name})}" target="_blank" rel="noopener">Báo thông tin chưa đúng</a>
       </div>`+
       SECTIONS.map(([c,t,open,warn])=>`<details class="sec${warn?" warn":""}"${open?" open":""}><summary><i></i>${t}</summary><div class="ct">${fmt(r[c])}</div></details>`).join("")+
       `<div class="dnote"><strong>Lưu ý:</strong> Thông tin chỉ mang tính tham khảo cho nhân viên y tế. Luôn đối chiếu tờ hướng dẫn sử dụng, Dược thư Quốc gia và hướng dẫn của Bộ Y tế trước khi chỉ định.</div>`;

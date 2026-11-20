@@ -67,7 +67,13 @@ Thiết kế: font **Be Vietnam Pro** cho toàn trang (kể cả nhãn nhỏ), d
 1. [~] Điền link công cụ: ĐÃ XONG Danh mục thuốc, Người bệnh đặc biệt, Thuốc tiêm truyền, Tương tác thuốc–thuốc, ICD-10 (lấy từ Google Sites 20/11/2026). CÒN THIẾU: Tương hợp–tương kỵ (Sites cũ không có trang riêng).
 2. [ ] Điền link PDF: Bản tin thông tin thuốc số 1/2025; Danh mục LASA 2026. (20/11/2026: tìm trên Drive không thấy – chỉ có "LASA 2019.pdf" của BV khác và "BẢN TIN TTT số 1_2026" của kimlanbvdkbt, không phải của khoa. Cần chủ dự án gửi file/link.)
 3. [x] Link 7 video: dùng file MP4 trên Google Drive của khoaduochv@gmail.com (chế độ "ai có link đều xem được"), lấy từ trang "Hướng dẫn sử dụng thuốc" trên Sites cũ. (Sau) có thể đưa lên YouTube để xem mượt hơn – Rapihaler & Turbuhaler nặng ~460MB/file.
-4. [ ] Tạo Google Form góp ý, thay dòng "Góp ý" ở mục Liên hệ.
+4. [x] Google Form góp ý (20/11/2026, chủ: khoaduochv@gmail.com):
+   – Điền: https://docs.google.com/forms/d/e/1FAIpQLSf9UKCRkBBMIAIP0fAv91ys_OSCQNon6elGApa5aiQl8sa_lg/viewform
+   – Sửa Form: https://docs.google.com/forms/d/1JcRXmTDT8Z2yK-qPzL7RT-Kdy54Wnpx9U-uuSiiSku8/edit
+   – Câu trả lời: Sheet "Góp ý HV-Pharmacy (câu trả lời)" https://docs.google.com/spreadsheets/d/1V2fwTdqm0xxpzbyn3uUfT7-muz0LE5qzDfMprravbyQ/edit
+   – Tạo bằng `tools/tao-form-gop-y.gs` (dự án Apps Script "Tao Form gop y HV-Pharmacy" của khoaduochv). Không bắt đăng nhập, không thu email.
+   – Link + mã câu hỏi (entry) nằm trong `assets/site.js` (`gopYUrl()` tạo link điền sẵn loại góp ý/trang/tên thuốc). Sửa câu hỏi trong Form → kiểm tra lại entry.
+   – Nút "Báo thông tin chưa đúng" có trong chi tiết của danh-muc, dac-biet, tiem-truyen, icd10; trang chủ: thẻ Liên hệ + chân trang.
 5. [x] Repo GitHub riêng tư: https://github.com/poseidonwww/hv-pharmacy (nhánh `main`).
 6. [x] Cloudflare Pages (20/11/2026): **https://hv-pharmacy.pages.dev** – mỗi lần push lên `main` tự deploy lại sau ~1 phút.
    – App "Cloudflare Workers and Pages" trên GitHub đang được cài; nên giới hạn chỉ repo hv-pharmacy (GitHub → Settings → Applications → Configure).
@@ -76,6 +82,6 @@ Thiết kế: font **Be Vietnam Pro** cho toàn trang (kể cả nhãn nhỏ), d
 8. [ ] (Sau) Thẻ Open Graph (cần ảnh og.png 1200×630), trang 404. Favicon đã xong.
 
 ## Quy ước
-- Không thêm thư viện ngoài nếu không thật cần. Không dẫn ảnh từ nguồn bên ngoài (ảnh phải nằm trong `assets/`); icon dùng SVG inline.
+- JS dùng chung ở `assets/site.js` (nạp trước script riêng của trang). Không thêm thư viện ngoài nếu không thật cần. Không dẫn ảnh từ nguồn bên ngoài (ảnh phải nằm trong `assets/`); icon dùng SVG inline.
 - Mỗi thay đổi: commit ngắn gọn bằng tiếng Việt, ví dụ `Thêm link video Ellipta`.
 - Kiểm tra lại trên mobile (DevTools 390px) và dark mode trước khi push.

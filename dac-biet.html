@@ -200,6 +200,7 @@
   <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span><a href="./" style="color:inherit">← Về trang chủ</a></span></div></div>
 </footer>
 
+<script src="assets/site.js"></script>
 <script>
 /* ====== CẤU HÌNH ======
    Bảng "Thông tin thuốc", trang tính Sheet2 (gid 545322599).
@@ -309,7 +310,7 @@ async function openDetail(d){
   $("d-pt").textContent=[C.than.checked&&P.crclTxt,C.gan.checked&&P.cpTxt].filter(Boolean).join("  ·  ");
   const showThan=C.than.checked||!anyCond(), showGan=C.gan.checked||!anyCond(), showThai=C.thai.checked||!anyCond(), showBu=C.bu.checked||!anyCond();
   const none='<p class="na">Tờ hướng dẫn sử dụng không ghi khuyến cáo riêng. Đánh giá theo lâm sàng và thông tin chung của thuốc.</p>';
-  let h=`<div class="dactions">${/^https?:/.test(d.hdsd)?`<a class="btn primary" href="${esc(d.hdsd)}" target="_blank" rel="noopener">Tờ hướng dẫn sử dụng</a>`:""}<a class="btn" href="danh-muc.html#t=${encodeURIComponent(d.name)}">Xem toàn bộ thông tin thuốc</a></div>`;
+  let h=`<div class="dactions">${/^https?:/.test(d.hdsd)?`<a class="btn primary" href="${esc(d.hdsd)}" target="_blank" rel="noopener">Tờ hướng dẫn sử dụng</a>`:""}<a class="btn" href="danh-muc.html#t=${encodeURIComponent(d.name)}">Xem toàn bộ thông tin thuốc</a><a class="btn" href="${gopYUrl({loai:GOP_Y_SAI,trang:"Người bệnh đặc biệt",thuoc:d.name})}" target="_blank" rel="noopener">Báo thông tin chưa đúng</a></div>`;
   if(showThan) h+=blk("Suy thận",C.than.checked?P.crclTxt.split(" · ")[0]:"",[row("Chống chỉ định","red",list(d.cthan)||'<p class="na">Không ghi chống chỉ định riêng.</p>'),row("Liều dùng","amb",list(d.lthan)||none)]);
   if(showGan) h+=blk("Suy gan",C.gan.checked?P.cpTxt.split(" · ")[0]:"",[row("Chống chỉ định","red",list(d.cgan)||'<p class="na">Không ghi chống chỉ định riêng.</p>'),row("Liều dùng","amb",list(d.lgan)||none)]);
   if(showThai||showBu) h+=`<div id="pn">${blk(showThai&&showBu?"Phụ nữ có thai & cho con bú":showThai?"Phụ nữ có thai":"Phụ nữ cho con bú","",['<div class="row"><div class="skel" style="height:60px;border-radius:8px"></div></div>'])}</div>`;
