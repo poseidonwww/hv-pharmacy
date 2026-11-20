@@ -56,7 +56,7 @@ Thiết kế: font **Be Vietnam Pro** cho toàn trang (kể cả nhãn nhỏ), d
   - Ảnh mới: resize ≤1920px, WebP q55–78, giữ mỗi ảnh < 300KB.
   - (Sau) Cần ảnh thật của **Khoa Dược** (kho thuốc, quầy cấp phát, tập thể khoa) – chưa có.
 ## Link đã biết
-- Thông tin thuốc BVHV: https://script.google.com/macros/s/AKfycbw0rOd8davPK5fL-vFp8-aj3DEPztAGZ8WfGx-9Joi0q9zcZ37hXxZigjjtA6xWlhP7/exec
+- "Thông tin thuốc BVHV" (AKfycbw0rOd8…/exec) thực chất là công cụ **QUẢN TRỊ** "Quản lý danh mục thuốc" (569 thuốc, có nút Thêm/Sửa/Xoá/Làm mới dữ liệu). **Đã gỡ khỏi trang chủ (20/11/2026)** – KHÔNG đưa lại lên site công khai. Phần tra cứu đã có `danh-muc.html`. Cần chủ dự án giới hạn quyền truy cập bản triển khai Apps Script (chỉ tài khoản khoa).
 - Website BV: https://benhvienhungvuong.vn/
 - Email khoa: khoaduochv@gmail.com
 - Google Sites cũ (bản nháp, chưa xuất bản): https://sites.google.com/d/1daw07BidwpA8h0RJuidRTwJx54z0tCax/p/1vCNfTbeR9Q6kziYw2KVALjGT4-kw6ZRH/edit
