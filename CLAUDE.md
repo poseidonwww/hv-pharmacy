@@ -42,8 +42,10 @@ Thiết kế: font **Be Vietnam Pro** cho toàn trang (tiêu đề đậm 700, n
 2. [ ] Điền link PDF: Bản tin thông tin thuốc số 1/2025; Danh mục LASA 2026. (20/11/2026: tìm trên Drive không thấy – chỉ có "LASA 2019.pdf" của BV khác và "BẢN TIN TTT số 1_2026" của kimlanbvdkbt, không phải của khoa. Cần chủ dự án gửi file/link.)
 3. [x] Link 7 video: dùng file MP4 trên Google Drive của khoaduochv@gmail.com (chế độ "ai có link đều xem được"), lấy từ trang "Hướng dẫn sử dụng thuốc" trên Sites cũ. (Sau) có thể đưa lên YouTube để xem mượt hơn – Rapihaler & Turbuhaler nặng ~460MB/file.
 4. [ ] Tạo Google Form góp ý, thay dòng "Góp ý" ở mục Liên hệ.
-5. [ ] `git init`, tạo repo GitHub `hv-pharmacy`, push.
-6. [ ] Cloudflare Pages: Connect to Git → chọn repo → Framework: None, Build command: trống, Output dir: `/`.
+5. [x] Repo GitHub riêng tư: https://github.com/poseidonwww/hv-pharmacy (nhánh `main`).
+6. [x] Cloudflare Pages (20/11/2026): **https://hv-pharmacy.pages.dev** – mỗi lần push lên `main` tự deploy lại sau ~1 phút.
+   – App "Cloudflare Workers and Pages" trên GitHub đang được cài; nên giới hạn chỉ repo hv-pharmacy (GitHub → Settings → Applications → Configure).
+   – (Sau) Xin subdomain từ CNTT BV, thêm ở Pages → Custom domains.
 7. [ ] (Sau) Nối Google Sheets cho mục Tài liệu/Bản tin.
 8. [ ] (Sau) Thẻ Open Graph (cần ảnh og.png 1200×630), trang 404. Favicon đã xong.
 
