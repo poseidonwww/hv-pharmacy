@@ -9,19 +9,21 @@
  */
 const THU_MUC = {
   'quy-trinh': '1lyaR7N9-3VpkLRP2gkvrUCQnNJrwKnS0', // Bộ quy trình đang lưu hành tại khoa / Bản ký đóng dấu (KHÔNG dùng "Bản word + excel")
-  'guideline': '1zrxNfSoJDxo_HCVU3XYnAjUGEQ9cicet'  // Tài liệu y khoa (đọc cả thư mục con: Hướng dẫn của BYT, Hiệp hội chuyên khoa…)
+  'guideline': '1zrxNfSoJDxo_HCVU3XYnAjUGEQ9cicet', // Tài liệu y khoa (đọc cả thư mục con: Hướng dẫn của BYT, Hiệp hội chuyên khoa…)
+  'ban-tin': '1Fb6xNTXmUHgCfI6PXK6dWdBboqF_zxwf'    // Thông tin Dược: bản tin thông tin thuốc, danh mục LASA…
+
 };
 const CACHE_GIAY = 600; // lưu tạm 10 phút cho nhanh
 
 function doGet(e) {
   const cache = CacheService.getScriptCache();
   const fresh = e && e.parameter && e.parameter.fresh === '1';
-  let out = fresh ? null : cache.get('tai-lieu-v1');
+  let out = fresh ? null : cache.get('tai-lieu-v2');
   if (!out) {
     const nhom = {};
     for (const [k, id] of Object.entries(THU_MUC)) nhom[k] = docThuMuc_(DriveApp.getFolderById(id), '');
     out = JSON.stringify({ t: new Date().toISOString(), nhom });
-    if (out.length < 90000) cache.put('tai-lieu-v1', out, CACHE_GIAY);
+    if (out.length < 90000) cache.put('tai-lieu-v2', out, CACHE_GIAY);
   }
   return ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
 }

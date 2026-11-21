@@ -73,7 +73,7 @@ Thiết kế: font **Be Vietnam Pro** cho toàn trang (kể cả nhãn nhỏ), d
 
 ## Việc cần làm (TODO)
 1. [~] Điền link công cụ: ĐÃ XONG Danh mục thuốc, Người bệnh đặc biệt, Thuốc tiêm truyền, Tương tác thuốc–thuốc, ICD-10 (lấy từ Google Sites 20/11/2026). Tương hợp–tương kỵ: **tạm ẩn khỏi trang chủ** (chưa có dữ liệu; chủ dự án sẽ bổ sung). Hướng đã bàn: Sheet theo cặp thuốc (Thuốc A, Thuốc B, Y-site/bơm tiêm/túi dịch, kết quả, điều kiện, nguồn, ngày, DS duyệt) + trang ma trận; "chưa có dữ liệu" = không trộn chung.
-2. [ ] Điền link PDF: Bản tin thông tin thuốc số 1/2025; Danh mục LASA 2026. (20/11/2026: tìm trên Drive không thấy – chỉ có "LASA 2019.pdf" của BV khác và "BẢN TIN TTT số 1_2026" của kimlanbvdkbt, không phải của khoa. Cần chủ dự án gửi file/link.)
+2. [x] Bản tin & LASA: lấy từ thư mục Drive "Thông tin Dược" (thẻ Bản tin thông tin thuốc). Bản tin số 1/2025 chưa có trong thư mục. (20/11/2026: tìm trên Drive không thấy – chỉ có "LASA 2019.pdf" của BV khác và "BẢN TIN TTT số 1_2026" của kimlanbvdkbt, không phải của khoa. Cần chủ dự án gửi file/link.)
 3. [x] Link 7 video: dùng file MP4 trên Google Drive của khoaduochv@gmail.com (chế độ "ai có link đều xem được"), lấy từ trang "Hướng dẫn sử dụng thuốc" trên Sites cũ. (Sau) có thể đưa lên YouTube để xem mượt hơn – Rapihaler & Turbuhaler nặng ~460MB/file.
 4. [x] Google Form góp ý (20/11/2026, chủ: khoaduochv@gmail.com):
    – Điền: https://docs.google.com/forms/d/e/1FAIpQLSf9UKCRkBBMIAIP0fAv91ys_OSCQNon6elGApa5aiQl8sa_lg/viewform
@@ -95,7 +95,7 @@ Thiết kế: font **Be Vietnam Pro** cho toàn trang (kể cả nhãn nhỏ), d
 - Kiểm tra lại trên mobile (DevTools 390px) và dark mode trước khi push.
 
 ## Tài liệu chuyên môn (mục 02 trang chủ, 21/11/2026)
-- 3 thẻ con: **Quy trình dược** · **Guideline điều trị** · **Bản tin & danh mục** (mảng `DOCS`). Cấu hình `DOC_TABS`, `DOC_TEN`, `TAI_LIEU_API` trong `index.html`.
+- 3 thẻ con: **Quy trình dược** · **Guideline điều trị** · **Bản tin thông tin thuốc** (thư mục Drive "Thông tin Dược" `1Fb6xNTXmUHgCfI6PXK6dWdBboqF_zxwf`: bản tin, Danh mục LASA 2026, mẫu thông tin thuốc; tự chia nhóm theo tên file: "bản tin" / "danh mục|LASA" / khác; bản tin số lớn nhất lên đầu + nhãn "Mới nhất"). Mảng `DOCS` giờ để trống (chỉ dùng cho link ngoài Drive). API script đã thêm thư mục này (phiên bản 2, 21/11/2026). Cấu hình `DOC_TABS`, `DOC_TEN`, `TAI_LIEU_API` trong `index.html`.
 - Quy trình: thư mục Drive "Bộ quy trình đang lưu hành tại khoa" → CHỈ đọc thư mục con **"Bản ký đóng dấu"** `1lyaR7N9-3VpkLRP2gkvrUCQnNJrwKnS0` (19 PDF). KHÔNG đưa "Bản word + excel" lên web. Nhóm theo đuôi mã: GSP / NVD / DLS / Văn bản chung.
 - Guideline: thư mục "Tài liệu y khoa" `1zrxNfSoJDxo_HCVU3XYnAjUGEQ9cicet`, đọc cả thư mục con ("Hướng dẫn của BYT", "Hiệp hội chuyên khoa") → nhóm theo tên thư mục con. Đang trống.
 - Nguồn danh sách (ĐÃ TRIỂN KHAI 21/11/2026): Apps Script **"API tai lieu HV-Pharmacy"** (dự án `1QHJZno139aRZQdlnStB5hx0OLbIW5riy_QC7LQuEHIlmVLKbYGyNTqSo` của khoaduochv, Web app: chạy bằng khoaduochv, truy cập Anyone; /exec `AKfycbyiRh9dVk1i3QqookVn3azZu3AzQQqnv0cbdW17FOyVFGhzw_8L4lopzEsI79r5A00uug`; ~1,3s/lần, cache 10 phút, `?fresh=1` để đọc lại ngay). Trước đây là (`tools/api-tai-lieu.gs`, chỉ đọc, cache 10 phút) → điền link /exec vào `TAI_LIEU_API`. Chưa triển khai thì dùng bản tạm `data/tai-lieu.json` (chụp 21/11/2026).

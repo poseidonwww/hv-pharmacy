@@ -252,6 +252,7 @@ dialog.detail::backdrop{background:rgb(8 20 32 / .55);backdrop-filter:blur(2px)}
 .doc-wait b{color:var(--ink)}
 .doc-wait a{color:var(--brand)}
 .doc-note{margin-top:12px;font-size:var(--fs-xs);color:var(--muted)}
+.new-t{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:var(--accent);border-radius:99px;padding:1px 8px;margin-left:6px;vertical-align:2px}
 .warn-t{font-style:normal;color:var(--accent);font-weight:600}
 @media (max-width:760px){.tab{padding:10px 12px;font-size:var(--fs-sm)}}
 
