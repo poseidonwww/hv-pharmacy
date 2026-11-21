@@ -14,6 +14,8 @@ Phần lớn dữ liệu nằm trong **Google Sheets của tài khoản khoaduoc
 | **Thuốc mới** – suy gan, suy thận, có thai | Cùng file → trang tính **Sheet2** | Thêm 1 dòng, cột A–S; chú ý cột F (liều suy gan), G (liều suy thận), I (CCĐ suy gan), J (CCĐ suy thận), L (PNCT & CCB) | Người bệnh đặc biệt |
 | **Thuốc tiêm truyền** | **"Pha truyền"** | Thêm dòng **bên dưới đúng nhóm** ("Thuốc kháng sinh" / "Thuốc tiêm truyền khác"), cột A–N | Tiêm truyền |
 | **Cặp tương tác** | **"Copy of DANH MỤC TƯƠNG TÁC THUỐC"** → trang tính **DANH MỤC** | Thêm 1 dòng: B/D tên Việt · C hoạt chất 1 · E hoạt chất 2 · F điều kiện tuổi · G mã bệnh · H eGFR · I khoảng cách dùng · J mức độ cảnh báo · K cơ chế · L hậu quả · M xử trí. Cột C/E (tên chuẩn) phải viết giống nhau cho cùng 1 hoạt chất. Cột J ghi đúng "Chống chỉ định tuyệt đối" hoặc "Chống chỉ định tương đối". Mã bệnh cột G cách nhau dấu phẩy, eGFR/tuổi ghi dạng "<30 ml/phút/1,73m2", "<28 ngày tuổi" | Trang Tương tác thuốc (và công cụ Apps Script cũ) |
+| **Quy trình dược** (bản đã ký) | Thư mục Drive **"Bộ quy trình đang lưu hành tại khoa" → "Bản ký đóng dấu"** | Thả file PDF vào. Đặt tên theo mẫu `QT.01.DUOC.GSP Quy trình kiểm nhập.pdf` | Trang chủ → Tài liệu → Quy trình dược |
+| **Guideline điều trị** | Thư mục Drive **"Tài liệu y khoa"** → "Hướng dẫn của BYT" / "Hiệp hội chuyên khoa" (có thể tạo thêm thư mục con) | Thả file PDF vào; tên thư mục con = tên nhóm trên web | Trang chủ → Tài liệu → Guideline điều trị |
 | **Góp ý đã nhận** | **"Góp ý HV-Pharmacy (câu trả lời)"** | Chỉ đọc / xử lý | – |
 
 ### Quy tắc khi sửa bảng (để website không lỗi)

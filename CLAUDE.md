@@ -93,3 +93,10 @@ Thiết kế: font **Be Vietnam Pro** cho toàn trang (kể cả nhãn nhỏ), d
 - JS dùng chung ở `assets/site.js` (nạp trước script riêng của trang). Không thêm thư viện ngoài nếu không thật cần. Không dẫn ảnh từ nguồn bên ngoài (ảnh phải nằm trong `assets/`); icon dùng SVG inline.
 - Mỗi thay đổi: commit ngắn gọn bằng tiếng Việt, ví dụ `Thêm link video Ellipta`.
 - Kiểm tra lại trên mobile (DevTools 390px) và dark mode trước khi push.
+
+## Tài liệu chuyên môn (mục 02 trang chủ, 21/11/2026)
+- 3 thẻ con: **Quy trình dược** · **Guideline điều trị** · **Bản tin & danh mục** (mảng `DOCS`). Cấu hình `DOC_TABS`, `DOC_TEN`, `TAI_LIEU_API` trong `index.html`.
+- Quy trình: thư mục Drive "Bộ quy trình đang lưu hành tại khoa" → CHỈ đọc thư mục con **"Bản ký đóng dấu"** `1lyaR7N9-3VpkLRP2gkvrUCQnNJrwKnS0` (19 PDF). KHÔNG đưa "Bản word + excel" lên web. Nhóm theo đuôi mã: GSP / NVD / DLS / Văn bản chung.
+- Guideline: thư mục "Tài liệu y khoa" `1zrxNfSoJDxo_HCVU3XYnAjUGEQ9cicet`, đọc cả thư mục con ("Hướng dẫn của BYT", "Hiệp hội chuyên khoa") → nhóm theo tên thư mục con. Đang trống.
+- Nguồn danh sách: Apps Script **"API tai lieu HV-Pharmacy"** (`tools/api-tai-lieu.gs`, chỉ đọc, cache 10 phút) → điền link /exec vào `TAI_LIEU_API`. Chưa triển khai thì dùng bản tạm `data/tai-lieu.json` (chụp 21/11/2026).
+- Tên file lộn xộn/không dấu → sửa bằng `DOC_TEN` (id → [tên, mã]); tốt nhất khoa đổi tên file trên Drive theo mẫu "QT.01.DUOC.GSP Quy trình kiểm nhập.pdf".

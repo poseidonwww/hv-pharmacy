@@ -229,6 +229,32 @@ dialog.detail::backdrop{background:rgb(8 20 32 / .55);backdrop-filter:blur(2px)}
   .dtop,.dbody{padding-left:16px;padding-right:16px}
 }
 
+/* ================= TÀI LIỆU – THẺ CON ================= */
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tab{position:relative;display:inline-flex;align-items:center;gap:8px;font:600 var(--fs-base) var(--font);color:var(--muted);background:none;border:0;padding:12px 16px;cursor:pointer;border-radius:var(--r-sm) var(--r-sm) 0 0}
+.tab span{font-size:var(--fs-xs);font-weight:600;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);border-radius:99px;padding:1px 8px}
+.tab:hover{color:var(--ink);background:var(--tint)}
+.tab[aria-selected=true]{color:var(--brand)}
+.tab[aria-selected=true]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--brand)}
+.tab[aria-selected=true] span{background:var(--tint);border-color:transparent;color:var(--brand)}
+.doc-tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.doc-q{display:flex;align-items:center;gap:8px;flex:1 1 280px;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:0 12px;color:var(--muted)}
+.doc-q:focus-within{border-color:var(--brand)}
+.doc-q input{flex:1;border:0;background:transparent;font:inherit;font-size:var(--fs-sm);color:var(--ink);padding:10px 0;min-width:0}
+.doc-q input:focus{outline:none}
+.doc-folder{font-size:var(--fs-sm);font-weight:600;color:var(--brand);text-decoration:none}
+.doc-folder:hover{text-decoration:underline}
+.dgroup{font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:22px 0 10px}
+#doc-list .dgroup:first-child{margin-top:0}
+#doc-list .list .ico{background:var(--tint);color:var(--brand)}
+.doc-wait{display:flex;gap:14px;align-items:flex-start;padding:22px;border:1px dashed var(--line);border-radius:var(--r);color:var(--muted);line-height:1.65;background:var(--surface)}
+.doc-wait svg{flex:none;color:var(--brand)}
+.doc-wait b{color:var(--ink)}
+.doc-wait a{color:var(--brand)}
+.doc-note{margin-top:12px;font-size:var(--fs-xs);color:var(--muted)}
+.warn-t{font-style:normal;color:var(--accent);font-weight:600}
+@media (max-width:760px){.tab{padding:10px 12px;font-size:var(--fs-sm)}}
+
 /* ================= RESPONSIVE ================= */
 @media (max-width:980px){
   .hero .wrap{grid-template-columns:1fr;gap:40px}
