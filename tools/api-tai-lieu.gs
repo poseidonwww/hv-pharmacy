@@ -52,3 +52,6 @@ function docThuMuc_(folder, duongDan) {
   }
   return res;
 }
+
+/* Chạy thử trong trình soạn thảo để cấp quyền và xem kết quả */
+function thu() { Logger.log(doGet({ parameter: { fresh: '1' } }).getContent().slice(0, 500)); }
