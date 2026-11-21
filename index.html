@@ -94,9 +94,10 @@
       </div>
       <div class="tabs" role="tablist" aria-label="Loại tài liệu" id="doc-tabs"></div>
       <div class="doc-tools">
-        <label class="doc-q"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="doc-q" type="search" placeholder="Lọc tài liệu trong mục này…" autocomplete="off"></label>
+        <label class="doc-q"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="doc-q" type="search" placeholder="Tên bệnh, số hiệu, viết tắt… (vd: suy tim, THA, 1857)" autocomplete="off"></label>
         <a id="doc-folder" class="doc-folder" target="_blank" rel="noopener" hidden>Mở thư mục trên Google Drive ↗</a>
       </div>
+      <div class="doc-src" id="doc-src" role="group" aria-label="Lọc theo nguồn" hidden></div>
       <div id="doc-list" role="tabpanel" aria-live="polite"></div>
       <div class="empty" id="docs-empty">Không có tài liệu khớp từ khoá.</div>
     </div>
@@ -210,6 +211,8 @@ const DOC_TABS = [
 /* Tên hiển thị cho file đặt tên không dấu / lộn xộn trên Drive: {id file: ["Tên", "Mã quy trình"]}.
    Tốt nhất đổi tên file trên Drive theo mẫu "QT.01.DUOC.GSP Quy trình kiểm nhập.pdf" rồi xoá dòng tương ứng ở đây. */
 const DOC_TEN = {
+  "1hRXXZVLqBYhbKshS0GcjaQLR31TtmAFM":["Khuyến cáo của Hội Tim mạch học Việt Nam",""],
+  "1Pt15DkkjVmZHsNGg7-Blfwn6I33W3So9":["Hướng dẫn chẩn đoán và điều trị rối loạn chuyển hoá lipid",""],
   "1efippis37b3lDk0QKqXlPr10_QZYkixK":["Bản tin thông tin thuốc số 2",""],
   "1vP5ZL5FjGbax2Hvr1uOJi372Jbl8pdlW":["Quy trình rà soát đơn thuốc ngoại trú chưa lấy",""],
   "19uZwEzTNXfBbgQ-GffHU_s_3bwkn1NNz":["Quy trình quản lý hàng hoá ký gửi tại bệnh viện","QT.20.DUOC.GSP"],
@@ -253,76 +256,151 @@ $('n-docs').textContent=DOCS.filter(x=>x.url).length;
 const qi=$('q');
 
 /* ---------- Tài liệu (thẻ con) ---------- */
-let DOCDATA={"quy-trinh":[],"guideline":[]}, DOC_BAN_TAM=false, NGAY_BH={};
+let DOCDATA={"quy-trinh":[],"guideline":[]}, DOC_BAN_TAM=false, BYT={}, BYT_DS=[];
 let docTab=(()=>{try{return localStorage.getItem('hv-doc-tab')||'quy-trinh'}catch(e){return 'quy-trinh'}})();
+let docSrc='all';                 /* thẻ Guideline: lọc nguồn all | byt | hh */
+const docOpen=new Set();          /* nhóm chuyên khoa người dùng đã mở */
 const NHOM_QT={GSP:"Kho, bảo quản & cấp phát (GSP)",NVD:"Nghiệp vụ dược",DLS:"Dược lâm sàng"};
-/* Làm gọn tên file: bỏ đuôi, số thứ tự, "signed-", "_0001"; tách mã QT.xx… */
+const NGUON={byt:"Bộ Y tế",hh:"Hiệp hội"};
+/* Viết tắt trong tên file → chữ đầy đủ (so khớp cả từ, không phân biệt hoa thường) */
+const TU_TAT={hdcddt:"Hướng dẫn chẩn đoán và điều trị",hddcdddt:"Hướng dẫn chẩn đoán và điều trị",hdcdxt:"Hướng dẫn chẩn đoán và xử trí",
+  hd:"Hướng dẫn",kc:"Khuyến cáo",htmvn:"Hội Tim mạch Việt Nam",vr:"virus",vx:"vắc xin",hc:"hội chứng","đtđ":"đái tháo đường",
+  yhct:"y học cổ truyền",rhm:"răng hàm mặt",yh:"y học",pnmt:"phụ nữ mang thai",ng:"người","đtr":"điều trị",san:"sán","bênh":"bệnh",tre:"trẻ"};
+const moRong=s=>s.split(/(\s+)/).map(w=>TU_TAT[w.toLowerCase()]||w).join('').replace(/huyết áo/gi,'huyết áp').replace(/cở sở/gi,'cơ sở').replace(/phình đại/gi,'phì đại');
+/* Tìm kiếm: gõ viết tắt vẫn ra (THA → tăng huyết áp) */
+const DONG_NGHIA={tha:"tang huyet ap",dtd:"dai thao duong",copd:"tac nghen man tinh",bptnmt:"tac nghen man tinh",vpmpcd:"mac phai cong dong",
+  thkttm:"huyet khoi tinh mach",ttp:"tien liet",ut:"ung thu",ctm:"cong thuc mau",yhct:"y hoc co truyen",tbmmn:"dot quy",ckd:"than man"};
+/* Đoán chuyên khoa cho tài liệu chưa có (hiệp hội, văn bản ngoài danh mục 132) – tên trùng tên nhóm của Medinet */
+const CK_DOAN=[["Ung bướu",/ung thu|ung buou/],["Tim mạch",/tim mach|huyet ap|\btha\b|rung nhi|suy tim|co tim|mach vanh|dong mach|thuyen tac|huyet khoi|lipid/],
+  ["Nhãn khoa",/vong mac|thuy tinh the|dich kinh|benh ve mat/],["Nội tiết - Dinh dưỡng",/dai thao duong|beo phi|noi tiet|dinh duong|an dam|nhin an/],
+  ["Hô hấp",/phoi|ho hap|\bhen\b/],["Truyền nhiễm",/covid|virus|\blao\b|\bsot\b|\bcum\b|\bsoi\b|ebola|marburg|nipah|hanta|dau mua khi|rubella|zika|dich hach|nam xam lan|lay nhiem/],
+  ["Sản phụ khoa",/thai|tu cung|san khoa|san phu/],["Nhi khoa",/\btre\b|so sinh/],["Thận - Tiết niệu",/\bthan\b|tiet nieu|tien liet/],
+  ["Huyết học",/huyet hoc|hemophilia|tieu cau/],["Ký sinh trùng",/\bsan (la|day)|\bgiun\b|ky sinh/],["Đa chuyên khoa",/giam nhe/],["Y học cổ truyền",/y hoc co truyen/],["Da liễu",/da lieu/],["Hồi sức cấp cứu",/cap cuu|hoi suc/]];
+const doanCK=s=>{const t=' '+norm(s)+' ';const r=CK_DOAN.find(([,re])=>re.test(t));return r?r[0]:''};
+/* Tra văn bản BYT trong danh mục 132 (data/huong-dan-byt.json): ưu tiên trùng ngày + số; sai số nhưng đúng ngày duy nhất vẫn nhận */
+function timBYT(so,iso){
+  const cungNgay=BYT_DS.filter(x=>x.iso===iso);
+  return (so&&cungNgay.find(x=>x.so===so)||cungNgay.length===1&&cungNgay[0]||so&&BYT_DS.filter(x=>x.so===so&&x.y===iso.slice(0,4)).length===1&&BYT_DS.find(x=>x.so===so&&x.y===iso.slice(0,4))||{}).stt||0;
+}
+/* Làm gọn tên file: bỏ đuôi, số thứ tự, "signed-", "_0001"; tách mã QT.xx… hoặc số hiệu văn bản */
 function cleanDoc(f,key){
-  let s=f.ten.replace(/(\.(pdf|docx?|xlsx?|pptx?))+$/i,'').replace(/_0001$/,'').replace(/^\d+\.\s*/,'');
-  let code='', stt=0;
-  /* Hướng dẫn BYT: "037 - 2187-QĐ-BYT - Hướng dẫn chẩn đoán…" → mã 2187/QĐ-BYT */
-  const b=s.match(/^(\d{1,3}) - ([^ ]+-BYT) - (.+)$/);
-  if(b){stt=+b[1];code=b[2].replace(/-(?=.*-BYT$)/g,'/');s=b[3].replace(/^(về\s+)?(việc\s+)?(ban hành\s+)?(tài liệu chuyên môn\s+)?/i,'');}
-  const m=!b&&s.match(/\bQT[ .]?(\d+)((?:\.[A-Z]{2,6})*)/i);
+  let s=f.ten.replace(/(\.(pdf|docx?|xlsx?|pptx?))+$/i,'').replace(/_0001$|_compressed$/i,'').replace(/^\d+\.\s*/,'');
+  let code='', stt=0, ngay='', nam='', ck='', nguon='', hang=0;
+  const cay=(f.nhomCon||'').split(' / ');
+  if(key==='guideline'){nguon=/hiệp hội|hội /i.test(cay[0])?'hh':'byt';ck=cay[1]||'';}
+  let b=s.match(/^(\d{1,3}) - ([^ ]+-BYT) - (.+)$/);                     /* 037 - 2187-QĐ-BYT - Tên */
+  if(b){stt=+b[1];code=b[2].replace(/-(?=.*-BYT$)/g,'/');s=b[3];hang=2;
+    const r=BYT[stt];if(!r||r[0].split('/')[0]!==code.split('/')[0])stt=0;}
+  else if(key==='guideline'&&(b=s.match(/^(\d{4})(\d{2})(\d{2})\s+(?:(\d{1,5})\s+)?(.+)$/))){   /* 20220705 1857 HDCDDT … */
+    ngay=b[3]+'/'+b[2]+'/'+b[1];s=b[5];if(b[4])code=b[4]+'/QĐ-BYT';stt=timBYT(b[4]||'',b[1]+'-'+b[2]+'-'+b[3]);hang=1;}
+  const m=!hang&&s.match(/\bQT[ .]?(\d+)((?:\.[A-Z]{2,6})*)/i);
   if(m){code=('QT.'+m[1].padStart(2,'0')+m[2]).toUpperCase();s=s.replace(m[0],'');}
+  if(stt&&BYT[stt]){const r=BYT[stt];code=r[0];ngay=r[1];ck=ck||r[2];}
+  if(nguon==='hh'){nam=(s.match(/\((\d{4})\)/)||s.match(/\b(20\d{2})\b/)||[])[1]||'';s=s.replace(/\s*\(\d{4}\)\s*/,' ');}
+  if(!/\s/.test(s))s=s.replace(/-/g,' ');
   s=s.replace(/signed-/gi,'').replace(/\(\s*\)/g,'').replace(/_/g,' ').replace(/^[\s.\-–]+|[\s.\-–]+$/g,'').replace(/,(?=\S)/g,', ').replace(/\s{2,}/g,' ');
+  if(key==='guideline')s=moRong(s).replace(/^(về\s+)?(việc\s+)?(ban hành\s+)?(tài liệu chuyên môn\s+)?/i,'');
+  if(s===s.toUpperCase()&&/[A-ZĐ]/.test(s))s=s.toLowerCase();
   const ov=DOC_TEN[f.id]; if(ov){s=ov[0];if(ov[1])code=ov[1];}
   s=s.charAt(0).toUpperCase()+s.slice(1);
   const suf=(code.match(/\.(GSP|NVD|DLS)$/)||[])[1];
-  /* Ngày ban hành: tra theo STT trong data/huong-dan-byt.json (kiểm tra khớp số hiệu) */
-  const bh=stt&&NGAY_BH[stt], ngayBH=bh&&bh[0].split('/')[0]===code.split('/')[0]?bh[1]:'';
-  return {...f,code,tenHT:s,ngayBH,ngayISO:ngayBH?ngayBH.split('/').reverse().join('-'):'',so:stt||(/^QT/.test(code)?parseInt(code.slice(3)):999),
-    nhom:f.nhomCon?f.nhomCon.replace(/^Hướng dẫn của BYT\b/,'Bộ Y tế').replace(/ \/ /g,' · '):(key==='quy-trinh'?(NHOM_QT[suf]||"Văn bản chung"):key==='ban-tin'?nhomBanTin(s):"Tài liệu"),
+  if(key==='guideline'&&!ck)ck=doanCK(s)||'Khác';
+  const ngayISO=ngay?ngay.split('/').reverse().join('-'):nam?nam+'-01-01':'';
+  return {...f,code,tenHT:s,ngayBH:ngay,nam,ngayISO,nguon,hang,stt,so:stt||(/^QT/.test(code)?parseInt(code.slice(3)):999),
+    nhom:key==='guideline'?ck:key==='quy-trinh'?(NHOM_QT[suf]||"Văn bản chung"):key==='ban-tin'?nhomBanTin(s):(f.nhomCon||"Tài liệu"),
     soBT:+((s.match(/số\s*(\d+)/i)||[])[1]||0),
     url:'https://drive.google.com/file/d/'+f.id+'/view'};
 }
-/* Thứ tự nhóm quy trình: văn bản chung → GSP → NVD → DLS; nhóm khác (guideline) theo ABC */
-const nhomRank=g=>{const i=["Văn bản chung",NHOM_QT.GSP,NHOM_QT.NVD,NHOM_QT.DLS,"Bản tin thông tin thuốc","Danh mục cảnh báo","Tài liệu thông tin thuốc"].indexOf(g);return i<0?9:i};
+/* Thứ tự nhóm quy trình: văn bản chung → GSP → NVD → DLS; nhóm khác theo ABC, "Khác" cuối */
+const nhomRank=g=>{const i=["Văn bản chung",NHOM_QT.GSP,NHOM_QT.NVD,NHOM_QT.DLS,"Bản tin thông tin thuốc","Danh mục cảnh báo","Tài liệu thông tin thuốc"].indexOf(g);return i<0?(g==='Khác'?99:9):i};
 /* Thẻ Bản tin: phân nhóm theo tên file */
 const nhomBanTin=t=>/bản tin/i.test(t)?"Bản tin thông tin thuốc":/danh mục|lasa/i.test(t)?"Danh mục cảnh báo":"Tài liệu thông tin thuốc";
 const fmtDate=s=>{const d=new Date(s);return isNaN(d)?'':d.toLocaleDateString('vi-VN')};
 const fmtSize=kb=>kb>=1024?(kb/1024).toFixed(1).replace('.',',')+' MB':kb+' KB';
+const LOAI_DOC=/pdf|wordprocessing|msword|google-apps\.(document|presentation)|presentation/;
+const moiBanHanh=x=>x.ngayBH&&(Date.now()-new Date(x.ngayISO))<365*864e5;
+const _docCache={};
 function docItems(key){
+  const raw=DOCDATA[key]||[];
+  if(_docCache[key]&&_docCache[key].raw===raw&&_docCache[key].n===BYT_DS.length)return _docCache[key].v;
   const ngoai=key==='ban-tin'?DOCS.map(x=>({tenHT:x.name,code:'',meta:x.kind+' · '+x.note,url:x.url,nhom:x.kind,so:999,soBT:0})):[];
-  /* Chỉ hiện tài liệu (PDF, Word, Google Docs…) – bỏ CSV/Excel/ảnh. Cùng tên có cả PDF và Word → gộp 1 dòng (mở PDF, kèm nút Word). */
-  const LOAI=/pdf|wordprocessing|msword|google-apps\.(document|presentation)|presentation/;
+  /* Chỉ hiện tài liệu (PDF, Word, Google Docs…) – bỏ CSV/Excel/ảnh/Thumbs.db.
+     Gộp bản trùng: cùng văn bản BYT (cùng STT danh mục) hoặc cùng tên → 1 dòng: mở PDF (bản nhẹ nhất), kèm nút Word. */
   const byKey=new Map();
-  for(const f of (DOCDATA[key]||[]).filter(f=>LOAI.test(f.loai||'application/pdf'))){
-    const d=cleanDoc(f,key), isW=/word/.test(f.loai||''), k=d.nhom+'|'+d.tenHT+'|'+d.code;
-    const o=byKey.get(k);
-    if(!o){d.fmt=isW?'Word':(/pdf/.test(f.loai||'pdf')?'PDF':'');byKey.set(k,d);continue}
-    if(isW&&!o.altUrl&&o.fmt!=='Word'){o.altUrl=d.url;o.fmt='PDF + Word'}
-    else if(!isW&&o.fmt==='Word'){d.altUrl=o.url;d.fmt='PDF + Word';byKey.set(k,d)}
+  for(const f of raw.filter(f=>LOAI_DOC.test(f.loai||'application/pdf'))){
+    const d=cleanDoc(f,key), isW=/word/.test(f.loai||'');
+    const k=key==='guideline'?(d.nguon==='byt'&&d.stt?'stt'+d.stt:d.nguon+'|'+norm(d.tenHT)):d.nhom+'|'+d.tenHT+'|'+d.code;
+    let o=byKey.get(k);
+    if(!o){o={...d,pdf:null,word:null};byKey.set(k,o);}
+    else if(d.hang>o.hang){Object.assign(o,{tenHT:d.tenHT,hang:d.hang});}
+    if(isW){if(!o.word)o.word=d;}else if(!o.pdf||(d.kb||0)<(o.pdf.kb||0))o.pdf=d;
   }
-  const ds=[...byKey.values()].map(d=>{d.meta=[d.code,d.ngayBH?'ban hành '+d.ngayBH:(d.capNhat&&('cập nhật '+fmtDate(d.capNhat))),d.fmt,d.kb&&fmtSize(d.kb)].filter(Boolean).join(' · ');return d});
+  const ds=[...byKey.values()].map(o=>{const main=o.pdf||o.word;
+    const d={...o,url:main.url,kb:main.kb,congKhai:main.congKhai,capNhat:main.capNhat,altUrl:o.pdf&&o.word?o.word.url:'',
+      fmt:o.pdf&&o.word?'PDF + Word':o.pdf?(/pdf/.test(o.pdf.loai||'pdf')?'PDF':''):'Word'};
+    d.meta=[key==='guideline'?NGUON[d.nguon]:'',d.code,d.ngayBH?'ban hành '+d.ngayBH:d.nam?'năm '+d.nam:key==='guideline'?'':(d.capNhat&&('cập nhật '+fmtDate(d.capNhat))),d.fmt].filter(Boolean).join(' · ');
+    return d});
   /* trong 1 nhóm: văn bản ban hành mới nhất lên đầu */
-  return ngoai.concat(ds).sort((a,b)=>nhomRank(a.nhom)-nhomRank(b.nhom)||a.nhom.localeCompare(b.nhom,'vi')||(b.ngayISO||'').localeCompare(a.ngayISO||'')||(b.soBT||0)-(a.soBT||0)||a.so-b.so||(key==='ban-tin'?String(b.capNhat).localeCompare(String(a.capNhat)):0)||a.tenHT.localeCompare(b.tenHT,'vi'));
+  const v=ngoai.concat(ds).sort((a,b)=>nhomRank(a.nhom)-nhomRank(b.nhom)||a.nhom.localeCompare(b.nhom,'vi')||(b.ngayISO||'').localeCompare(a.ngayISO||'')||(b.soBT||0)-(a.soBT||0)||a.so-b.so||(key==='ban-tin'?String(b.capNhat).localeCompare(String(a.capNhat)):0)||a.tenHT.localeCompare(b.tenHT,'vi'));
+  _docCache[key]={raw,n:BYT_DS.length,v};
+  return v;
 }
 function renderDocs(q){
   const k=norm(((q||'')+' '+$('doc-q').value).trim()), ws=k.split(/\s+/).filter(Boolean);
-  const match=x=>ws.every(w=>norm(x.tenHT+' '+x.code+' '+x.meta+' '+x.nhom).includes(w));
-  $('doc-tabs').innerHTML=DOC_TABS.map(t=>{const n=docItems(t.key).filter(match).length;
-    return `<button role="tab" class="tab" data-k="${t.key}" aria-selected="${t.key===docTab}" tabindex="${t.key===docTab?0:-1}">${t.ten}<span>${n}</span></button>`}).join('');
+  /* viết tắt (THA, COPD…) chỉ khớp nguyên từ hoặc cụm đầy đủ – tránh "tha" khớp nhầm "tháo" */
+  const wre=ws.map(w=>DONG_NGHIA[w]||w.length<=2?new RegExp('(^|[^a-z0-9])'+w.replace(/[^a-z0-9]/g,'\\$&')+'($|[^a-z0-9])'):null);
+  const match=x=>{const t=norm(x.tenHT+' '+x.code+' '+x.meta+' '+x.nhom);return ws.every((w,i)=>wre[i]?(wre[i].test(t)||!!DONG_NGHIA[w]&&t.includes(DONG_NGHIA[w])):t.includes(w))};
+  const hits={};DOC_TABS.forEach(t=>hits[t.key]=docItems(t.key).filter(match));
+  $('doc-tabs').innerHTML=DOC_TABS.map(t=>`<button role="tab" class="tab" data-k="${t.key}" aria-selected="${t.key===docTab}" tabindex="${t.key===docTab?0:-1}">${t.ten}<span>${hits[t.key].length}</span></button>`).join('');
   const tab=DOC_TABS.find(t=>t.key===docTab)||DOC_TABS[0];
   $('doc-folder').hidden=!tab.thuMuc; if(tab.thuMuc)$('doc-folder').href=tab.thuMuc;
-  const items=docItems(tab.key), shown=items.filter(match);
+  const items=docItems(tab.key), isG=tab.key==='guideline';
+  /* Thẻ Guideline: nút lọc nguồn + mở/thu gọn tất cả */
+  const srcBox=$('doc-src');
+  if(isG&&items.length){
+    const n=s=>hits.guideline.filter(x=>s==='all'||x.nguon===s).length;
+    srcBox.hidden=false;
+    srcBox.innerHTML=[['all','Tất cả'],['byt','Bộ Y tế'],['hh','Hiệp hội']].map(([s,t])=>`<button type="button" class="chip" data-src="${s}" aria-pressed="${docSrc===s}">${t}<span>${n(s)}</span></button>`).join('')
+      +`<button type="button" class="chip chip-ghost" id="doc-toggle-all"></button>`;
+  }else srcBox.hidden=true;
+  const shown=hits[tab.key].filter(x=>!isG||docSrc==='all'||x.nguon===docSrc);
   if(!items.length){
     $('doc-list').innerHTML=`<div class="doc-wait">${svg(ICONS.doc,22)}<div><b>Khoa Dược đang cập nhật tài liệu cho mục này.</b>${tab.thuMuc?(DOC_BAN_TAM?`<br>Xem trực tiếp trong <a href="${tab.thuMuc}" target="_blank" rel="noopener">thư mục Google Drive</a>.`:`<br>Tài liệu thêm vào <a href="${tab.thuMuc}" target="_blank" rel="noopener">thư mục Google Drive</a> sẽ tự hiện ở đây.`):''}</div></div>`;
     $('docs-empty').style.display='none'; return;
   }
   const groups=[...new Set(shown.map(x=>x.nhom))];
-  $('doc-list').innerHTML=groups.map(g=>`${g?`<h3 class="dgroup">${g}</h3>`:''}<div class="panel"><ul class="list">${shown.filter(x=>x.nhom===g).map(x=>{const tag=x.url?'a':'div';
-    return `<li${x.altUrl?' class="has-alt"':''}>${x.altUrl?`<a class="alt"${ext(x.altUrl)} aria-label="Bản Word: ${x.tenHT}">Word</a>`:''}<${tag}${ext(x.url)}><span class="ico">${svg(ICONS.doc,20)}</span><span><b>${x.tenHT}${x===shown.find(y=>y.nhom==="Bản tin thông tin thuốc")?' <em class="new-t">Mới nhất</em>':''}</b><small>${x.meta}${x.congKhai===false?' · <em class="warn-t">chưa chia sẻ công khai</em>':''}</small></span>${x.url?'<span class="arr">↗</span>':'<span class="state">Đang cập nhật</span>'}</${tag}></li>`}).join('')}</ul></div>`).join('')
+  /* Nhóm thu gọn khi danh sách dài (Guideline, không tìm kiếm) → nhìn như mục lục chuyên khoa; tìm kiếm/ít mục thì mở hết */
+  const autoOpen=!isG||ws.length>0||shown.length<=25||groups.length<=2;
+  const banTinMoi=shown.find(y=>y.nhom==="Bản tin thông tin thuốc");
+  const row=x=>{const tag=x.url?'a':'div', lon=x.kb>20480;
+    return `<li${x.altUrl?' class="has-alt"':''}>${x.altUrl?`<a class="alt"${ext(x.altUrl)} aria-label="Bản Word: ${x.tenHT}">Word</a>`:''}<${tag}${ext(x.url)}><span class="ico">${svg(ICONS.doc,20)}</span><span><b>${x.tenHT}${x===banTinMoi?' <em class="new-t">Mới nhất</em>':''}${isG&&moiBanHanh(x)?' <em class="new-t">Mới</em>':''}</b><small>${x.meta}${x.kb?` · <span${lon?' class="big-t" title="File lớn – mở trên điện thoại có thể chậm"':''}>${fmtSize(x.kb)}${lon?' · file lớn':''}</span>`:''}${x.congKhai===false?' · <em class="warn-t">chưa chia sẻ công khai</em>':''}</small></span>${x.url?'<span class="arr">↗</span>':'<span class="state">Đang cập nhật</span>'}</${tag}></li>`};
+  $('doc-list').innerHTML=(isG?'<div class="dgrid">':'')+groups.map(g=>{const its=shown.filter(x=>x.nhom===g), open=autoOpen||docOpen.has(g);
+    return g?`<details class="dgrp" data-g="${g}"${open?' open':''}><summary class="dgroup"><span>${g}</span><span class="cnt">${its.length}</span></summary><div class="panel"><ul class="list">${its.map(row).join('')}</ul></div></details>`
+            :`<div class="panel"><ul class="list">${its.map(row).join('')}</ul></div>`}).join('')+(isG?'</div>':'')
     +(DOC_BAN_TAM&&tab.thuMuc?'<p class="doc-note">Danh sách lưu lần gần nhất – mở thư mục Google Drive để xem tài liệu mới nhất.</p>':'');
+  const tg=$('doc-toggle-all'); if(tg){const all=[...$('doc-list').querySelectorAll('details.dgrp')];tg.textContent=all.length&&all.every(d=>d.open)?'Thu gọn tất cả':'Mở tất cả';tg.hidden=autoOpen;}
+  /* Không có kết quả ở thẻ này nhưng có ở thẻ khác → gợi ý chuyển thẻ */
+  const other=DOC_TABS.find(t=>t.key!==tab.key&&hits[t.key].length);
+  $('docs-empty').innerHTML=shown.length?'':(ws.length&&other?`Không có trong mục này. <button type="button" class="link-btn" data-go="${other.key}">Xem ${hits[other.key].length} kết quả ở “${other.ten}” →</button>`:'Không có tài liệu khớp từ khoá.');
   $('docs-empty').style.display=shown.length?'none':'block';
 }
 $('doc-tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;docTab=b.dataset.k;try{localStorage.setItem('hv-doc-tab',docTab)}catch(x){};renderDocs(qi.value)});
 $('doc-tabs').addEventListener('keydown',e=>{if(!/Arrow(Left|Right)/.test(e.key))return;const i=DOC_TABS.findIndex(t=>t.key===docTab),n=(i+(e.key==='ArrowRight'?1:-1)+DOC_TABS.length)%DOC_TABS.length;docTab=DOC_TABS[n].key;renderDocs(qi.value);$('doc-tabs').children[n].focus()});
 $('doc-q').addEventListener('input',()=>renderDocs(qi.value));
+$('doc-src').addEventListener('click',e=>{
+  const c=e.target.closest('[data-src]');
+  if(c){docSrc=c.dataset.src;renderDocs(qi.value);return}
+  if(e.target.id==='doc-toggle-all'){const all=[...$('doc-list').querySelectorAll('details.dgrp')],mo=!all.every(d=>d.open);all.forEach(d=>{d.open=mo;mo?docOpen.add(d.dataset.g):docOpen.delete(d.dataset.g)});e.target.textContent=mo?'Thu gọn tất cả':'Mở tất cả';}
+});
+$('doc-list').addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details.dgrp'))return;d.open?docOpen.add(d.dataset.g):docOpen.delete(d.dataset.g);
+  const tg=$('doc-toggle-all');if(tg){const all=[...$('doc-list').querySelectorAll('details.dgrp')];tg.textContent=all.every(x=>x.open)?'Thu gọn tất cả':'Mở tất cả';}},true);
+$('docs-empty').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;docTab=b.dataset.go;docSrc='all';renderDocs(qi.value)});
 async function loadDocs(){
-  /* ngày ban hành hướng dẫn BYT (tĩnh, nhỏ) – tải song song, có thì vẽ lại */
-  fetch('data/huong-dan-byt.json').then(r=>r.json()).then(d=>{NGAY_BH=d.stt||{};renderDocs(qi.value)}).catch(()=>{});
-  const apply=d=>{DOCDATA=d.nhom||DOCDATA;DOC_BAN_TAM=!!d.banTam;$('n-docs').textContent=Object.values(DOCDATA).reduce((a,x)=>a+x.length,0)+DOCS.filter(x=>x.url).length;renderDocs(qi.value)};
+  /* danh mục 132 hướng dẫn BYT (số hiệu, ngày ban hành, chuyên khoa) – tĩnh, nhỏ; có thì vẽ lại */
+  fetch('data/huong-dan-byt.json').then(r=>r.json()).then(d=>{BYT=d.stt||{};
+    BYT_DS=Object.entries(BYT).map(([k,v])=>({stt:+k,so:v[0].split('/')[0],iso:v[1].split('/').reverse().join('-'),y:v[1].slice(-4)}));
+    capNhatSoDocs();renderDocs(qi.value)}).catch(()=>{});
+  const apply=d=>{DOCDATA=d.nhom||DOCDATA;DOC_BAN_TAM=!!d.banTam;capNhatSoDocs();renderDocs(qi.value)};
   let cached=null;try{cached=JSON.parse(localStorage.getItem('hv-docs-v1')||'null')}catch(e){}
   if(cached)apply(cached);
   for(const u of [TAI_LIEU_API,'data/tai-lieu.json'].filter(Boolean)){
@@ -330,6 +408,8 @@ async function loadDocs(){
   }
   if(!cached)renderDocs(qi.value);
 }
+/* Số tài liệu ở khung "Truy cập nhanh" = số dòng thực hiện (đã gộp bản trùng) */
+const capNhatSoDocs=()=>{$('n-docs').textContent=DOC_TABS.reduce((a,t)=>a+docItems(t.key).length,0)};
 
 function render(q=''){
   const k=norm(q.trim());

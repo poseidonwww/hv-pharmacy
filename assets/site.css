@@ -246,6 +246,33 @@ dialog.detail::backdrop{background:rgb(8 20 32 / .55);backdrop-filter:blur(2px)}
 .doc-folder:hover{text-decoration:underline}
 .dgroup{font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:22px 0 10px}
 #doc-list .dgroup:first-child{margin-top:0}
+/* Nhóm tài liệu thu gọn được (details/summary) */
+#doc-list .dgrp+.dgrp{margin-top:10px}
+/* Guideline: nhóm đang thu gọn xếp 2 cột như mục lục chuyên khoa; nhóm mở chiếm cả hàng */
+@media (min-width:900px){
+  #doc-list .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+  #doc-list .dgrid .dgrp+.dgrp{margin-top:0}
+  #doc-list .dgrid .dgrp[open]{grid-column:1/-1}
+}
+#doc-list .dgrp>summary{list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer;margin:0;padding:12px 16px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);color:var(--ink);font-size:var(--fs-sm);letter-spacing:.02em;text-transform:none;font-weight:700;user-select:none}
+#doc-list .dgrp>summary::-webkit-details-marker{display:none}
+#doc-list .dgrp>summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;margin-right:2px;flex:none}
+#doc-list .dgrp[open]>summary::before{transform:rotate(45deg)}
+#doc-list .dgrp>summary:hover{border-color:var(--brand);color:var(--brand)}
+#doc-list .dgrp>summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+#doc-list .dgrp>summary .cnt{margin-left:auto;font-size:var(--fs-xs);font-weight:600;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:1px 9px}
+#doc-list .dgrp[open]>summary{border-radius:var(--r-sm) var(--r-sm) 0 0;border-bottom-color:transparent;background:var(--tint);color:var(--brand)}
+#doc-list .dgrp>.panel{border-top-left-radius:0;border-top-right-radius:0}
+/* Lọc nguồn (Guideline) */
+.doc-src{display:flex;flex-wrap:wrap;gap:8px;margin:-4px 0 16px}
+.chip{display:inline-flex;align-items:center;gap:6px;font:600 var(--fs-sm) var(--font);color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:6px 14px;cursor:pointer}
+.chip span{font-size:var(--fs-xs);color:var(--muted)}
+.chip:hover{border-color:var(--brand);color:var(--brand)}
+.chip[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip[aria-pressed=true] span{color:rgba(255,255,255,.85)}
+.chip-ghost{margin-left:auto;border-style:dashed}
+.big-t{color:var(--accent);font-weight:600}
+.link-btn{font:inherit;font-weight:600;color:var(--brand);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
 #doc-list .list .ico{background:var(--tint);color:var(--brand)}
 /* Tài liệu có cả PDF và Word: dòng mở PDF, nút nhỏ "Word" bên phải */
 #doc-list .has-alt{position:relative}
