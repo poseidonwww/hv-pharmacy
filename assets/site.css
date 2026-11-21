@@ -247,6 +247,16 @@ dialog.detail::backdrop{background:rgb(8 20 32 / .55);backdrop-filter:blur(2px)}
 .dgroup{font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:22px 0 10px}
 #doc-list .dgroup:first-child{margin-top:0}
 #doc-list .list .ico{background:var(--tint);color:var(--brand)}
+/* Tài liệu có cả PDF và Word: dòng mở PDF, nút nhỏ "Word" bên phải */
+#doc-list .has-alt{position:relative}
+#doc-list .has-alt>a:not(.alt)>span:nth-child(2){margin-right:76px}
+#doc-list .list a.alt{position:absolute;right:52px;top:50%;transform:translateY(-50%);z-index:1;display:inline-block;padding:3px 10px;border:1px solid var(--line);border-radius:99px;background:var(--surface);font-size:var(--fs-xs);font-weight:600;color:var(--brand)}
+#doc-list .list a.alt:hover{background:var(--tint);border-color:var(--brand)}
+@media (max-width:560px){
+  #doc-list .has-alt>a:not(.alt){padding-bottom:50px}
+  #doc-list .has-alt>a:not(.alt)>span:nth-child(2){margin-right:0}
+  #doc-list .list a.alt{top:auto;bottom:16px;transform:none;right:auto;left:78px}
+}
 .doc-wait{display:flex;gap:14px;align-items:flex-start;padding:22px;border:1px dashed var(--line);border-radius:var(--r);color:var(--muted);line-height:1.65;background:var(--surface)}
 .doc-wait svg{flex:none;color:var(--brand)}
 .doc-wait b{color:var(--ink)}

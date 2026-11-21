@@ -253,21 +253,26 @@ $('n-docs').textContent=DOCS.filter(x=>x.url).length;
 const qi=$('q');
 
 /* ---------- Tài liệu (thẻ con) ---------- */
-let DOCDATA={"quy-trinh":[],"guideline":[]}, DOC_BAN_TAM=false;
+let DOCDATA={"quy-trinh":[],"guideline":[]}, DOC_BAN_TAM=false, NGAY_BH={};
 let docTab=(()=>{try{return localStorage.getItem('hv-doc-tab')||'quy-trinh'}catch(e){return 'quy-trinh'}})();
 const NHOM_QT={GSP:"Kho, bảo quản & cấp phát (GSP)",NVD:"Nghiệp vụ dược",DLS:"Dược lâm sàng"};
 /* Làm gọn tên file: bỏ đuôi, số thứ tự, "signed-", "_0001"; tách mã QT.xx… */
 function cleanDoc(f,key){
   let s=f.ten.replace(/(\.(pdf|docx?|xlsx?|pptx?))+$/i,'').replace(/_0001$/,'').replace(/^\d+\.\s*/,'');
-  let code='';
-  const m=s.match(/\bQT[ .]?(\d+)((?:\.[A-Z]{2,6})*)/i);
+  let code='', stt=0;
+  /* Hướng dẫn BYT: "037 - 2187-QĐ-BYT - Hướng dẫn chẩn đoán…" → mã 2187/QĐ-BYT */
+  const b=s.match(/^(\d{1,3}) - ([^ ]+-BYT) - (.+)$/);
+  if(b){stt=+b[1];code=b[2].replace(/-(?=.*-BYT$)/g,'/');s=b[3].replace(/^(về\s+)?(việc\s+)?(ban hành\s+)?(tài liệu chuyên môn\s+)?/i,'');}
+  const m=!b&&s.match(/\bQT[ .]?(\d+)((?:\.[A-Z]{2,6})*)/i);
   if(m){code=('QT.'+m[1].padStart(2,'0')+m[2]).toUpperCase();s=s.replace(m[0],'');}
   s=s.replace(/signed-/gi,'').replace(/\(\s*\)/g,'').replace(/_/g,' ').replace(/^[\s.\-–]+|[\s.\-–]+$/g,'').replace(/,(?=\S)/g,', ').replace(/\s{2,}/g,' ');
   const ov=DOC_TEN[f.id]; if(ov){s=ov[0];if(ov[1])code=ov[1];}
   s=s.charAt(0).toUpperCase()+s.slice(1);
   const suf=(code.match(/\.(GSP|NVD|DLS)$/)||[])[1];
-  return {...f,code,tenHT:s,so:code?parseInt(code.slice(3)):999,
-    nhom:f.nhomCon||(key==='quy-trinh'?(NHOM_QT[suf]||"Văn bản chung"):key==='ban-tin'?nhomBanTin(s):"Tài liệu"),
+  /* Ngày ban hành: tra theo STT trong data/huong-dan-byt.json (kiểm tra khớp số hiệu) */
+  const bh=stt&&NGAY_BH[stt], ngayBH=bh&&bh[0].split('/')[0]===code.split('/')[0]?bh[1]:'';
+  return {...f,code,tenHT:s,ngayBH,ngayISO:ngayBH?ngayBH.split('/').reverse().join('-'):'',so:stt||(/^QT/.test(code)?parseInt(code.slice(3)):999),
+    nhom:f.nhomCon?f.nhomCon.replace(/^Hướng dẫn của BYT\b/,'Bộ Y tế').replace(/ \/ /g,' · '):(key==='quy-trinh'?(NHOM_QT[suf]||"Văn bản chung"):key==='ban-tin'?nhomBanTin(s):"Tài liệu"),
     soBT:+((s.match(/số\s*(\d+)/i)||[])[1]||0),
     url:'https://drive.google.com/file/d/'+f.id+'/view'};
 }
@@ -279,8 +284,19 @@ const fmtDate=s=>{const d=new Date(s);return isNaN(d)?'':d.toLocaleDateString('v
 const fmtSize=kb=>kb>=1024?(kb/1024).toFixed(1).replace('.',',')+' MB':kb+' KB';
 function docItems(key){
   const ngoai=key==='ban-tin'?DOCS.map(x=>({tenHT:x.name,code:'',meta:x.kind+' · '+x.note,url:x.url,nhom:x.kind,so:999,soBT:0})):[];
-  return ngoai.concat((DOCDATA[key]||[]).map(f=>{const d=cleanDoc(f,key);d.meta=[d.code,d.capNhat&&('cập nhật '+fmtDate(d.capNhat)),d.kb&&fmtSize(d.kb)].filter(Boolean).join(' · ');return d})
-    ).sort((a,b)=>nhomRank(a.nhom)-nhomRank(b.nhom)||a.nhom.localeCompare(b.nhom,'vi')||(b.soBT||0)-(a.soBT||0)||a.so-b.so||(key==='ban-tin'?String(b.capNhat).localeCompare(String(a.capNhat)):0)||a.tenHT.localeCompare(b.tenHT,'vi'));
+  /* Chỉ hiện tài liệu (PDF, Word, Google Docs…) – bỏ CSV/Excel/ảnh. Cùng tên có cả PDF và Word → gộp 1 dòng (mở PDF, kèm nút Word). */
+  const LOAI=/pdf|wordprocessing|msword|google-apps\.(document|presentation)|presentation/;
+  const byKey=new Map();
+  for(const f of (DOCDATA[key]||[]).filter(f=>LOAI.test(f.loai||'application/pdf'))){
+    const d=cleanDoc(f,key), isW=/word/.test(f.loai||''), k=d.nhom+'|'+d.tenHT+'|'+d.code;
+    const o=byKey.get(k);
+    if(!o){d.fmt=isW?'Word':(/pdf/.test(f.loai||'pdf')?'PDF':'');byKey.set(k,d);continue}
+    if(isW&&!o.altUrl&&o.fmt!=='Word'){o.altUrl=d.url;o.fmt='PDF + Word'}
+    else if(!isW&&o.fmt==='Word'){d.altUrl=o.url;d.fmt='PDF + Word';byKey.set(k,d)}
+  }
+  const ds=[...byKey.values()].map(d=>{d.meta=[d.code,d.ngayBH?'ban hành '+d.ngayBH:(d.capNhat&&('cập nhật '+fmtDate(d.capNhat))),d.fmt,d.kb&&fmtSize(d.kb)].filter(Boolean).join(' · ');return d});
+  /* trong 1 nhóm: văn bản ban hành mới nhất lên đầu */
+  return ngoai.concat(ds).sort((a,b)=>nhomRank(a.nhom)-nhomRank(b.nhom)||a.nhom.localeCompare(b.nhom,'vi')||(b.ngayISO||'').localeCompare(a.ngayISO||'')||(b.soBT||0)-(a.soBT||0)||a.so-b.so||(key==='ban-tin'?String(b.capNhat).localeCompare(String(a.capNhat)):0)||a.tenHT.localeCompare(b.tenHT,'vi'));
 }
 function renderDocs(q){
   const k=norm(((q||'')+' '+$('doc-q').value).trim()), ws=k.split(/\s+/).filter(Boolean);
@@ -296,7 +312,7 @@ function renderDocs(q){
   }
   const groups=[...new Set(shown.map(x=>x.nhom))];
   $('doc-list').innerHTML=groups.map(g=>`${g?`<h3 class="dgroup">${g}</h3>`:''}<div class="panel"><ul class="list">${shown.filter(x=>x.nhom===g).map(x=>{const tag=x.url?'a':'div';
-    return `<li><${tag}${ext(x.url)}><span class="ico">${svg(ICONS.doc,20)}</span><span><b>${x.tenHT}${x===shown.find(y=>y.nhom==="Bản tin thông tin thuốc")?' <em class="new-t">Mới nhất</em>':''}</b><small>${x.meta}${x.congKhai===false?' · <em class="warn-t">chưa chia sẻ công khai</em>':''}</small></span>${x.url?'<span class="arr">↗</span>':'<span class="state">Đang cập nhật</span>'}</${tag}></li>`}).join('')}</ul></div>`).join('')
+    return `<li${x.altUrl?' class="has-alt"':''}>${x.altUrl?`<a class="alt"${ext(x.altUrl)} aria-label="Bản Word: ${x.tenHT}">Word</a>`:''}<${tag}${ext(x.url)}><span class="ico">${svg(ICONS.doc,20)}</span><span><b>${x.tenHT}${x===shown.find(y=>y.nhom==="Bản tin thông tin thuốc")?' <em class="new-t">Mới nhất</em>':''}</b><small>${x.meta}${x.congKhai===false?' · <em class="warn-t">chưa chia sẻ công khai</em>':''}</small></span>${x.url?'<span class="arr">↗</span>':'<span class="state">Đang cập nhật</span>'}</${tag}></li>`}).join('')}</ul></div>`).join('')
     +(DOC_BAN_TAM&&tab.thuMuc?'<p class="doc-note">Danh sách lưu lần gần nhất – mở thư mục Google Drive để xem tài liệu mới nhất.</p>':'');
   $('docs-empty').style.display=shown.length?'none':'block';
 }
@@ -304,6 +320,8 @@ $('doc-tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!
 $('doc-tabs').addEventListener('keydown',e=>{if(!/Arrow(Left|Right)/.test(e.key))return;const i=DOC_TABS.findIndex(t=>t.key===docTab),n=(i+(e.key==='ArrowRight'?1:-1)+DOC_TABS.length)%DOC_TABS.length;docTab=DOC_TABS[n].key;renderDocs(qi.value);$('doc-tabs').children[n].focus()});
 $('doc-q').addEventListener('input',()=>renderDocs(qi.value));
 async function loadDocs(){
+  /* ngày ban hành hướng dẫn BYT (tĩnh, nhỏ) – tải song song, có thì vẽ lại */
+  fetch('data/huong-dan-byt.json').then(r=>r.json()).then(d=>{NGAY_BH=d.stt||{};renderDocs(qi.value)}).catch(()=>{});
   const apply=d=>{DOCDATA=d.nhom||DOCDATA;DOC_BAN_TAM=!!d.banTam;$('n-docs').textContent=Object.values(DOCDATA).reduce((a,x)=>a+x.length,0)+DOCS.filter(x=>x.url).length;renderDocs(qi.value)};
   let cached=null;try{cached=JSON.parse(localStorage.getItem('hv-docs-v1')||'null')}catch(e){}
   if(cached)apply(cached);
