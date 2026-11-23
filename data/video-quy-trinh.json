@@ -3,110 +3,122 @@
 "ghiChu": "Bản dự phòng danh sách video thư mục Drive 'Bộ quy trình đang lưu hành tại khoa / Videos' (1dV8Fk444ooO3jw6xPU61bcg3CT2OQCcp). Website ưu tiên đọc qua API (nhóm video-qt).",
 "video-qt": [
 {
-"id": "1_t0nYGHZ0HarZevAIPTAkJACSPw5a1MS",
-"ten": "Phát_hiện_sớm_ADR.mp4",
-"loai": "video/mp4",
-"kb": 34081
-},
-{
 "id": "1l-H1CBRn7WOj14Bh3gTm21MPLsDYiczn",
-"ten": "Rà_soát_đơn_chưa_lấy.mp4",
+"ten": "QT.19 - Quy trình rà soát đơn thuốc ngoại trú chưa lấy.mp4",
 "loai": "video/mp4",
 "kb": 27807
 },
 {
 "id": "1nWBLz6ZSV77Fe0MT2mBIgMcmdwGd3NPG",
-"ten": "Quản_Lý_Hàng_Ký_Gửi.mp4",
+"ten": "QT.20 - Quy trình quản lý hàng hóa ký gửi tại bệnh viện.mp4",
 "loai": "video/mp4",
 "kb": 23906
 },
 {
 "id": "1zZw1WhX7D97hAt7O9Llt7Ryq0NhTTqTd",
-"ten": "Quản_Lý_Thuốc_Nguy_Cơ_Cao.mp4",
+"ten": "QT.16 - Quy trình thuốc có nguy cơ cao.mp4",
 "loai": "video/mp4",
 "kb": 25160
 },
 {
-"id": "1ihsqni0GliYyzArMvFs1O-q2LJB-8pSB",
-"ten": "Hành_trình_thuốc_trả_về.mp4",
+"id": "1_t0nYGHZ0HarZevAIPTAkJACSPw5a1MS",
+"ten": "QT.15 - Quy trình giám sát ADR.mp4",
 "loai": "video/mp4",
-"kb": 25847
-},
-{
-"id": "193tYywAGgWfcIDoqutAzlGfBgFaNM2oe",
-"ten": "Xử_Trí_Kho_Thuốc_Khẩn_Cấp.mp4",
-"loai": "video/mp4",
-"kb": 36232
-},
-{
-"id": "1eBn78LcTtyarZWQu5qoOasrf_shLKl3k",
-"ten": "Xử_lý_thuốc_hỏng_vỡ.mp4",
-"loai": "video/mp4",
-"kb": 23918
-},
-{
-"id": "1O7v1z8rlZ0_wZYcLDKf8aBTMgep5gczX",
-"ten": "Kiểm_Soát_Côn_Trùng_Kho_Y_Tế.mp4",
-"loai": "video/mp4",
-"kb": 25563
+"kb": 34081
 },
 {
 "id": "1QlGuDlqdNCXayURx8_5fFRTFin2ZkaXL",
-"ten": "Quy_trình_QT.14.DUOC.mp4",
+"ten": "QT.14 - Quy trình 3 kiểm tra 5 đối chiếu.mp4",
 "loai": "video/mp4",
 "kb": 26907
 },
 {
 "id": "1hQbh4UIC5gqzuCABz5PEW-JNu_wmSDUR",
-"ten": "Hành_trình_chuẩn_của_thuốc.mp4",
+"ten": "QT.13 - Quy trình cấp phát thuốc ngoại trú.mp4",
 "loai": "video/mp4",
 "kb": 26400
 },
 {
 "id": "1kOEDJFI7Qr8DTwAEG_OiTK6jmHOrMMPy",
-"ten": "QT.12.DUOC.mp4",
+"ten": "QT.12 - Quy trình định kỳ đối chiếu thuốc trong kho.mp4",
 "loai": "video/mp4",
 "kb": 31355
 },
 {
-"id": "1pqOCu0fxFk2VvnjWv74gc2k7Xc0etN3l",
-"ten": "Bảo_trì_thiết_bị_bảo_quản.mp4",
-"loai": "video/mp4",
-"kb": 24942
-},
-{
 "id": "1L_yr1CUrUkQ4HyhbNWYPzfqZgX7Oeoz5",
-"ten": "Biệt_trữ_thuốc_an_toàn.mp4",
+"ten": "QT.11 - Quy trình biệt trữ thuốc.mp4",
 "loai": "video/mp4",
 "kb": 27314
 },
 {
+"id": "1ihsqni0GliYyzArMvFs1O-q2LJB-8pSB",
+"ten": "QT.10 - Quy trình tiếp nhận và xử lý thuốc trả về.mp4",
+"loai": "video/mp4",
+"kb": 25847
+},
+{
 "id": "1bodkvn-5nLu9uqZjTu7dhiqvCPzmY0vt",
-"ten": "Kiểm_Tra_Y_Lệnh_Nội_Trú.mp4",
+"ten": "QT.09 - Quy trình cấp phát thuốc đến người bệnh nội trú.mp4",
 "loai": "video/mp4",
 "kb": 25989
 },
 {
+"id": "193tYywAGgWfcIDoqutAzlGfBgFaNM2oe",
+"ten": "QT.08 - Quy trình theo dõi, ghi chép điều kiện bảo quản (bản cũ).mp4",
+"loai": "video/mp4",
+"kb": 36232
+},
+{
+"id": "1rueTySRp-Q7VGPkKNf2ICb1XKqWyhNR9",
+"ten": "QT.08 - Quy trình theo dõi, ghi chép điều kiện bảo quản.mp4",
+"loai": "video/mp4",
+"kb": 28269
+},
+{
+"id": "1eBn78LcTtyarZWQu5qoOasrf_shLKl3k",
+"ten": "QT.07 - Quy trình xử lý thuốc hỏng vỡ.mp4",
+"loai": "video/mp4",
+"kb": 23918
+},
+{
+"id": "1O7v1z8rlZ0_wZYcLDKf8aBTMgep5gczX",
+"ten": "QT.06 - Quy trình kiểm soát mối, mọt, côn trùng, gặm nhấm trong kho.mp4",
+"loai": "video/mp4",
+"kb": 25563
+},
+{
+"id": "1pqOCu0fxFk2VvnjWv74gc2k7Xc0etN3l",
+"ten": "QT.05 - Quy trình kiểm tra, bảo trì, bảo dưỡng thiết bị bảo quản.mp4",
+"loai": "video/mp4",
+"kb": 24942
+},
+{
 "id": "1BkOzF2eCVoMtpS97qjiWJJUL8aGjS0mR",
-"ten": "Quy_Trình_Vệ_Sinh_Kho.mp4",
+"ten": "QT.04 - Quy trình vệ sinh kho.mp4",
 "loai": "video/mp4",
 "kb": 42144
 },
 {
 "id": "1Yw7e6pSl6TsI3V7uQwMs9ejJlidU9B0o",
-"ten": "BV_Hùng_Vương__Quản_lý_thuốc.mp4",
+"ten": "QT.03 - Quy trình kiểm tra, theo dõi chất lượng thuốc trong kho.mp4",
 "loai": "video/mp4",
 "kb": 27656
 },
 {
 "id": "1g3T7jylqaQQ6E7lcAYndKN6VVeHHBY1i",
-"ten": "Quy_trình_bảo_quản_vắc_xin.mp4",
+"ten": "QT.02 - Quy trình bảo quản (bản cũ).mp4",
 "loai": "video/mp4",
 "kb": 29820
 },
 {
+"id": "1fbD-Zx4Nmz5nuvpk5_F4iyIHQyH74D87",
+"ten": "QT.02 - Quy trình bảo quản.mp4",
+"loai": "video/mp4",
+"kb": 35549
+},
+{
 "id": "16nnHHov4ER2K9eUjWknqBueBrPLOyeXd",
-"ten": "Quy_trình_kiểm_nhập.mp4",
+"ten": "QT.01 - Quy trình kiểm nhập.mp4",
 "loai": "video/mp4",
 "kb": 30579
 }

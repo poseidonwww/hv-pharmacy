@@ -96,8 +96,8 @@ Thiết kế: font **Be Vietnam Pro** cho toàn trang (kể cả nhãn nhỏ), d
 
 ## Trang Quy trình dược `quy-trinh.html` (23/11/2026)
 - Thẻ quy trình (mã QT, nhóm GSP/NVD/DLS/Văn bản chung) + khung chi tiết 2 tab: **Video thuyết minh** (iframe Drive `/preview`) và **Văn bản quy trình** (PDF preview). Link `quy-trinh.html#qt=QT.01`, video lẻ `#v=<id>`. Đóng khung → xoá iframe (dừng video).
-- Video: thư mục Drive "Bộ quy trình đang lưu hành tại khoa / **Videos**" `1dV8Fk444ooO3jw6xPU61bcg3CT2OQCcp` (khoaduochv, chia sẻ link). API nhóm `video-qt` (đã thêm vào `tools/api-tai-lieu.gs`, cache `tai-lieu-v3`) – **CHƯA triển khai phiên bản mới** thì trang dùng bản dự phòng `data/video-quy-trinh.json` (18 video, 23/11/2026).
-- Gắn video → quy trình: tên video có "QT.xx" → đúng mã; không có thì khớp từ khoá `VIDEO_KHOP` (cụ thể trước, "bao quan" cuối). Không khớp → mục "Video tổng quan & đào tạo". Đoán chưa chắc (cần khoa xác nhận): "Kiểm tra y lệnh nội trú" → QT.09, "Bảo quản vắc xin" → QT.02. Chưa có video: QT.03, QT.08, QT.13, Quyết định ban hành.
+- Video: thư mục Drive "Bộ quy trình đang lưu hành tại khoa / **Videos**" `1dV8Fk444ooO3jw6xPU61bcg3CT2OQCcp` (khoaduochv, chia sẻ link). API nhóm `video-qt` (đã thêm vào `tools/api-tai-lieu.gs`, cache `tai-lieu-v3`) – **CHƯA triển khai phiên bản mới** (cần đăng nhập khoaduochv trong Apps Script → Triển khai → Quản lý → Sửa → Phiên bản mới); trong lúc đó trang dùng bản dự phòng `data/video-quy-trinh.json` (20 video, 23/11/2026) – thêm/đổi video thì phải cập nhật file này.
+- Gắn video → quy trình: tên video dạng "QT.xx - Tên.mp4" (khoa đã đổi tên 23/11/2026: 20 video, QT.01–QT.20; QT.19 = rà soát đơn ngoại trú chưa lấy – mã gán qua `DOC_TEN`). Không có mã thì khớp từ khoá `VIDEO_KHOP`; không khớp → mục "Video tổng quan & đào tạo". Tên hiển thị bỏ tiền tố mã; video có "(bản cũ)" xếp sau bản mới (QT.02, QT.08 có 2 video). Chỉ "Quyết định ban hành" chưa có video.
 - `TAI_LIEU_API` và `DOC_TEN` chuyển sang `assets/site.js` (dùng chung index + quy-trinh). Menu trang con thêm "Quy trình"; trang chủ: thẻ công cụ "Quy trình dược" + banner trong thẻ Quy trình.
 
 ## Tài liệu chuyên môn (mục 02 trang chủ, 21/11/2026)

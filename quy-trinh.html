@@ -185,7 +185,7 @@ function lamGon(f){
 }
 /* Tên video: bỏ đuôi, "_" → dấu cách, viết hoa kiểu câu (giữ chữ viết tắt & tên riêng) */
 function tenVideo(t){
-  let s=t.replace(/\.(mp4|mov|m4v|webm|avi|mkv)$/i,"").replace(/__+/g," – ").replace(/_/g," ").replace(/\s{2,}/g," ").trim();
+  let s=t.replace(/\.(mp4|mov|m4v|webm|avi|mkv)$/i,"").replace(/^\s*QT[ ._]?\d{1,2}(\.\w+)*\s*[-–:]\s*/i,"").replace(/__+/g," – ").replace(/_/g," ").replace(/\s{2,}/g," ").trim();
   const giu=/^(BV|ADR|QT\.?\d*|Hùng|Vương|Việt|Nam|GSP|NVD|DLS|DUOC)$/;
   const w=s.split(" ");
   if(w.filter(x=>/^[A-ZÀ-Ỹ][a-zà-ỹ]/.test(x)).length>=3) s=w.map((x,i)=>i===0||giu.test(x)||x===x.toUpperCase()?x:x.toLowerCase()).join(" ");
@@ -210,6 +210,7 @@ function setData(qtRaw,vidRaw){
     if(q&&/^(quy trình )?qt\.?\d+(\.\w+)*$/i.test(v.ten))v.ten="Video: "+q.ten.replace(/^Quy trình /,"");  /* tên video chỉ có mã → dùng tên quy trình */
     q?q.videos.push(v):VIDEO_LE.push(v);
   }
+  for(const q of QT)q.videos.sort((a,b)=>/bản cũ/i.test(a.ten)-/bản cũ/i.test(b.ten)||a.ten.localeCompare(b.ten,"vi"));  /* bản mới trước, "(bản cũ)" sau */
   const nv=QT.filter(x=>x.videos.length).length, tv=QT.reduce((a,x)=>a+x.videos.length,0)+VIDEO_LE.length;
   $("stats").innerHTML=`<span><b>${QT.length}</b> quy trình</span><span><b>${tv}</b> video thuyết minh</span><span><b>${nv}</b> quy trình có video</span>`;
   const gs=[["all","Tất cả",QT.length],["video","Có video",nv],...Object.values(NHOM).map(g=>[g,g.replace(/ \(GSP\)/,""),QT.filter(x=>x.nhom===g).length]).filter(x=>x[2])];

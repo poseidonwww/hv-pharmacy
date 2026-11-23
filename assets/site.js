@@ -33,7 +33,7 @@ const DOC_TEN = {
   "1hRXXZVLqBYhbKshS0GcjaQLR31TtmAFM":["Khuyến cáo của Hội Tim mạch học Việt Nam",""],
   "1Pt15DkkjVmZHsNGg7-Blfwn6I33W3So9":["Hướng dẫn chẩn đoán và điều trị rối loạn chuyển hoá lipid",""],
   "1efippis37b3lDk0QKqXlPr10_QZYkixK":["Bản tin thông tin thuốc số 2",""],
-  "1vP5ZL5FjGbax2Hvr1uOJi372Jbl8pdlW":["Quy trình rà soát đơn thuốc ngoại trú chưa lấy",""],
+  "1vP5ZL5FjGbax2Hvr1uOJi372Jbl8pdlW":["Quy trình rà soát đơn thuốc ngoại trú chưa lấy","QT.19"],
   "19uZwEzTNXfBbgQ-GffHU_s_3bwkn1NNz":["Quy trình quản lý hàng hoá ký gửi tại bệnh viện","QT.20.DUOC.GSP"],
   "13bsVkXn_cf5GtJ6pHd1M7ayIaEwKfavI":["Quyết định ban hành quy trình",""],
   "1jAnm07RAwSwoPK4-u4JLm_iFBv1i_xcT":["Quy trình thực hiện 3 kiểm tra, 5 đối chiếu","QT.14.DUOC.NVD"],
