@@ -30,7 +30,8 @@
     </a>
     <ul>
       <li><a href="#tra-cuu">Tra cứu</a></li>
-      <li><a href="#tai-lieu">Tài liệu</a></li>
+      <li><a href="#tai-lieu">Tài liệu dược</a></li>
+      <li><a href="#y-khoa">Tài liệu y khoa</a></li>
       <li><a href="#video">Hướng dẫn</a></li>
       <li><a href="#lien-he">Liên hệ</a></li>
     </ul>
@@ -88,25 +89,41 @@
   <section id="tai-lieu">
     <div class="wrap">
       <div class="sec-head">
-        <span class="label">02 · Tài liệu</span>
-        <h2>Tài liệu chuyên môn</h2>
-        <p>Quy trình dược đang lưu hành tại khoa, hướng dẫn điều trị của Bộ Y tế và hiệp hội chuyên khoa, bản tin thông tin thuốc.</p>
+        <span class="label">02 · Tài liệu dược</span>
+        <h2>Tài liệu dược</h2>
+        <p>Quy trình dược đang lưu hành, bản tin thông tin thuốc, danh mục LASA &amp; cảnh báo, báo cáo đề kháng kháng sinh… do Khoa Dược ban hành.</p>
       </div>
-      <div class="tabs" role="tablist" aria-label="Loại tài liệu" id="doc-tabs"></div>
+      <div class="tabs" role="tablist" aria-label="Loại tài liệu dược" id="doc-tabs"></div>
       <div class="doc-tools">
-        <label class="doc-q"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="doc-q" type="search" placeholder="Tên bệnh, số hiệu, viết tắt… (vd: suy tim, THA, 1857)" autocomplete="off"></label>
+        <label class="doc-q"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="doc-q" type="search" placeholder="Tìm tài liệu dược… (vd: kiểm nhập, LASA, bản tin)" autocomplete="off"></label>
         <a id="doc-folder" class="doc-folder" target="_blank" rel="noopener" hidden>Mở thư mục trên Google Drive ↗</a>
       </div>
-      <div class="doc-src" id="doc-src" role="group" aria-label="Lọc theo nguồn" hidden></div>
-      <div id="doc-list" role="tabpanel" aria-live="polite"></div>
+      <div id="doc-list" class="doc-list" role="tabpanel" aria-live="polite"></div>
       <div class="empty" id="docs-empty">Không có tài liệu khớp từ khoá.</div>
+    </div>
+  </section>
+
+  <section id="y-khoa">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="label">03 · Tài liệu y khoa</span>
+        <h2>Tài liệu y khoa</h2>
+        <p>Hướng dẫn chẩn đoán và điều trị của Bộ Y tế, khuyến cáo của các hiệp hội chuyên khoa – xếp theo chuyên khoa, văn bản mới nhất lên đầu.</p>
+      </div>
+      <div class="doc-tools">
+        <label class="doc-q"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="yk-q" type="search" placeholder="Tên bệnh, số hiệu, viết tắt… (vd: suy tim, THA, 1857)" autocomplete="off"></label>
+        <a id="yk-folder" class="doc-folder" target="_blank" rel="noopener" hidden>Mở thư mục trên Google Drive ↗</a>
+      </div>
+      <div class="doc-src" id="yk-src" role="group" aria-label="Lọc theo nguồn" hidden></div>
+      <div id="yk-list" class="doc-list" aria-live="polite"></div>
+      <div class="empty" id="yk-empty">Không có tài liệu khớp từ khoá.</div>
     </div>
   </section>
 
   <section id="video">
     <div class="wrap">
       <div class="sec-head">
-        <span class="label">03 · Hướng dẫn</span>
+        <span class="label">04 · Hướng dẫn</span>
         <h2>Hướng dẫn dùng thuốc</h2>
         <p>Video hướng dẫn kỹ thuật dùng insulin và các dạng thuốc hít.</p>
       </div>
@@ -127,7 +144,7 @@
       </figure>
       <div class="about">
         <div class="sec-head">
-          <span class="label">04 · Giới thiệu</span>
+          <span class="label">05 · Giới thiệu</span>
           <h2>Về Khoa Dược</h2>
         </div>
         <p>Khoa Dược – Bệnh viện Đa khoa Hùng Vương cung cấp thông tin thuốc, giám sát sử dụng thuốc an toàn – hợp lý và hỗ trợ chuyên môn cho các khoa lâm sàng.</p>
@@ -168,6 +185,7 @@
       <ul>
         <li><a href="#tra-cuu">Công cụ tra cứu</a></li>
         <li><a href="#tai-lieu">Tài liệu dược</a></li>
+        <li><a href="#y-khoa">Tài liệu y khoa</a></li>
         <li><a href="#video">Video hướng dẫn</a></li>
       </ul>
     </div>
@@ -201,11 +219,21 @@ const TOOLS = [
 /* Tài liệu không nằm trên Drive (link ngoài) – hiện ở thẻ Bản tin. Để trống nếu không có. */
 const DOCS = [];
 /* TAI_LIEU_API, DOC_TEN (tên hiển thị file Drive) nằm trong assets/site.js – dùng chung với trang quy-trinh.html */
-const DOC_TABS = [
-  {key:"quy-trinh", ten:"Quy trình dược", thuMuc:"https://drive.google.com/drive/folders/1RI_Y60N3w6CzqMHgUBG38_mYIgDGdWUX"},
-  {key:"guideline", ten:"Guideline điều trị", thuMuc:"https://drive.google.com/drive/folders/1zrxNfSoJDxo_HCVU3XYnAjUGEQ9cicet"},
-  {key:"ban-tin", ten:"Bản tin thông tin thuốc", thuMuc:"https://drive.google.com/drive/folders/1Fb6xNTXmUHgCfI6PXK6dWdBboqF_zxwf"},
+/* Thư mục Drive của từng nguồn tài liệu – khoa thả file vào là web tự cập nhật (~10 phút) */
+const THU_MUC_TL = {
+  "quy-trinh":"https://drive.google.com/drive/folders/1RI_Y60N3w6CzqMHgUBG38_mYIgDGdWUX",   // Bộ quy trình đang lưu hành tại khoa
+  "ban-tin":"https://drive.google.com/drive/folders/1Fb6xNTXmUHgCfI6PXK6dWdBboqF_zxwf",     // Thông tin Dược
+  "guideline":"https://drive.google.com/drive/folders/1zrxNfSoJDxo_HCVU3XYnAjUGEQ9cicet",   // Tài liệu y khoa
+};
+/* Mục 02 – Tài liệu dược: thẻ "Quy trình dược" + các thẻ đọc từ thư mục "Thông tin Dược".
+   THÊM LOẠI TÀI LIỆU MỚI: tạo THƯ MỤC CON trong "Thông tin Dược" (vd "Báo cáo sử dụng thuốc") → web tự thêm thẻ cùng tên.
+   File để ở gốc thư mục được xếp vào thẻ theo từ khoá trong tên (tu, không dấu). Các thẻ dưới đây hiện cả khi chưa có file. */
+const DUOC_MUC = [
+  {ten:"Bản tin thông tin thuốc", tu:/ban tin/},
+  {ten:"Danh mục LASA & cảnh báo", tu:/lasa|canh bao|nhin giong|doc giong/},
+  {ten:"Báo cáo đề kháng kháng sinh", tu:/de khang|khang sinh do|vi sinh|amr/},
 ];
+const DUOC_KHAC = "Tài liệu dược khác";
 const VIDEOS = [
   {name:"Insulin", note:"Bảo quản & tiêm", url:"https://drive.google.com/file/d/111R34ixFN2o9twGQJBwj5TNffeySJm03/view"},
   {name:"Bút tiêm insulin", note:"Thao tác từng bước", url:"https://drive.google.com/file/d/1h_NZ-qTBF2FPaFSiuTEOFd7xfVcfDAvc/view"},
@@ -292,14 +320,14 @@ function cleanDoc(f,key){
   if(key==='guideline'&&!ck)ck=doanCK(s)||'Khác';
   const ngayISO=ngay?ngay.split('/').reverse().join('-'):nam?nam+'-01-01':'';
   return {...f,code,tenHT:s,ngayBH:ngay,nam,ngayISO,nguon,hang,stt,so:stt||(/^QT/.test(code)?parseInt(code.slice(3)):999),
-    nhom:key==='guideline'?ck:key==='quy-trinh'?(NHOM_QT[suf]||"Văn bản chung"):key==='ban-tin'?nhomBanTin(s):(f.nhomCon||"Tài liệu"),
+    nhom:key==='guideline'?ck:key==='quy-trinh'?(NHOM_QT[suf]||"Văn bản chung"):key==='ban-tin'?mucDuoc(f,s):(f.nhomCon||"Tài liệu"),
     soBT:+((s.match(/số\s*(\d+)/i)||[])[1]||0),
     url:'https://drive.google.com/file/d/'+f.id+'/view'};
 }
 /* Thứ tự nhóm quy trình: văn bản chung → GSP → NVD → DLS; nhóm khác theo ABC, "Khác" cuối */
-const nhomRank=g=>{const i=["Văn bản chung",NHOM_QT.GSP,NHOM_QT.NVD,NHOM_QT.DLS,"Bản tin thông tin thuốc","Danh mục cảnh báo","Tài liệu thông tin thuốc"].indexOf(g);return i<0?(g==='Khác'?99:9):i};
-/* Thẻ Bản tin: phân nhóm theo tên file */
-const nhomBanTin=t=>/bản tin/i.test(t)?"Bản tin thông tin thuốc":/danh mục|lasa/i.test(t)?"Danh mục cảnh báo":"Tài liệu thông tin thuốc";
+const nhomRank=g=>{const i=["Văn bản chung",NHOM_QT.GSP,NHOM_QT.NVD,NHOM_QT.DLS,...DUOC_MUC.map(x=>x.ten)].indexOf(g);return i<0?(g==='Khác'?99:9):i};
+/* Tài liệu dược: thư mục con cấp 1 trong "Thông tin Dược" = 1 thẻ; file ở gốc → theo từ khoá tên (DUOC_MUC) */
+const mucDuoc=(f,s)=>{const top=(f.nhomCon||'').split(' / ')[0], t=norm(top||s), m=DUOC_MUC.find(x=>x.tu.test(t));return m?m.ten:(top||DUOC_KHAC)};
 const fmtDate=s=>{const d=new Date(s);return isNaN(d)?'':d.toLocaleDateString('vi-VN')};
 const fmtSize=kb=>kb>=1024?(kb/1024).toFixed(1).replace('.',',')+' MB':kb+' KB';
 const LOAI_DOC=/pdf|wordprocessing|msword|google-apps\.(document|presentation)|presentation/;
@@ -330,57 +358,83 @@ function docItems(key){
   _docCache[key]={raw,n:BYT_DS.length,v};
   return v;
 }
-function renderDocs(q){
-  const k=norm(((q||'')+' '+$('doc-q').value).trim()), ws=k.split(/\s+/).filter(Boolean);
-  /* viết tắt (THA, COPD…) chỉ khớp nguyên từ hoặc cụm đầy đủ – tránh "tha" khớp nhầm "tháo" */
+/* Bộ lọc tìm kiếm dùng chung: viết tắt (THA, COPD…) chỉ khớp nguyên từ hoặc cụm đầy đủ – tránh "tha" khớp nhầm "tháo" */
+function boLoc(q,inputId){
+  const ws=norm(((q||'')+' '+$(inputId).value).trim()).split(/\s+/).filter(Boolean);
   const wre=ws.map(w=>DONG_NGHIA[w]||w.length<=2?new RegExp('(^|[^a-z0-9])'+w.replace(/[^a-z0-9]/g,'\\$&')+'($|[^a-z0-9])'):null);
   const match=x=>{const t=norm(x.tenHT+' '+x.code+' '+x.meta+' '+x.nhom);return ws.every((w,i)=>wre[i]?(wre[i].test(t)||!!DONG_NGHIA[w]&&t.includes(DONG_NGHIA[w])):t.includes(w))};
-  const hits={};DOC_TABS.forEach(t=>hits[t.key]=docItems(t.key).filter(match));
-  $('doc-tabs').innerHTML=DOC_TABS.map(t=>`<button role="tab" class="tab" data-k="${t.key}" aria-selected="${t.key===docTab}" tabindex="${t.key===docTab?0:-1}">${t.ten}<span>${hits[t.key].length}</span></button>`).join('');
-  const tab=DOC_TABS.find(t=>t.key===docTab)||DOC_TABS[0];
+  return {ws,match};
+}
+const PLAY=svg('<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',18);
+function dongTL(x,{isG,banTinMoi}){const tag=x.url?'a':'div', lon=x.kb>20480;
+  return `<li${x.altUrl?' class="has-alt"':''}>${x.altUrl?`<a class="alt"${ext(x.altUrl)} aria-label="Bản Word: ${x.tenHT}">Word</a>`:''}<${tag}${ext(x.url)}><span class="ico">${svg(ICONS.doc,20)}</span><span><b>${x.tenHT}${x===banTinMoi?' <em class="new-t">Mới nhất</em>':''}${isG&&moiBanHanh(x)?' <em class="new-t">Mới</em>':''}</b><small>${x.meta}${x.kb?` · <span${lon?' class="big-t" title="File lớn – mở trên điện thoại có thể chậm"':''}>${fmtSize(x.kb)}${lon?' · file lớn':''}</span>`:''}${x.congKhai===false?' · <em class="warn-t">chưa chia sẻ công khai</em>':''}</small></span>${x.url?'<span class="arr">↗</span>':'<span class="state">Đang cập nhật</span>'}</${tag}></li>`}
+const choCapNhat=thuMuc=>`<div class="doc-wait">${svg(ICONS.doc,22)}<div><b>Khoa Dược đang cập nhật tài liệu cho mục này.</b>${thuMuc?(DOC_BAN_TAM?`<br>Xem trực tiếp trong <a href="${thuMuc}" target="_blank" rel="noopener">thư mục Google Drive</a>.`:`<br>Tài liệu thêm vào <a href="${thuMuc}" target="_blank" rel="noopener">thư mục Google Drive</a> sẽ tự hiện ở đây.`):''}</div></div>`;
+
+/* ===== Mục 02 – Tài liệu dược (thẻ) ===== */
+function duocTabs(){
+  const bt=docItems('ban-tin');
+  const moi=[...new Set(bt.map(x=>x.nhom))].filter(c=>!DUOC_MUC.some(m=>m.ten===c)&&c!==DUOC_KHAC).sort((a,b)=>a.localeCompare(b,'vi'));
+  const cats=[...DUOC_MUC.map(m=>m.ten),...moi,...(bt.some(x=>x.nhom===DUOC_KHAC)?[DUOC_KHAC]:[])];
+  return [{key:'quy-trinh',ten:'Quy trình dược',items:docItems('quy-trinh'),thuMuc:THU_MUC_TL['quy-trinh']},
+    ...cats.map(c=>({key:'d:'+c,ten:c,items:bt.filter(x=>x.nhom===c),thuMuc:THU_MUC_TL['ban-tin']}))];
+}
+function renderDuoc(q){
+  const {ws,match}=boLoc(q,'doc-q'), tabs=duocTabs();
+  const hits={};tabs.forEach(t=>hits[t.key]=t.items.filter(match));
+  const tab=tabs.find(t=>t.key===docTab)||tabs[0];
+  $('doc-tabs').innerHTML=tabs.map(t=>`<button role="tab" class="tab" data-k="${t.key}" aria-selected="${t===tab}" tabindex="${t===tab?0:-1}">${t.ten}<span>${hits[t.key].length}</span></button>`).join('');
+  { const sel=$('doc-tabs').querySelector('[aria-selected=true]'); if(sel) $('doc-tabs').scrollLeft=sel.offsetLeft-16; }  /* điện thoại: thẻ đang chọn luôn trong tầm nhìn */
   $('doc-folder').hidden=!tab.thuMuc; if(tab.thuMuc)$('doc-folder').href=tab.thuMuc;
-  const items=docItems(tab.key), isG=tab.key==='guideline';
-  /* Thẻ Guideline: nút lọc nguồn + mở/thu gọn tất cả */
-  const srcBox=$('doc-src');
-  if(isG&&items.length){
-    const n=s=>hits.guideline.filter(x=>s==='all'||x.nguon===s).length;
-    srcBox.hidden=false;
-    srcBox.innerHTML=[['all','Tất cả'],['byt','Bộ Y tế'],['hh','Hiệp hội']].map(([s,t])=>`<button type="button" class="chip" data-src="${s}" aria-pressed="${docSrc===s}">${t}<span>${n(s)}</span></button>`).join('')
-      +`<button type="button" class="chip chip-ghost" id="doc-toggle-all"></button>`;
-  }else srcBox.hidden=true;
-  const shown=hits[tab.key].filter(x=>!isG||docSrc==='all'||x.nguon===docSrc);
-  if(!items.length){
-    $('doc-list').innerHTML=`<div class="doc-wait">${svg(ICONS.doc,22)}<div><b>Khoa Dược đang cập nhật tài liệu cho mục này.</b>${tab.thuMuc?(DOC_BAN_TAM?`<br>Xem trực tiếp trong <a href="${tab.thuMuc}" target="_blank" rel="noopener">thư mục Google Drive</a>.`:`<br>Tài liệu thêm vào <a href="${tab.thuMuc}" target="_blank" rel="noopener">thư mục Google Drive</a> sẽ tự hiện ở đây.`):''}</div></div>`;
-    $('docs-empty').style.display='none'; return;
-  }
-  const groups=[...new Set(shown.map(x=>x.nhom))];
-  const banner=tab.key==='quy-trinh'?`<a class="doc-banner" href="quy-trinh.html"><span class="ico">${svg('<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',18)}</span><span><b>Xem trang Quy trình dược</b><small>Đọc quy trình và xem video thuyết minh ngay trên một trang</small></span><span class="arr">→</span></a>`:'';
-  /* Nhóm thu gọn khi danh sách dài (Guideline, không tìm kiếm) → nhìn như mục lục chuyên khoa; tìm kiếm/ít mục thì mở hết */
-  const autoOpen=!isG||ws.length>0||shown.length<=25||groups.length<=2;
-  const banTinMoi=shown.find(y=>y.nhom==="Bản tin thông tin thuốc");
-  const row=x=>{const tag=x.url?'a':'div', lon=x.kb>20480;
-    return `<li${x.altUrl?' class="has-alt"':''}>${x.altUrl?`<a class="alt"${ext(x.altUrl)} aria-label="Bản Word: ${x.tenHT}">Word</a>`:''}<${tag}${ext(x.url)}><span class="ico">${svg(ICONS.doc,20)}</span><span><b>${x.tenHT}${x===banTinMoi?' <em class="new-t">Mới nhất</em>':''}${isG&&moiBanHanh(x)?' <em class="new-t">Mới</em>':''}</b><small>${x.meta}${x.kb?` · <span${lon?' class="big-t" title="File lớn – mở trên điện thoại có thể chậm"':''}>${fmtSize(x.kb)}${lon?' · file lớn':''}</span>`:''}${x.congKhai===false?' · <em class="warn-t">chưa chia sẻ công khai</em>':''}</small></span>${x.url?'<span class="arr">↗</span>':'<span class="state">Đang cập nhật</span>'}</${tag}></li>`};
-  $('doc-list').innerHTML=banner+(isG?'<div class="dgrid">':'')+groups.map(g=>{const its=shown.filter(x=>x.nhom===g), open=autoOpen||docOpen.has(g);
-    return g?`<details class="dgrp" data-g="${g}"${open?' open':''}><summary class="dgroup"><span>${g}</span><span class="cnt">${its.length}</span></summary><div class="panel"><ul class="list">${its.map(row).join('')}</ul></div></details>`
-            :`<div class="panel"><ul class="list">${its.map(row).join('')}</ul></div>`}).join('')+(isG?'</div>':'')
+  if(!tab.items.length){$('doc-list').innerHTML=choCapNhat(tab.thuMuc);$('docs-empty').style.display='none';return}
+  const shown=hits[tab.key], isQT=tab.key==='quy-trinh';
+  const banner=isQT?`<a class="doc-banner" href="quy-trinh.html"><span class="ico">${PLAY}</span><span><b>Xem trang Quy trình dược</b><small>Đọc quy trình và xem video thuyết minh ngay trên một trang</small></span><span class="arr">→</span></a>`:'';
+  const o={isG:false,banTinMoi:shown.find(y=>y.nhom==="Bản tin thông tin thuốc")};
+  /* Quy trình: chia nhóm GSP/NVD/DLS; thẻ khác: 1 danh sách (mới nhất lên đầu) */
+  const groups=isQT?[...new Set(shown.map(x=>x.nhom))]:[''];
+  $('doc-list').innerHTML=banner+groups.map(g=>{const its=isQT?shown.filter(x=>x.nhom===g):shown;if(!its.length)return '';
+    return g?`<details class="dgrp" data-g="${g}"${ws.length||docOpen.has(g)?' open':''}><summary class="dgroup"><span>${g}</span><span class="cnt">${its.length}</span></summary><div class="panel"><ul class="list">${its.map(x=>dongTL(x,o)).join('')}</ul></div></details>`
+            :`<div class="panel"><ul class="list">${its.map(x=>dongTL(x,o)).join('')}</ul></div>`}).join('')
     +(DOC_BAN_TAM&&tab.thuMuc?'<p class="doc-note">Danh sách lưu lần gần nhất – mở thư mục Google Drive để xem tài liệu mới nhất.</p>':'');
-  const tg=$('doc-toggle-all'); if(tg){const all=[...$('doc-list').querySelectorAll('details.dgrp')];tg.textContent=all.length&&all.every(d=>d.open)?'Thu gọn tất cả':'Mở tất cả';tg.hidden=autoOpen;}
   /* Không có kết quả ở thẻ này nhưng có ở thẻ khác → gợi ý chuyển thẻ */
-  const other=DOC_TABS.find(t=>t.key!==tab.key&&hits[t.key].length);
+  const other=tabs.find(t=>t!==tab&&hits[t.key].length);
   $('docs-empty').innerHTML=shown.length?'':(ws.length&&other?`Không có trong mục này. <button type="button" class="link-btn" data-go="${other.key}">Xem ${hits[other.key].length} kết quả ở “${other.ten}” →</button>`:'Không có tài liệu khớp từ khoá.');
   $('docs-empty').style.display=shown.length?'none':'block';
 }
-$('doc-tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;docTab=b.dataset.k;try{localStorage.setItem('hv-doc-tab',docTab)}catch(x){};renderDocs(qi.value)});
-$('doc-tabs').addEventListener('keydown',e=>{if(!/Arrow(Left|Right)/.test(e.key))return;const i=DOC_TABS.findIndex(t=>t.key===docTab),n=(i+(e.key==='ArrowRight'?1:-1)+DOC_TABS.length)%DOC_TABS.length;docTab=DOC_TABS[n].key;renderDocs(qi.value);$('doc-tabs').children[n].focus()});
-$('doc-q').addEventListener('input',()=>renderDocs(qi.value));
-$('doc-src').addEventListener('click',e=>{
+$('doc-tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;docTab=b.dataset.k;try{localStorage.setItem('hv-doc-tab',docTab)}catch(x){};renderDuoc(qi.value)});
+$('doc-tabs').addEventListener('keydown',e=>{if(!/Arrow(Left|Right)/.test(e.key))return;const ts=[...$('doc-tabs').children],i=ts.findIndex(b=>b.getAttribute('aria-selected')==='true'),n=(i+(e.key==='ArrowRight'?1:-1)+ts.length)%ts.length;docTab=ts[n].dataset.k;renderDuoc(qi.value);$('doc-tabs').children[n].focus()});
+$('doc-q').addEventListener('input',()=>renderDuoc(qi.value));
+$('doc-list').addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.matches('details.dgrp'))d.open?docOpen.add(d.dataset.g):docOpen.delete(d.dataset.g)},true);
+$('docs-empty').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;docTab=b.dataset.go;renderDuoc(qi.value)});
+
+/* ===== Mục 03 – Tài liệu y khoa (guideline theo chuyên khoa) ===== */
+function renderYK(q){
+  const {ws,match}=boLoc(q,'yk-q'), items=docItems('guideline'), hit=items.filter(match);
+  $('yk-folder').hidden=false; $('yk-folder').href=THU_MUC_TL.guideline;
+  const srcBox=$('yk-src');
+  if(!items.length){srcBox.hidden=true;$('yk-list').innerHTML=choCapNhat(THU_MUC_TL.guideline);$('yk-empty').style.display='none';return}
+  const n=s=>hit.filter(x=>s==='all'||x.nguon===s).length;
+  srcBox.hidden=false;
+  srcBox.innerHTML=[['all','Tất cả'],['byt','Bộ Y tế'],['hh','Hiệp hội']].map(([s,t])=>`<button type="button" class="chip" data-src="${s}" aria-pressed="${docSrc===s}">${t}<span>${n(s)}</span></button>`).join('')
+    +`<button type="button" class="chip chip-ghost" id="yk-toggle-all"></button>`;
+  const shown=hit.filter(x=>docSrc==='all'||x.nguon===docSrc), groups=[...new Set(shown.map(x=>x.nhom))];
+  /* Nhóm thu gọn khi không tìm kiếm → nhìn như mục lục chuyên khoa; tìm kiếm/ít mục thì mở hết */
+  const autoOpen=ws.length>0||shown.length<=25||groups.length<=2, o={isG:true};
+  $('yk-list').innerHTML='<div class="dgrid">'+groups.map(g=>{const its=shown.filter(x=>x.nhom===g), open=autoOpen||docOpen.has(g);
+    return `<details class="dgrp" data-g="${g}"${open?' open':''}><summary class="dgroup"><span>${g}</span><span class="cnt">${its.length}</span></summary><div class="panel"><ul class="list">${its.map(x=>dongTL(x,o)).join('')}</ul></div></details>`}).join('')+'</div>'
+    +(DOC_BAN_TAM?'<p class="doc-note">Danh sách lưu lần gần nhất – mở thư mục Google Drive để xem tài liệu mới nhất.</p>':'');
+  const tg=$('yk-toggle-all'), all=[...$('yk-list').querySelectorAll('details.dgrp')];
+  tg.textContent=all.length&&all.every(d=>d.open)?'Thu gọn tất cả':'Mở tất cả'; tg.hidden=autoOpen;
+  $('yk-empty').style.display=shown.length?'none':'block';
+}
+$('yk-q').addEventListener('input',()=>renderYK(qi.value));
+$('yk-src').addEventListener('click',e=>{
   const c=e.target.closest('[data-src]');
-  if(c){docSrc=c.dataset.src;renderDocs(qi.value);return}
-  if(e.target.id==='doc-toggle-all'){const all=[...$('doc-list').querySelectorAll('details.dgrp')],mo=!all.every(d=>d.open);all.forEach(d=>{d.open=mo;mo?docOpen.add(d.dataset.g):docOpen.delete(d.dataset.g)});e.target.textContent=mo?'Thu gọn tất cả':'Mở tất cả';}
+  if(c){docSrc=c.dataset.src;renderYK(qi.value);return}
+  if(e.target.id==='yk-toggle-all'){const all=[...$('yk-list').querySelectorAll('details.dgrp')],mo=!all.every(d=>d.open);all.forEach(d=>{d.open=mo;mo?docOpen.add(d.dataset.g):docOpen.delete(d.dataset.g)});e.target.textContent=mo?'Thu gọn tất cả':'Mở tất cả';}
 });
-$('doc-list').addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details.dgrp'))return;d.open?docOpen.add(d.dataset.g):docOpen.delete(d.dataset.g);
-  const tg=$('doc-toggle-all');if(tg){const all=[...$('doc-list').querySelectorAll('details.dgrp')];tg.textContent=all.every(x=>x.open)?'Thu gọn tất cả':'Mở tất cả';}},true);
-$('docs-empty').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;docTab=b.dataset.go;docSrc='all';renderDocs(qi.value)});
+$('yk-list').addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details.dgrp'))return;d.open?docOpen.add(d.dataset.g):docOpen.delete(d.dataset.g);
+  const tg=$('yk-toggle-all');if(tg){const all=[...$('yk-list').querySelectorAll('details.dgrp')];tg.textContent=all.every(x=>x.open)?'Thu gọn tất cả':'Mở tất cả';}},true);
+function renderDocs(q){renderDuoc(q);renderYK(q)}
 async function loadDocs(){
   /* danh mục 132 hướng dẫn BYT (số hiệu, ngày ban hành, chuyên khoa) – tĩnh, nhỏ; có thì vẽ lại */
   fetch('data/huong-dan-byt.json').then(r=>r.json()).then(d=>{BYT=d.stt||{};
@@ -395,7 +449,7 @@ async function loadDocs(){
   if(!cached)renderDocs(qi.value);
 }
 /* Số tài liệu ở khung "Truy cập nhanh" = số dòng thực hiện (đã gộp bản trùng) */
-const capNhatSoDocs=()=>{$('n-docs').textContent=DOC_TABS.reduce((a,t)=>a+docItems(t.key).length,0)};
+const capNhatSoDocs=()=>{$('n-docs').textContent=['quy-trinh','ban-tin','guideline'].reduce((a,k)=>a+docItems(k).length,0)};
 
 function render(q=''){
   const k=norm(q.trim());
