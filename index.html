@@ -195,32 +195,17 @@ const TOOLS = [
   {name:"Tương tác thuốc – thuốc", desc:"Nhập cả đơn thuốc, đối chiếu tuổi, eGFR, mã bệnh: 767 cặp tương tác chống chỉ định.", url:"tuong-tac.html", icon:"swap", quick:true},
   /* Tạm ẩn (20/11/2026) – chờ khoa có dữ liệu tương hợp theo cặp thuốc:
   {name:"Tương hợp – tương kỵ", desc:"Khả năng phối hợp các thuốc tiêm trong cùng dây truyền, bơm tiêm.", url:"", icon:"flask"}, */
+  {name:"Quy trình dược", desc:"Bộ quy trình đang lưu hành tại khoa, kèm video thuyết minh từng quy trình.", url:"quy-trinh.html", icon:"book", tag:"Mới"},
   {name:"Mã ICD-10", desc:"15.844 mã theo Thông tư 06/2026/TT-BYT. Tìm theo mã, tên Việt không dấu hoặc tiếng Anh.", url:"icd10.html", icon:"code", quick:true},
 ];
 /* Tài liệu không nằm trên Drive (link ngoài) – hiện ở thẻ Bản tin. Để trống nếu không có. */
 const DOCS = [];
-/* Tài liệu từ Google Drive (thư mục của khoaduochv). Khoa chỉ cần thả file PDF vào đúng thư mục.
-   TAI_LIEU_API: link /exec của Apps Script "API tai lieu HV-Pharmacy" (tools/api-tai-lieu.gs).
-   Để trống → dùng bản danh sách tạm data/tai-lieu.json. */
-const TAI_LIEU_API = "https://script.google.com/macros/s/AKfycbyiRh9dVk1i3QqookVn3azZu3AzQQqnv0cbdW17FOyVFGhzw_8L4lopzEsI79r5A00uug/exec";
+/* TAI_LIEU_API, DOC_TEN (tên hiển thị file Drive) nằm trong assets/site.js – dùng chung với trang quy-trinh.html */
 const DOC_TABS = [
   {key:"quy-trinh", ten:"Quy trình dược", thuMuc:"https://drive.google.com/drive/folders/1RI_Y60N3w6CzqMHgUBG38_mYIgDGdWUX"},
   {key:"guideline", ten:"Guideline điều trị", thuMuc:"https://drive.google.com/drive/folders/1zrxNfSoJDxo_HCVU3XYnAjUGEQ9cicet"},
   {key:"ban-tin", ten:"Bản tin thông tin thuốc", thuMuc:"https://drive.google.com/drive/folders/1Fb6xNTXmUHgCfI6PXK6dWdBboqF_zxwf"},
 ];
-/* Tên hiển thị cho file đặt tên không dấu / lộn xộn trên Drive: {id file: ["Tên", "Mã quy trình"]}.
-   Tốt nhất đổi tên file trên Drive theo mẫu "QT.01.DUOC.GSP Quy trình kiểm nhập.pdf" rồi xoá dòng tương ứng ở đây. */
-const DOC_TEN = {
-  "1hRXXZVLqBYhbKshS0GcjaQLR31TtmAFM":["Khuyến cáo của Hội Tim mạch học Việt Nam",""],
-  "1Pt15DkkjVmZHsNGg7-Blfwn6I33W3So9":["Hướng dẫn chẩn đoán và điều trị rối loạn chuyển hoá lipid",""],
-  "1efippis37b3lDk0QKqXlPr10_QZYkixK":["Bản tin thông tin thuốc số 2",""],
-  "1vP5ZL5FjGbax2Hvr1uOJi372Jbl8pdlW":["Quy trình rà soát đơn thuốc ngoại trú chưa lấy",""],
-  "19uZwEzTNXfBbgQ-GffHU_s_3bwkn1NNz":["Quy trình quản lý hàng hoá ký gửi tại bệnh viện","QT.20.DUOC.GSP"],
-  "13bsVkXn_cf5GtJ6pHd1M7ayIaEwKfavI":["Quyết định ban hành quy trình",""],
-  "1jAnm07RAwSwoPK4-u4JLm_iFBv1i_xcT":["Quy trình thực hiện 3 kiểm tra, 5 đối chiếu","QT.14.DUOC.NVD"],
-  "1Ij2sHaz5jqLSLvORE4hQamJ-gFICXpq2":["Quy trình giám sát phản ứng có hại của thuốc (ADR)","QT.15.DUOC.DLS"],
-  "1IjZVbkw6HAz1cARfG5BF7R-_dwhWspY9":["Quy trình quản lý thuốc có nguy cơ cao","QT.16.DUOC.DLS"],
-};
 const VIDEOS = [
   {name:"Insulin", note:"Bảo quản & tiêm", url:"https://drive.google.com/file/d/111R34ixFN2o9twGQJBwj5TNffeySJm03/view"},
   {name:"Bút tiêm insulin", note:"Thao tác từng bước", url:"https://drive.google.com/file/d/1h_NZ-qTBF2FPaFSiuTEOFd7xfVcfDAvc/view"},
@@ -369,12 +354,13 @@ function renderDocs(q){
     $('docs-empty').style.display='none'; return;
   }
   const groups=[...new Set(shown.map(x=>x.nhom))];
+  const banner=tab.key==='quy-trinh'?`<a class="doc-banner" href="quy-trinh.html"><span class="ico">${svg('<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',18)}</span><span><b>Xem trang Quy trình dược</b><small>Đọc quy trình và xem video thuyết minh ngay trên một trang</small></span><span class="arr">→</span></a>`:'';
   /* Nhóm thu gọn khi danh sách dài (Guideline, không tìm kiếm) → nhìn như mục lục chuyên khoa; tìm kiếm/ít mục thì mở hết */
   const autoOpen=!isG||ws.length>0||shown.length<=25||groups.length<=2;
   const banTinMoi=shown.find(y=>y.nhom==="Bản tin thông tin thuốc");
   const row=x=>{const tag=x.url?'a':'div', lon=x.kb>20480;
     return `<li${x.altUrl?' class="has-alt"':''}>${x.altUrl?`<a class="alt"${ext(x.altUrl)} aria-label="Bản Word: ${x.tenHT}">Word</a>`:''}<${tag}${ext(x.url)}><span class="ico">${svg(ICONS.doc,20)}</span><span><b>${x.tenHT}${x===banTinMoi?' <em class="new-t">Mới nhất</em>':''}${isG&&moiBanHanh(x)?' <em class="new-t">Mới</em>':''}</b><small>${x.meta}${x.kb?` · <span${lon?' class="big-t" title="File lớn – mở trên điện thoại có thể chậm"':''}>${fmtSize(x.kb)}${lon?' · file lớn':''}</span>`:''}${x.congKhai===false?' · <em class="warn-t">chưa chia sẻ công khai</em>':''}</small></span>${x.url?'<span class="arr">↗</span>':'<span class="state">Đang cập nhật</span>'}</${tag}></li>`};
-  $('doc-list').innerHTML=(isG?'<div class="dgrid">':'')+groups.map(g=>{const its=shown.filter(x=>x.nhom===g), open=autoOpen||docOpen.has(g);
+  $('doc-list').innerHTML=banner+(isG?'<div class="dgrid">':'')+groups.map(g=>{const its=shown.filter(x=>x.nhom===g), open=autoOpen||docOpen.has(g);
     return g?`<details class="dgrp" data-g="${g}"${open?' open':''}><summary class="dgroup"><span>${g}</span><span class="cnt">${its.length}</span></summary><div class="panel"><ul class="list">${its.map(row).join('')}</ul></div></details>`
             :`<div class="panel"><ul class="list">${its.map(row).join('')}</ul></div>`}).join('')+(isG?'</div>':'')
     +(DOC_BAN_TAM&&tab.thuMuc?'<p class="doc-note">Danh sách lưu lần gần nhất – mở thư mục Google Drive để xem tài liệu mới nhất.</p>':'');

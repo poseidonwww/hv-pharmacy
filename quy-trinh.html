@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quy trình dược · Khoa Dược BVĐK Hùng Vương</title>
+<meta name="description" content="Bộ quy trình dược đang lưu hành tại Khoa Dược – Bệnh viện Đa khoa Hùng Vương, kèm video thuyết minh từng quy trình.">
+<meta name="theme-color" content="#1577bc">
+<link rel="icon" type="image/png" href="assets/favicon-bvhv.png">
+<link rel="apple-touch-icon" href="assets/favicon-bvhv.png">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* ===== Riêng trang Quy trình dược ===== */
+.page-hero .lead{margin-bottom:24px;max-width:64ch}
+.page-hero .search{max-width:720px}
+.qstats{display:flex;flex-wrap:wrap;gap:10px 22px;margin:-6px 0 22px;color:rgb(255 255 255 / .85);font-size:var(--fs-sm)}
+.qstats b{color:#fff;font-size:var(--fs-md)}
+.groups{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.groups button{font:600 var(--fs-sm) var(--font);color:#fff;background:rgb(255 255 255 / .12);border:1px solid rgb(255 255 255 / .25);border-radius:99px;padding:8px 14px;cursor:pointer}
+.groups button[aria-pressed=true]{background:#fff;color:var(--brand);border-color:#fff}
+.groups b{font-weight:500;opacity:.7;margin-left:4px}
+
+.results{padding:40px 0 72px}
+.gtitle{display:flex;align-items:center;gap:10px;font-size:var(--fs-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:32px 0 12px}
+.gtitle:first-child{margin-top:0}
+.gtitle span{font-weight:600;letter-spacing:0;text-transform:none;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:1px 9px}
+
+/* Thẻ quy trình */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.qt{position:relative;display:flex;flex-direction:column;gap:8px;text-align:left;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;cursor:pointer;box-shadow:var(--shadow-sm);transition:transform .2s,box-shadow .2s,border-color .2s}
+.qt:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
+.qt:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.qt .code{align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.03em;color:var(--brand);background:var(--tint);border-radius:6px;padding:3px 8px}
+.qt b{font-size:var(--fs-base);font-weight:700;line-height:1.4}
+.qt .meta{color:var(--muted);font-size:var(--fs-xs)}
+.qt .foot{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:10px;border-top:1px dashed var(--line)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted);background:var(--surface-2)}
+.pill.vid{color:#fff;background:var(--accent);border-color:var(--accent)}
+.pill svg{flex:none}
+
+/* Video tổng quan */
+.vids{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.vcard{display:flex;align-items:center;gap:14px;text-align:left;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:border-color .2s,box-shadow .2s}
+.vcard:hover{border-color:var(--accent);box-shadow:var(--shadow-sm)}
+.vcard .play{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--accent-tint);color:var(--accent)}
+.vcard b{display:block;font-size:var(--fs-sm);font-weight:700;line-height:1.35}
+.vcard small{color:var(--muted);font-size:var(--fs-xs)}
+.src{margin-top:28px;font-size:var(--fs-xs);color:var(--muted);text-align:center;line-height:1.6}
+.src a{color:var(--brand)}
+
+/* Chi tiết */
+dialog.detail{width:min(1040px,calc(100% - 32px))}
+.dtop .meta{font-size:var(--fs-xs);color:var(--muted);margin-top:6px}
+.dbody{padding:16px 24px 24px;overflow:auto}
+.vtabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.vtabs button{font:600 var(--fs-sm) var(--font);color:var(--muted);background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.vtabs button[aria-selected=true]{color:var(--brand);border-bottom-color:var(--brand)}
+.player{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:var(--r-sm);overflow:hidden}
+.player iframe,.pdf iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.pdf{position:relative;width:100%;height:min(72vh,900px);background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+.vlist{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.vlist button{font:600 var(--fs-xs) var(--font);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:6px 12px;cursor:pointer}
+.vlist button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.dactions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.hint{font-size:var(--fs-xs);color:var(--muted);margin-top:8px}
+@media (max-width:760px){.dbody{padding:12px 16px 20px}.pdf{height:70vh}}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <span>Bệnh viện Đa khoa Hùng Vương · Khoa Dược</span>
+  <span>Email: <a href="mailto:khoaduochv@gmail.com">khoaduochv@gmail.com</a></span>
+</div></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="./" aria-label="Khoa Dược – BVĐK Hùng Vương, trang chủ">
+      <img src="assets/favicon-bvhv.png" width="44" height="44" alt="">
+      <span><b>Khoa Dược</b><small>Bệnh viện Đa khoa Hùng Vương</small></span>
+    </a>
+    <ul>
+      <li><a href="danh-muc.html">Danh mục thuốc</a></li>
+      <li><a href="tuong-tac.html">Tương tác</a></li>
+      <li><a href="tiem-truyen.html">Tiêm truyền</a></li>
+      <li><a href="dac-biet.html">Người bệnh đặc biệt</a></li>
+      <li><a href="icd10.html">ICD-10</a></li>
+      <li><a href="quy-trinh.html" aria-current="page">Quy trình</a></li>
+    </ul>
+    <button class="theme" id="theme" aria-label="Đổi giao diện sáng/tối">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="hero page-hero">
+    <div class="wrap">
+      <nav class="crumb" aria-label="Đường dẫn"><a href="./">Trang chủ</a><span>/</span><span>Quy trình dược</span></nav>
+      <h1>Quy trình dược</h1>
+      <p class="lead">Bộ quy trình đang lưu hành tại Khoa Dược (bản đã ký, đóng dấu), kèm video thuyết minh để xem nhanh các bước thực hiện.</p>
+      <div class="qstats" id="stats"></div>
+      <label class="search" for="q">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="q" type="search" placeholder="Tên hoặc mã (vd: kiểm nhập, QT.14)" autocomplete="off">
+        <kbd>/</kbd>
+      </label>
+      <div class="groups" id="groups" role="group" aria-label="Lọc theo nhóm"></div>
+    </div>
+  </div>
+
+  <section class="results" aria-live="polite">
+    <div class="wrap">
+      <div id="out"><div class="cards"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div></div>
+      <p class="src">Nguồn: thư mục Google Drive “Bộ quy trình đang lưu hành tại khoa” của Khoa Dược – tự cập nhật khi khoa thêm file (tối đa ~10 phút).<br>
+        Video đặt tên có mã quy trình (vd “QT.05 Bảo trì thiết bị.mp4”) sẽ tự gắn vào đúng quy trình.</p>
+    </div>
+  </section>
+</main>
+
+<dialog class="detail" id="detail" aria-labelledby="d-name">
+  <div class="dwrap">
+    <div class="dtop">
+      <div><div class="inn" id="d-code"></div><h2 id="d-name"></h2><div class="meta" id="d-meta"></div></div>
+      <button class="x" id="d-close" aria-label="Đóng"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="dbody" id="d-body"></div>
+  </div>
+</dialog>
+
+<footer>
+  <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span><a href="./" style="color:inherit">← Về trang chủ</a></span></div></div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script>
+/* ====== CẤU HÌNH ======
+   Danh sách quy trình + video lấy từ API tài liệu (TAI_LIEU_API trong assets/site.js):
+     nhom["quy-trinh"] = thư mục "Bản ký đóng dấu"; nhom["video-qt"] = thư mục "Videos".
+   API chưa có nhóm video-qt → dùng bản dự phòng data/video-quy-trinh.json.
+   Video tự gắn vào quy trình: (1) tên video có mã "QT.xx"; (2) khớp từ khoá trong VIDEO_KHOP (theo thứ tự, cụ thể trước).
+   Video không khớp quy trình nào → hiện ở mục "Video tổng quan". */
+const VIDEO_KHOP=[
+  ["ra-soat",/don chua lay|ra soat don/],
+  ["QT.05",/bao tri|thiet bi bao quan/],
+  ["QT.08",/dieu kien bao quan|nhiet do|do am/],
+  ["QT.03",/chat luong thuoc/],
+  ["QT.01",/kiem nhap/],["QT.04",/ve sinh kho/],["QT.06",/con trung|moi mot|gam nham/],["QT.07",/hong vo/],
+  ["QT.10",/tra ve/],["QT.11",/biet tru/],["QT.12",/doi chieu thuoc trong kho|dinh ky doi chieu/],
+  ["QT.14",/3 kiem tra|5 doi chieu/],["QT.15",/\badr\b|phan ung co hai/],["QT.16",/nguy co cao/],["QT.20",/ky gui/],
+  ["QT.13",/ngoai tru/],["QT.09",/noi tru/],["QT.02",/bao quan/]
+];
+const NHOM={GSP:"Kho, bảo quản & cấp phát (GSP)",NVD:"Nghiệp vụ dược",DLS:"Dược lâm sàng",CHUNG:"Văn bản chung"};
+const THU_MUC="https://drive.google.com/drive/folders/1RI_Y60N3w6CzqMHgUBG38_mYIgDGdWUX";
+
+const $=id=>document.getElementById(id);
+const norm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/gi,"d").toLowerCase();
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtSize=kb=>kb>=1024?(kb/1024).toFixed(1).replace(".",",")+" MB":kb+" KB";
+const fmtDate=s=>{const d=new Date(s);return isNaN(d)?"":d.toLocaleDateString("vi-VN")};
+const ICON={
+  play:'<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" fill="currentColor"/></svg>',
+  play20:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" fill="currentColor"/></svg>',
+  doc:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>'
+};
+
+/* Tên file quy trình → mã + tên gọn (giống thẻ Quy trình ở trang chủ) */
+function lamGon(f){
+  let s=f.ten.replace(/(\.(pdf|docx?))+$/i,"").replace(/_0001$/,"").replace(/^\d+\.\s*/,"");
+  let code="";
+  const m=s.match(/\bQT[ .]?(\d+)((?:\.[A-Z]{2,6})*)/i);
+  if(m){code=("QT."+m[1].padStart(2,"0")+m[2]).toUpperCase();s=s.replace(m[0],"");}
+  s=s.replace(/signed-/gi,"").replace(/\(\s*\)/g,"").replace(/_/g," ").replace(/^[\s.\-–]+|[\s.\-–]+$/g,"").replace(/,(?=\S)/g,", ").replace(/\s{2,}/g," ");
+  const ov=(typeof DOC_TEN!=="undefined")&&DOC_TEN[f.id]; if(ov){s=ov[0];if(ov[1])code=ov[1];}
+  s=s.charAt(0).toUpperCase()+s.slice(1);
+  const suf=(code.match(/\.(GSP|NVD|DLS)$/)||[])[1];
+  const coSo=code?code.slice(0,5):"";
+  const k=coSo||(/ra soat don/.test(norm(s))?"ra-soat":"f"+f.id);
+  return {id:f.id,k,code,coSo,ten:s,nhom:NHOM[suf]||NHOM.CHUNG,so:coSo?parseInt(code.slice(3)):(/quyet dinh/.test(norm(s))?0:999),
+    kb:f.kb,capNhat:f.capNhat,url:"https://drive.google.com/file/d/"+f.id+"/view",videos:[]};
+}
+/* Tên video: bỏ đuôi, "_" → dấu cách, viết hoa kiểu câu (giữ chữ viết tắt & tên riêng) */
+function tenVideo(t){
+  let s=t.replace(/\.(mp4|mov|m4v|webm|avi|mkv)$/i,"").replace(/__+/g," – ").replace(/_/g," ").replace(/\s{2,}/g," ").trim();
+  const giu=/^(BV|ADR|QT\.?\d*|Hùng|Vương|Việt|Nam|GSP|NVD|DLS|DUOC)$/;
+  const w=s.split(" ");
+  if(w.filter(x=>/^[A-ZÀ-Ỹ][a-zà-ỹ]/.test(x)).length>=3) s=w.map((x,i)=>i===0||giu.test(x)||x===x.toUpperCase()?x:x.toLowerCase()).join(" ");
+  return s;
+}
+function khopVideo(v){
+  const t=norm(v.ten).replace(/_/g," ");
+  const c=t.match(/\bqt[ ._]?(\d{1,2})\b/);
+  if(c) return "QT."+c[1].padStart(2,"0");
+  const r=VIDEO_KHOP.find(([,re])=>re.test(t));
+  return r?r[0]:"";
+}
+
+let QT=[], VIDEO_LE=[], group="all";
+function setData(qtRaw,vidRaw){
+  QT=qtRaw.filter(f=>/pdf|word|document/.test(f.loai||"application/pdf")).map(lamGon).sort((a,b)=>a.so-b.so||a.ten.localeCompare(b.ten,"vi"));
+  const theoK=Object.fromEntries(QT.map(x=>[x.k,x]));
+  VIDEO_LE=[];
+  for(const f of vidRaw.filter(f=>/^video\//.test(f.loai||"video/mp4"))){
+    const v={id:f.id,ten:tenVideo(f.ten),kb:f.kb,url:"https://drive.google.com/file/d/"+f.id+"/view"};
+    const k=khopVideo(f), q=k&&theoK[k];
+    if(q&&/^(quy trình )?qt\.?\d+(\.\w+)*$/i.test(v.ten))v.ten="Video: "+q.ten.replace(/^Quy trình /,"");  /* tên video chỉ có mã → dùng tên quy trình */
+    q?q.videos.push(v):VIDEO_LE.push(v);
+  }
+  const nv=QT.filter(x=>x.videos.length).length, tv=QT.reduce((a,x)=>a+x.videos.length,0)+VIDEO_LE.length;
+  $("stats").innerHTML=`<span><b>${QT.length}</b> quy trình</span><span><b>${tv}</b> video thuyết minh</span><span><b>${nv}</b> quy trình có video</span>`;
+  const gs=[["all","Tất cả",QT.length],["video","Có video",nv],...Object.values(NHOM).map(g=>[g,g.replace(/ \(GSP\)/,""),QT.filter(x=>x.nhom===g).length]).filter(x=>x[2])];
+  $("groups").innerHTML=gs.map(([k,t,n])=>`<button type="button" data-g="${esc(k)}" aria-pressed="${k===group}">${esc(t)}<b>${n}</b></button>`).join("");
+  render(); openFromHash();
+}
+function render(){
+  const ws=norm($("q").value).split(/\s+/).filter(Boolean);
+  const hit=x=>ws.every(w=>norm(x.code+" "+x.ten+" "+x.nhom+" "+x.videos.map(v=>v.ten).join(" ")).includes(w));
+  const ds=QT.filter(x=>(group==="all"||(group==="video"?x.videos.length:x.nhom===group))&&hit(x));
+  const card=x=>`<button type="button" class="qt" data-k="${esc(x.k)}">
+      <span class="code">${esc(x.code||"Văn bản")}</span>
+      <b>${esc(x.ten)}</b>
+      <span class="meta">${esc(x.nhom)}${x.capNhat?" · cập nhật "+fmtDate(x.capNhat):""}</span>
+      <span class="foot">${x.videos.length?`<span class="pill vid">${ICON.play} Video${x.videos.length>1?" ("+x.videos.length+")":""}</span>`:""}<span class="pill">${ICON.doc} PDF${x.kb?" · "+fmtSize(x.kb):""}</span></span>
+    </button>`;
+  let h="";
+  const le=VIDEO_LE.filter(v=>group==="all"||group==="video").filter(v=>ws.every(w=>norm(v.ten).includes(w)));
+  if(le.length) h+=`<h2 class="gtitle">Video tổng quan & đào tạo <span>${le.length}</span></h2><div class="vids">${le.map(v=>`<button type="button" class="vcard" data-v="${v.id}"><span class="play">${ICON.play20}</span><span><b>${esc(v.ten)}</b><small>Video${v.kb?" · "+fmtSize(v.kb):""}</small></span></button>`).join("")}</div>`;
+  for(const g of [...new Set(ds.map(x=>x.nhom))].sort((a,b)=>Object.values(NHOM).indexOf(a)-Object.values(NHOM).indexOf(b))){
+    const its=ds.filter(x=>x.nhom===g);
+    h+=`<h2 class="gtitle">${esc(g)} <span>${its.length}</span></h2><div class="cards">${its.map(card).join("")}</div>`;
+  }
+  $("out").innerHTML=h||`<div class="state">Không có quy trình khớp “${esc($("q").value)}”.</div>`;
+}
+
+/* ---------- Khung chi tiết: video + văn bản PDF ---------- */
+let cur=null, tab="video", vi=0;
+const vIframe=id=>`<div class="player"><iframe src="https://drive.google.com/file/d/${id}/preview" allow="autoplay; fullscreen" allowfullscreen title="Video thuyết minh"></iframe></div>`;
+function veChiTiet(){
+  const x=cur, coV=x.videos&&x.videos.length, coP=!!x.pdf;
+  if(!coV) tab="pdf"; if(!coP) tab="video";
+  let h="";
+  if(coV&&coP) h+=`<div class="vtabs" role="tablist"><button role="tab" data-t="video" aria-selected="${tab==="video"}">${ICON.play} Video thuyết minh</button><button role="tab" data-t="pdf" aria-selected="${tab==="pdf"}">${ICON.doc} Văn bản quy trình</button></div>`;
+  if(tab==="video"){
+    const v=x.videos[vi]||x.videos[0];
+    h+=vIframe(v.id);
+    if(x.videos.length>1) h+=`<div class="vlist">${x.videos.map((v,i)=>`<button type="button" data-vi="${i}" aria-pressed="${i===vi}">${esc(v.ten)}</button>`).join("")}</div>`;
+    h+=`<p class="hint">Video phát qua Google Drive. Mạng chậm thì chờ vài giây hoặc bấm “Mở video trên Drive”.</p>`;
+  }else{
+    h+=`<div class="pdf"><iframe src="https://drive.google.com/file/d/${x.pdf.id}/preview" title="Văn bản quy trình"></iframe></div>`;
+  }
+  const v=coV&&(x.videos[vi]||x.videos[0]);
+  h+=`<div class="dactions">${coP?`<a class="btn primary" href="${x.pdf.url}" target="_blank" rel="noopener">${ICON.doc} Mở văn bản PDF ↗</a>`:""}${v?`<a class="btn" href="${v.url}" target="_blank" rel="noopener">${ICON.play} Mở video trên Drive ↗</a>`:""}<button type="button" class="btn" id="d-share">Sao chép link</button><a class="btn" target="_blank" rel="noopener" href="${gopYUrl({thuoc:(x.code?x.code+" ":"")+x.ten})}">Báo thông tin chưa đúng</a></div>`;
+  $("d-body").innerHTML=h;
+  $("d-share").onclick=async e=>{try{await navigator.clipboard.writeText(location.href);e.target.textContent="Đã sao chép ✓"}catch(_){e.target.textContent=location.href}};
+}
+function moQT(q,push=true){
+  cur={...q,pdf:{id:q.id,url:q.url}}; tab=q.videos.length?"video":"pdf"; vi=0;
+  $("d-code").textContent=q.code||"Văn bản";
+  $("d-name").textContent=q.ten;
+  $("d-meta").textContent=[q.nhom,q.capNhat&&"cập nhật "+fmtDate(q.capNhat),q.videos.length?q.videos.length+" video":"chưa có video"].filter(Boolean).join(" · ");
+  veChiTiet(); if(!$("detail").open)$("detail").showModal();
+  if(push)history.replaceState(null,"","#qt="+encodeURIComponent(q.code?q.coSo:q.k));
+}
+function moVideo(v,push=true){
+  cur={videos:[v]}; tab="video"; vi=0;
+  $("d-code").textContent="Video tổng quan"; $("d-name").textContent=v.ten; $("d-meta").textContent=v.kb?fmtSize(v.kb):"";
+  veChiTiet(); if(!$("detail").open)$("detail").showModal();
+  if(push)history.replaceState(null,"","#v="+v.id);
+}
+function openFromHash(){
+  let m=location.hash.match(/^#qt=(.+)$/);
+  if(m){const k=decodeURIComponent(m[1]);const q=QT.find(x=>x.k===k||x.coSo===k);if(q)moQT(q,false);return}
+  m=location.hash.match(/^#v=(.+)$/);
+  if(m){const id=m[1];const q=QT.find(x=>x.videos.some(v=>v.id===id));if(q){moQT(q,false);vi=q.videos.findIndex(v=>v.id===id);veChiTiet();return}const v=VIDEO_LE.find(v=>v.id===id);if(v)moVideo(v,false)}
+}
+$("out").addEventListener("click",e=>{
+  const c=e.target.closest(".qt"); if(c){moQT(QT.find(x=>x.k===c.dataset.k));return}
+  const v=e.target.closest(".vcard"); if(v)moVideo(VIDEO_LE.find(x=>x.id===v.dataset.v));
+});
+$("d-body").addEventListener("click",e=>{
+  const t=e.target.closest("[data-t]"); if(t){tab=t.dataset.t;veChiTiet();return}
+  const b=e.target.closest("[data-vi]"); if(b){vi=+b.dataset.vi;veChiTiet();}
+});
+$("groups").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;group=b.dataset.g;[...$("groups").children].forEach(x=>x.setAttribute("aria-pressed",x===b));render()});
+let tm;$("q").addEventListener("input",()=>{clearTimeout(tm);tm=setTimeout(render,100)});
+$("d-close").onclick=()=>$("detail").close();
+$("detail").addEventListener("click",e=>{if(e.target===$("detail"))$("detail").close()});
+/* đóng khung → dừng video (xoá iframe) */
+$("detail").addEventListener("close",()=>{$("d-body").innerHTML="";history.replaceState(null,"",location.pathname+location.search)});
+addEventListener("hashchange",openFromHash);
+addEventListener("keydown",e=>{if(e.key==="/"&&document.activeElement!==$("q")&&!$("detail").open){e.preventDefault();$("q").focus()}});
+
+/* ---------- Tải dữ liệu: bộ nhớ đệm chung với trang chủ → API → bản dự phòng ---------- */
+(async()=>{
+  let vidDP=null;
+  const layVideoDP=async()=>{if(vidDP)return vidDP;try{vidDP=(await (await fetch("data/video-quy-trinh.json")).json())["video-qt"]||[]}catch(e){vidDP=[]}return vidDP};
+  const apply=async d=>{const n=d&&d.nhom;if(!n||!n["quy-trinh"])return false;setData(n["quy-trinh"],n["video-qt"]||await layVideoDP());return true};
+  let cached=null;try{cached=JSON.parse(localStorage.getItem("hv-docs-v1")||"null")}catch(e){}
+  if(cached)await apply(cached);
+  for(const u of [TAI_LIEU_API,"data/tai-lieu.json"].filter(Boolean)){
+    try{const r=await fetch(u);if(!r.ok)throw 0;const d=await r.json();if(await apply(d)){if(u===TAI_LIEU_API)try{localStorage.setItem("hv-docs-v1",JSON.stringify(d))}catch(e){};return}}catch(e){}
+  }
+  if(!cached)$("out").innerHTML=`<div class="state">Không tải được danh sách. Kiểm tra mạng rồi tải lại trang, hoặc <a href="${THU_MUC}" target="_blank" rel="noopener">mở thư mục quy trình trên Google Drive</a>.</div>`;
+})();
+
+const root=document.documentElement;
+try{const s=localStorage.getItem("hv-theme");if(s)root.dataset.theme=s}catch(e){}
+$("theme").onclick=()=>{const dark=root.dataset.theme?root.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;root.dataset.theme=dark?"light":"dark";try{localStorage.setItem("hv-theme",root.dataset.theme)}catch(e){}};
+</script>
+</body>
+</html>
