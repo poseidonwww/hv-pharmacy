@@ -1,6 +1,6 @@
 /**
  * API danh sách tài liệu cho website HV-Pharmacy (CHỈ ĐỌC – không sửa/xoá file nào).
- * Dự án Apps Script "API tai lieu HV-Pharmacy" của khoaduochv@gmail.com,
+ * Dự án Apps Script "API tai lieu HV-Pharmacy" của khoaduochv@gmail.com (bật dịch vụ nâng cao Drive API v3, mã nhận dạng "Drive"),
  * triển khai Web app: Thực thi với tư cách "Tôi", Người có quyền truy cập "Bất kỳ ai".
  * Website gọi: <link /exec>  → JSON { t, nhom: { "quy-trinh": [...], "guideline": [...], "ban-tin": [...], "video-qt": [...] } }
  *
@@ -14,7 +14,7 @@ const THU_MUC = {
   'video-qt': '1dV8Fk444ooO3jw6xPU61bcg3CT2OQCcp'   // Bộ quy trình đang lưu hành tại khoa / Videos – video thuyết minh (trang quy-trinh.html)
 
 };
-const CACHE_GIAY = 600; // lưu tạm 10 phút cho nhanh
+const CACHE_GIAY = 1500; // 25 phút – hẹn giờ lamMoiCache làm mới mỗi 10 phút nên người dùng luôn lấy từ bộ nhớ đệm
 
 function doGet(e) {
   const cache = CacheService.getScriptCache();
@@ -22,7 +22,7 @@ function doGet(e) {
   let out = fresh ? null : layCache_(cache);
   if (!out) {
     const nhom = {};
-    for (const [k, id] of Object.entries(THU_MUC)) nhom[k] = docThuMuc_(DriveApp.getFolderById(id), '');
+    for (const [k, id] of Object.entries(THU_MUC)) nhom[k] = docThuMuc_(id, '');
     out = JSON.stringify({ t: new Date().toISOString(), nhom });
     luuCache_(cache, out);
   }
@@ -46,7 +46,37 @@ function luuCache_(c, s) {
   try { c.putAll(o, CACHE_GIAY); } catch (err) {}
 }
 
-function docThuMuc_(folder, duongDan) {
+/* Đọc thư mục: ưu tiên Drive API (dịch vụ nâng cao "Drive" v3, 1 lệnh/thư mục – ~9 giây cho ~320 file); lỗi thì dùng DriveApp (~80 giây) */
+function docThuMuc_(id, duongDan) {
+  try { return docNhanh_(id, duongDan); } catch (err) { return docCham_(DriveApp.getFolderById(id), duongDan); }
+}
+function docNhanh_(id, duongDan) {
+  const res = [], subs = [];
+  let token;
+  do {
+    const r = Drive.Files.list({ q: "'" + id + "' in parents and trashed = false", pageSize: 1000, pageToken: token,
+      fields: 'nextPageToken, files(id, name, mimeType, size, modifiedTime, permissionIds)' });
+    for (const f of r.files || []) {
+      if (f.mimeType === 'application/vnd.google-apps.folder') { subs.push(f); continue; }
+      const p = f.permissionIds;
+      res.push({ id: f.id, ten: f.name, loai: f.mimeType, kb: Math.round((+f.size || 0) / 1024), capNhat: f.modifiedTime,
+        nhomCon: duongDan, congKhai: !p || p.includes('anyoneWithLink') || p.includes('anyone') });
+    }
+    token = r.nextPageToken;
+  } while (token);
+  for (const s of subs) res.push(...docNhanh_(s.id, duongDan ? duongDan + ' / ' + s.name : s.name));
+  return res;
+}
+
+/* Hẹn giờ: tự làm mới danh sách mỗi 10 phút. Chạy caiHenGio() MỘT lần trong trình soạn thảo (cần cấp quyền). Đã cài 23/11/2026. */
+function lamMoiCache() { doGet({ parameter: { fresh: '1' } }); }
+function caiHenGio() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'lamMoiCache').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('lamMoiCache').timeBased().everyMinutes(10).create();
+}
+
+/* Cách cũ (dự phòng) */
+function docCham_(folder, duongDan) {
   const res = [];
   const files = folder.getFiles();
   while (files.hasNext()) {
@@ -68,7 +98,7 @@ function docThuMuc_(folder, duongDan) {
   while (subs.hasNext()) {
     const s = subs.next();
     if (s.isTrashed()) continue;
-    res.push(...docThuMuc_(s, duongDan ? duongDan + ' / ' + s.getName() : s.getName()));
+    res.push(...docCham_(s, duongDan ? duongDan + ' / ' + s.getName() : s.getName()));
   }
   return res;
 }
