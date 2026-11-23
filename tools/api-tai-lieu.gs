@@ -19,14 +19,31 @@ const CACHE_GIAY = 600; // lưu tạm 10 phút cho nhanh
 function doGet(e) {
   const cache = CacheService.getScriptCache();
   const fresh = e && e.parameter && e.parameter.fresh === '1';
-  let out = fresh ? null : cache.get('tai-lieu-v3');
+  let out = fresh ? null : layCache_(cache);
   if (!out) {
     const nhom = {};
     for (const [k, id] of Object.entries(THU_MUC)) nhom[k] = docThuMuc_(DriveApp.getFolderById(id), '');
     out = JSON.stringify({ t: new Date().toISOString(), nhom });
-    if (out.length < 90000) cache.put('tai-lieu-v3', out, CACHE_GIAY);
+    luuCache_(cache, out);
   }
   return ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
+}
+
+/* Bộ nhớ đệm chia nhiều phần (mỗi phần ≤ 100KB) – danh sách đã > 90KB (23/11/2026) */
+const KHOA_CACHE = 'tai-lieu-v3';
+function layCache_(c) {
+  const n = +c.get(KHOA_CACHE + '-n');
+  if (!n) return null;
+  const ks = Array.from({ length: n }, (_, i) => KHOA_CACHE + '-' + i);
+  const m = c.getAll(ks);
+  if (ks.some(k => m[k] == null)) return null;
+  return ks.map(k => m[k]).join('');
+}
+function luuCache_(c, s) {
+  const o = {}, N = 30000; let i = 0;
+  for (let p = 0; p < s.length; p += N) o[KHOA_CACHE + '-' + (i++)] = s.slice(p, p + N);
+  o[KHOA_CACHE + '-n'] = String(i);
+  try { c.putAll(o, CACHE_GIAY); } catch (err) {}
 }
 
 function docThuMuc_(folder, duongDan) {
