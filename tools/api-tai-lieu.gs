@@ -154,10 +154,11 @@ function lichLamViec_() {
   for (const c of chon) {
     const ss = SpreadsheetApp.openById(c.f.id), th = ss.getSheetByName('Tổng hợp nghỉ');
     docLuoi_(luoi_(ss).getDataRange().getDisplayValues(), c, ngay, chu, vai, th ? null : { nghi: nghi, chuNghi: chuNghi });
-    if (th) docNghiTongHop_(th.getDataRange().getDisplayValues(), c, nghi, chuNghi);
-    /* Mẫu tự đăng ký (26/11/2026): nhân sự theo buổi so với định mức, làm thay đã duyệt */
     const T = taiThang_(c.f.id);
+    if (th && !T) docNghiTongHop_(th.getDataRange().getDisplayValues(), c, nghi, chuNghi);
+    /* Mẫu tự đăng ký (26/11/2026): nhân sự theo buổi so với định mức, làm thay đã duyệt */
     if (T) {
+      nghiTuT_(T, c, nghi, chuNghi);   /* tính thẳng từ đơn (không chờ công thức "Tổng hợp nghỉ" tính lại) */
       dangKy = true; nhanVien = T.nv.map(x => ({ ten: x.ten, viTri: x.viTri, chinh: x.chinh })); dinhMuc = T.dm.map(d => ({ boPhan: d.boPhan, buoi: d.buoi, can: d.can, khong: d.khong }));
       const ns = nhanSuCongKhai_(T);
       for (const k of Object.keys(ns)) if (!nhanSu[k] || +k.slice(5, 7) === c.thang) nhanSu[k] = ns[k];
@@ -398,6 +399,20 @@ function nhanSuCongKhai_(T) {
   return o;
 }
 
+/* Lịch nghỉ công khai của file mẫu mới: đơn đã duyệt (nhiều đơn/ngày nối " + "), không có đơn thì nghỉ trực tự động */
+function nghiTuT_(T, c, nghi, chuNghi) {
+  for (const k of T.ngays) {
+    const cuaThang = +k.slice(5, 7) === c.thang && +k.slice(0, 4) === c.nam;
+    if (chuNghi[k] && !cuaThang) continue;
+    const ds = [];
+    for (const x of T.nv) {
+      const n = nn_(x.ten), dk = T.dk.filter(r => dkHL_(r) && nn_(r.ten) === n && r.kieu && r.tu <= k && k <= r.den).map(r => r.kieu);
+      const kieu = dk.length ? dk.join(' + ') : kieuNghi_(T, x.ten, k, null);
+      if (kieu) ds.push({ ten: x.ten, viTri: x.viTri, kieu: kieuCongKhai_(kieu) });
+    }
+    if (cuaThang || !nghi[k]) { nghi[k] = ds; if (cuaThang) chuNghi[k] = true; }
+  }
+}
 /* ---- Mã cá nhân ---- */
 function bangMa_() {
   const id = PropertiesService.getScriptProperties().getProperty('MA_SHEET');
@@ -689,7 +704,8 @@ function nghiNam_(ten) {
         for (const k of dsNgay_(r.tu, r.den)) if (k.slice(0, 4) === nam && !co[k + r.kieu]) { co[k + r.kieu] = 1; out.push({ ngay: k, kieu: r.kieu, tt: r.tt || 'Đã duyệt' }); }
       continue;
     }
-    /* Lịch mẫu cũ (T10, T11/2026): mọi ngày nghỉ quy về "Phép tháng" (sáng/chiều = ½), bỏ ngày nghỉ sau trực cấp phát/trực kho */
+    /* Lịch mẫu cũ từ T10/2026: mọi ngày nghỉ quy về "Phép tháng" (sáng/chiều = ½), bỏ ngày nghỉ sau trực cấp phát/trực kho */
+    if (o.t.nam * 100 + o.t.thang < 202610) continue;
     const d = nghiCu_(o.f, o.t), thg = nam + '-' + String(o.t.thang).padStart(2, '0');
     for (const k of Object.keys(d.nghi)) {
       if (k.slice(0, 7) !== thg) continue;
