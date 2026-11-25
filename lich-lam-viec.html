@@ -395,7 +395,7 @@ function veDK(){
   if(!L||!L.dangKy){el.innerHTML="";return}
   const nv=L.nhanVien||[];
   if(!S||!S.cuaToi){
-    const ds=nv.map(x=>x.ten).concat(["Lãnh đạo khoa"]);
+    const ds=nv.map(x=>x.ten);
     el.innerHTML=`<section class="blk dk no-print"><div class="wrap"><h2>Đăng ký nghỉ · đổi trực <small>dành cho nhân viên Khoa Dược</small></h2>
       <form class="dk-card dk-login" id="dk-login"><label>Tên<select id="dk-ten" required><option value="">— Chọn tên —</option>${ds.map(t=>`<option${S&&norm(S.ten)===norm(t)?" selected":""}>${esc(t)}</option>`).join("")}</select></label>
       <label>Mã cá nhân<input id="dk-ma" type="password" autocomplete="current-password" maxlength="20" placeholder="Mã nhân viên" required></label>
