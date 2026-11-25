@@ -723,6 +723,7 @@ function nghiNam_(ten) {
   const nam = homNay_().slice(0, 4), n = nn_(ten), moi = {}, out = [], co = {};
   for (const f of dsFileLich_()) { const t = thangCuaFile_(f); if (t && String(t.nam) === nam && (!moi[t.thang] || String(f.sua) > String(moi[t.thang].f.sua))) moi[t.thang] = { f: f, t: t }; }
   for (const o of Object.values(moi)) {
+    if (o.t.nam * 100 + o.t.thang < 202610) continue;   /* trước T10/2026: không thống kê (không mở file) */
     const T = taiThang_(o.f.id);
     if (T) {
       for (const r of T.dk) if (nn_(r.ten) === n && r.kieu && /^(|Đã duyệt|Chờ duyệt|Chờ người làm thay)$/.test(r.tt))
@@ -730,7 +731,6 @@ function nghiNam_(ten) {
       continue;
     }
     /* Lịch mẫu cũ từ T10/2026: mọi ngày nghỉ quy về "Phép tháng" (sáng/chiều = ½), bỏ ngày nghỉ sau trực cấp phát/trực kho */
-    if (o.t.nam * 100 + o.t.thang < 202610) continue;
     const d = nghiCu_(o.f, o.t), thg = nam + '-' + String(o.t.thang).padStart(2, '0');
     for (const k of Object.keys(d.nghi)) {
       if (k.slice(0, 7) !== thg) continue;
