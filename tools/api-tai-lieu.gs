@@ -248,7 +248,7 @@ function docNghiTongHop_(rows, c, nghi, chuNghi) {
 }
 
 /* ===== Nhân viên tự đăng ký nghỉ · đổi trực · làm thay (26/11/2026) =====
-   Web gửi POST (Content-Type text/plain, nội dung JSON) → doPost. Đăng nhập = tên + MÃ CÁ NHÂN 6 số.
+   Web gửi POST (Content-Type text/plain, nội dung JSON) → doPost. Đăng nhập = tên + MÃ CÁ NHÂN (ban đầu = mã nhân viên, vd 00123; tự đổi được trên web).
    Bảng mã: Google Sheet riêng của khoaduochv, KHÔNG chia sẻ (tạo bằng taoMaCaNhan; ID lưu ở Thuộc tính tập lệnh "MA_SHEET").
    File tháng (mẫu mới) cần các sheet: Nhân viên khoa · Đăng ký nghỉ · Làm thay · Đổi trực · Định mức · Bảng trực · Nhật ký.
    - Nhân sự theo VỊ TRÍ CỐ ĐỊNH (Nhân viên khoa), người đang trực vẫn tính; "Làm thay" chuyển 1 người sang vị trí khác theo buổi.
@@ -505,6 +505,18 @@ function canhBaoTruc_(T, ten, ks) {
 }
 const HANH_DONG_ = {
   dangNhap: (ai) => ({ cuaToi: cuaToi_(ai) }),
+  /* Đổi mã đăng nhập (mã ban đầu = mã nhân viên) */
+  doiMa: (ai, b) => {
+    const moi = String(b.maMoi || '').trim();
+    if (!/^[0-9A-Za-z]{4,20}$/.test(moi)) throw new Error('Mã mới gồm 4–20 chữ số hoặc chữ cái không dấu');
+    const sh = bangMa_(), v = sh.getDataRange().getValues();
+    const i = v.findIndex((r, j) => j > 0 && nn_(r[0]) === nn_(ai.ten));
+    if (i < 0) throw new Error('Không tìm thấy tên trong bảng mã');
+    sh.getRange(i + 1, 2).setNumberFormat('@').setValue(moi);
+    sh.getRange(i + 1, 4).setValue('Tự đổi mã trên web ' + Utilities.formatDate(new Date(), TZ_VN, 'dd/MM/yyyy HH:mm'));
+    CacheService.getScriptCache().remove('ds-ma');
+    return { thongBao: 'Đã đổi mã. Lần sau đăng nhập bằng mã mới.' };
+  },
   cuaToi: (ai) => ({ cuaToi: cuaToi_(ai) }),
   guiNghi: (ai, b) => {
     const tu = String(b.tu || ''), den = String(b.den || b.tu || ''), kieu = String(b.kieu || '');
@@ -666,7 +678,10 @@ function doPost(e) {
     if (!f) throw new Error('Thao tác không hợp lệ');
     const ai = xacThuc_(b.ten, b.ma);
     if (b.hd === 'dangNhap' || b.hd === 'cuaToi') out = Object.assign({ ok: true, ten: ai.ten, laLD: ai.laLD }, f(ai, b));
-    else {
+    else if (b.hd === 'doiMa') {
+      const lock = LockService.getScriptLock(); lock.waitLock(25000);
+      try { out = Object.assign({ ok: true, ten: ai.ten, laLD: ai.laLD }, f(ai, b)); } finally { lock.releaseLock(); }
+    } else {
       const lock = LockService.getScriptLock(); lock.waitLock(25000);
       try { out = Object.assign({ ok: true, ten: ai.ten, laLD: ai.laLD }, f(ai, b)); SpreadsheetApp.flush(); } finally { lock.releaseLock(); }
       for (const k of Object.keys(MEMO_)) delete MEMO_[k];
