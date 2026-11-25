@@ -146,7 +146,18 @@ table.wk{border-collapse:collapse;width:100%;min-width:760px;font-size:var(--fs-
 .cd:disabled{opacity:.35;cursor:default}
 .cd.co{opacity:1;background:var(--surface-2);color:var(--muted);text-decoration:line-through}
 .cd.tr::after{content:"";position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--accent)}
+.cd.nua{background:linear-gradient(135deg,var(--surface-2) 50%,var(--surface) 50%)}
 .cd.sel{background:var(--brand);border-color:var(--brand);color:#fff}
+.seg{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;min-width:0}
+.seg legend{font-size:var(--fs-sm);font-weight:600;color:var(--muted);padding:0;margin-bottom:5px}
+.seg{flex-direction:row;flex-wrap:wrap}
+.dk .seg label{flex-direction:row;flex:1}
+.dk .seg label{position:relative}
+.dk .seg input{position:absolute;left:0;top:0;opacity:0;width:1px;height:1px;padding:0;border:0;min-width:0}
+.seg span{flex:1;text-align:center;border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 6px;font-weight:600;color:var(--ink);cursor:pointer;background:var(--surface)}
+.seg input:checked+span{background:var(--brand);border-color:var(--brand);color:#fff}
+.seg input:focus-visible+span{outline:2px solid var(--brand);outline-offset:1px}
+.tk-k{margin-top:8px;color:var(--muted)}
 .cd.mini{display:inline-block;width:14px;height:14px;vertical-align:middle;margin:0 4px 0 10px;cursor:default}
 .cal-chu{width:100%;margin:0}
 .xem-h{display:block;font-size:var(--fs-sm);margin-bottom:4px}
@@ -285,7 +296,7 @@ const oTen=v=>{const s=esc(hoaTen(String(v)));return coToi(v)?`<mark class="me">
 const gt=(x,v)=>x?v.nhans.map(n=>x[n]).filter(Boolean).join(", "):"";
 /* Lịch nghỉ: L.nghi["YYYY-MM-DD"] = [{ten, viTri, kieu}] (API đã đổi "phép ốm" → "phép") */
 const NGAN={"nghi truc ca ngay":"nghỉ trực","nghi truc sang":"nghỉ trực sáng","nghi phep nam":"phép năm","nghi phep":"phép","nghi sang":"nghỉ sáng","nghi chieu":"nghỉ chiều","di hoc":"đi học","cong tac":"công tác","nghi":"nghỉ"};
-const kieuNgan=k=>NGAN[norm(k)]||String(k).toLowerCase();
+const kieuNgan=k=>NGAN[norm(k)]||String(k).toLowerCase().replace(/^nghỉ phép\b/,"phép");
 const nghiNgay=d=>{const gap={};for(const n of (L.nghi||{})[iso(d)]||[])gap[norm(n.ten)+"|"+norm(n.kieu)]=n;  /* bỏ trùng (cùng người, cùng kiểu) */
   return Object.values(gap).sort((a,b)=>a.ten.localeCompare(b.ten,"vi"))};
 const chipNghi=n=>`<span class="nc${/truc/.test(norm(n.kieu))?" tr":""}${me&&norm(n.ten)===me?" me":""}" title="${esc(n.viTri||"")}">${esc(hoaTen(n.ten))}<small>${esc(kieuNgan(n.kieu))}</small></span>`;
@@ -361,13 +372,16 @@ function oNhanSu(k,gon){
 const oLamThay=k=>{const ds=(L.lamThay||{})[k]||[];return ds.length?`<div class="lt">Làm thay: ${ds.map(x=>`<b>${esc(hoaTen(x.ten))}</b> → ${esc(x.viTri)}${x.buoi&&x.buoi!=="Cả ngày"?" ("+esc(x.buoi.toLowerCase())+")":""}`).join(" · ")}</div>`:""};
 
 /* ====== Tự đăng ký nghỉ · đổi trực (API POST, đăng nhập bằng tên + mã cá nhân) ====== */
-const KIEU_NGHI=["Nghỉ sáng","Nghỉ chiều","Nghỉ trực cả ngày","Nghỉ trực sáng","Nghỉ phép năm","Nghỉ phép ốm","Đi học","Công tác"];
+/* Loại nghỉ: mặc định "Phép tháng" cả ngày; chọn được buổi. "Nghỉ trực" = thay mặc định nghỉ trực cả ngày (vd chỉ nghỉ sáng) */
+const LOAI_NGHI=["Phép tháng","Phép năm","Phép ốm","Phép con ốm","Đi học","Công tác","Nghỉ trực","Phép khác"];
+const BUOI_CHON=["Cả ngày","Sáng","Chiều"];
+const ghep=()=>F.loai==="Nghỉ trực"?{"Cả ngày":"Nghỉ trực cả ngày","Sáng":"Nghỉ trực sáng","Chiều":"Nghỉ trực chiều"}[F.buoi]:F.loai+(F.buoi==="Sáng"?" (sáng)":F.buoi==="Chiều"?" (chiều)":"");
 const buoiCua=k=>{const t=norm(k);return /sang/.test(t)?["S"]:/chieu/.test(t)?["C"]:["S","C"]};
 const dm=s=>s?s.slice(8,10)+"/"+s.slice(5,7):"";
 const thuDm=s=>s?THU_NGAN[tuIso(s).getDay()]+" "+dm(s):"";
 const khoang=(a,b)=>thuDm(a)+(b&&b!==a?" – "+thuDm(b):"");
 let S=null, dkMsg=null, dkBan=false, dkDoiMa=false;
-const F={ngays:[],kieu:"Nghỉ phép năm",thay:"",ghiChu:"",ca:"",nhan:"",doi:""};
+const F={ngays:[],loai:"Phép tháng",buoi:"Cả ngày",khac:"",thay:"",ghiChu:"",ca:"",nhan:"",doi:""};
 try{S=JSON.parse(localStorage.getItem("hv-lich-dn")||"null")}catch(e){}
 const luuS=nho=>{try{if(nho)localStorage.setItem("hv-lich-dn",JSON.stringify({ten:S.ten,ma:S.ma}));else localStorage.removeItem("hv-lich-dn")}catch(e){}};
 async function goiApi(hd,du){
@@ -398,27 +412,37 @@ function veLichChon(){
   const el=$("dk-cal"); if(!el)return;
   const hom=iso(HOM), ks=Object.keys(L.nhanSu||{}).filter(k=>k>=hom).sort();
   if(!ks.length){el.innerHTML=`<p class="dk-note">Chưa có lịch tháng nào mở đăng ký.</p>`;return}
-  const daCo={},trucN={};for(const x of (S.cuaToi.nghiNam||[]))daCo[x.ngay]=x;for(const t of S.cuaToi.truc)trucN[t.ngay]=t.ten;
+  const daCo={},kin={},trucN={};for(const x of (S.cuaToi.nghiNam||[])){(daCo[x.ngay]=daCo[x.ngay]||[]).push(x);kin[x.ngay]=(kin[x.ngay]||0)+SO_NGAY(x.kieu)}for(const t of S.cuaToi.truc)trucN[t.ngay]=t.ten;
   el.innerHTML=[...new Set(ks.map(k=>k.slice(0,7)))].map(m=>{const [y,mo]=m.split("-").map(Number),f=+ks.find(k=>k.startsWith(m)).slice(8),s0=Math.max(1,f-(new Date(y,mo-1,f).getDay()+6)%7),lech=(new Date(y,mo-1,s0).getDay()+6)%7,n=new Date(y,mo,0).getDate();
     let c=`<div class="cal"><b class="cal-h">Tháng ${mo}/${y}</b><div class="cal-g">${["T2","T3","T4","T5","T6","T7","CN"].map(x=>`<span class="cal-w">${x}</span>`).join("")}${"<span></span>".repeat(lech)}`;
-    for(let i=s0;i<=n;i++){const k=m+"-"+String(i).padStart(2,"0"),co=daCo[k],tt=[co?co.kieu+(/^Chờ/.test(co.tt)?" (chờ duyệt)":""):"",trucN[k]?"Có lịch "+trucN[k].toLowerCase():""].filter(Boolean).join(" · ");
-      c+=`<button type="button" class="cd${F.ngays.includes(k)?" sel":""}${co?" co":""}${trucN[k]?" tr":""}" data-ngay="${k}"${!ks.includes(k)||co?" disabled":""}${tt?` title="${esc(tt)}"`:""} aria-pressed="${F.ngays.includes(k)}">${i}</button>`}
-    return c+`</div></div>`}).join("")+`<p class="dk-note cal-chu"><span class="cd sel mini"></span>đang chọn <span class="cd co mini"></span>đã đăng ký <span class="cd tr mini"></span>có lịch trực</p>`;
+    for(let i=s0;i<=n;i++){const k=m+"-"+String(i).padStart(2,"0"),co=daCo[k],kin1=(kin[k]||0)>=1,tt=[co?co.map(x=>x.kieu+(/^Chờ/.test(x.tt)?" (chờ duyệt)":"")).join(" + "):"",trucN[k]?"Có lịch "+trucN[k].toLowerCase():""].filter(Boolean).join(" · ");
+      c+=`<button type="button" class="cd${F.ngays.includes(k)?" sel":""}${co?(kin1?" co":" nua"):""}${trucN[k]?" tr":""}" data-ngay="${k}"${!ks.includes(k)||kin1?" disabled":""}${tt?` title="${esc(tt)}"`:""} aria-pressed="${F.ngays.includes(k)}">${i}</button>`}
+    return c+`</div></div>`}).join("")+`<p class="dk-note cal-chu"><span class="cd sel mini"></span>đang chọn <span class="cd co mini"></span>đã nghỉ <span class="cd nua mini"></span>đã nghỉ ½ ngày <span class="cd tr mini"></span>có lịch trực</p>`;
   el.querySelectorAll("[data-ngay]").forEach(b=>b.onclick=()=>{const k=b.dataset.ngay;F.ngays=F.ngays.includes(k)?F.ngays.filter(x=>x!==k):F.ngays.concat(k).sort();xemTruoc()});
 }
-/* Thống kê ngày nghỉ của bản thân: trong tháng (sáng/chiều = ½) và phép năm trong năm */
-const SO_NGAY=k=>{const t=norm(k);return /truc|di hoc|cong tac/.test(t)?0:/sang|chieu/.test(t)?0.5:1};
+/* Thống kê ngày nghỉ của bản thân. Phép tháng: tính theo tháng (sáng/chiều = ½; lịch cũ T10–T11 quy hết về phép tháng).
+   Phép năm, phép ốm, phép con ốm: tính riêng theo năm. Không tính nghỉ trực. */
+const LOAI_TK=k=>{const t=norm(k);return /con om/.test(t)?"conom":/om/.test(t)?"om":/phep nam/.test(t)?"nam":/truc/.test(t)?"truc":/di hoc/.test(t)?"hoc":/cong tac/.test(t)?"ct":/phep khac/.test(t)?"khac":"thang"};
+const TEN_TK={thang:"Phép tháng",nam:"Phép năm",om:"Phép ốm",conom:"Phép con ốm",hoc:"Đi học",ct:"Công tác",khac:"Phép khác",truc:"Nghỉ trực"};
+const SO_NGAY=k=>{const t=norm(k);return /truc/.test(t)&&!/sang|chieu/.test(t)?1:/sang|chieu/.test(t)?0.5:1};
+const soVN=x=>String(x).replace(".",",");
 function oThongKe(){
   const ds=S.cuaToi.nghiNam||[], nam=iso(HOM).slice(0,4), cho=x=>/^Chờ/.test(x.tt);
-  const chip=a=>a.map(x=>`<span class="nc${cho(x)?" cho":""}">${thuDm(x.ngay)}<small>${esc(kieuNgan(x.kieu))}${cho(x)?" · chờ duyệt":""}</small></span>`).join("");
+  const chip=a=>a.map(x=>`<span class="nc${cho(x)?" cho":""}">${thuDm(x.ngay)}<small>${esc(kieuNgan(x.kieu))}${x.cu?" · lịch cũ":""}${cho(x)?" · chờ duyệt":""}</small></span>`).join("");
+  const tong=a=>{const d=a.filter(x=>!cho(x)),c=a.length-d.length;return `${soVN(d.reduce((s,x)=>s+SO_NGAY(x.kieu),0))} ngày${c?` <small>(+${c} chờ duyệt)</small>`:""}`};
+  const thMuon=[...new Set([iso(HOM).slice(0,7)].concat(F.ngays.map(k=>k.slice(0,7))))].sort();
   let h="";
-  for(const m of [...new Set([iso(HOM).slice(0,7)].concat(F.ngays.map(k=>k.slice(0,7))))].sort()){
-    const a=ds.filter(x=>x.ngay.slice(0,7)===m), tinh=a.filter(x=>SO_NGAY(x.kieu)>0), dy=tinh.filter(x=>!cho(x)), n=tinh.length-dy.length;
-    h+=`<div class="tk"><b>Tháng ${+m.slice(5)}/${m.slice(0,4)}: đã nghỉ ${String(dy.reduce((s,x)=>s+SO_NGAY(x.kieu),0)).replace(".",",")} ngày</b>${n?` <small>(+${n} ngày chờ duyệt)</small>`:""}${a.length?`<div class="chips">${chip(a)}</div>`:""}</div>`;
+  for(const m of thMuon){
+    const a=ds.filter(x=>x.ngay.slice(0,7)===m), pt=a.filter(x=>LOAI_TK(x.kieu)==="thang"), khac=a.filter(x=>!["thang","truc"].includes(LOAI_TK(x.kieu)));
+    const nhom={};for(const x of khac)(nhom[LOAI_TK(x.kieu)]=nhom[LOAI_TK(x.kieu)]||[]).push(x);
+    h+=`<div class="tk"><b>Phép tháng ${+m.slice(5)}/${m.slice(0,4)}: ${tong(pt)}</b>${pt.length?`<div class="chips">${chip(pt)}</div>`:""}
+      ${khac.length?`<div class="tk-k">Loại khác trong tháng: ${Object.entries(nhom).map(([k,v])=>`${TEN_TK[k]} ${tong(v)}`).join(" · ")}<div class="chips">${chip(khac)}</div></div>`:""}</div>`;
   }
-  const pn=ds.filter(x=>norm(x.kieu)==="nghi phep nam"), pd=pn.filter(x=>!cho(x)).length;
-  return h+`<div class="tk"><b>Phép năm ${nam}: đã nghỉ ${pd} ngày</b>${pn.length>pd?` <small>(+${pn.length-pd} ngày chờ duyệt)</small>`:""}${pn.length?`<div class="chips">${chip(pn)}</div>`:""}</div>
-    <p class="dk-note tk-n">Nghỉ sáng/chiều tính ½ ngày; không tính nghỉ trực, đi học, công tác. Số liệu từ lịch mẫu mới (từ 30/11/2026).</p>`;
+  const cac=[...new Set(ds.filter(x=>LOAI_TK(x.kieu)==="thang").map(x=>x.ngay.slice(0,7)))].filter(m=>!thMuon.includes(m)).sort();
+  if(cac.length)h+=`<div class="tk"><b>Phép tháng các tháng khác:</b> ${cac.map(m=>`T${+m.slice(5)}: ${tong(ds.filter(x=>x.ngay.slice(0,7)===m&&LOAI_TK(x.kieu)==="thang"))}`).join(" · ")}</div>`;
+  for(const k of ["nam","om","conom"]){const a=ds.filter(x=>LOAI_TK(x.kieu)===k);if(k!=="nam"&&!a.length)continue;
+    h+=`<div class="tk"><b>${k==="nam"?"Phép năm "+nam:TEN_TK[k]+" năm "+nam}: ${tong(a)}</b>${a.length?`<div class="chips">${chip(a)}</div>`:""}</div>`}
+  return h+`<p class="dk-note tk-n">Nghỉ sáng/chiều tính ½ ngày. Phép ốm, phép con ốm tính riêng, không vào phép tháng. Lịch T10–T11/2026 (mẫu cũ) quy hết về phép tháng.</p>`;
 }
 /* Xem trước định mức từng ngày (máy chủ kiểm tra lại khi gửi) */
 function xemTruoc(){
@@ -426,7 +450,7 @@ function xemTruoc(){
   veLichChon(); if($("dk-tk"))$("dk-tk").innerHTML=oThongKe();
   const nv=(L.nhanVien||[]).find(x=>norm(x.ten)===norm(S.ten));
   if(!F.ngays.length||!nv){el.innerHTML=`<p class="dk-note">Bấm vào các ngày muốn nghỉ trên lịch (bấm lại để bỏ chọn).</p>`;return}
-  const bu=buoiCua(F.kieu), dong=[], truc=[], khong=d=>(d.khong||[]).includes(norm(nv.ten));
+  const bu=buoiCua(ghep()), dong=[], truc=[], khong=d=>(d.khong||[]).includes(norm(nv.ten));
   for(const k of F.ngays){
     const ns=(L.nhanSu||{})[k]||[], t=[];
     if(!((L.nghi||{})[k]||[]).some(n=>norm(n.ten)===norm(nv.ten)))
@@ -434,7 +458,7 @@ function xemTruoc(){
     dong.push(`<li class="${t.length?"warn":"ok"}"><b>${thuDm(k)}</b> · ${t.length?`${esc(nv.viTri)} thiếu người (${t.join(", ")}) → ${F.thay?"chờ "+esc(F.thay)+" xác nhận làm thay":"chờ lãnh đạo duyệt"}`:"đủ định mức → duyệt ngay"}</li>`);
     for(const x of trucCua(nv.ten))if(x.ngay===k)truc.push(x.vai.toLowerCase()+" "+dm(k));
   }
-  el.innerHTML=`<b class="xem-h">${F.ngays.length} ngày đã chọn · ${esc(F.kieu.toLowerCase())}</b><ul class="xem">${dong.join("")}</ul>`+(truc.length?`<div class="dk-msg warn">Bạn đang có lịch ${esc(truc.join(", "))} – nhờ người trực thay ở mục bên dưới.</div>`:"");
+  el.innerHTML=`<b class="xem-h">${F.ngays.length} ngày đã chọn · ${esc(ghep().toLowerCase())}${F.loai==="Phép khác"&&F.khac?": "+esc(F.khac):""}</b><ul class="xem">${dong.join("")}</ul>`+(truc.length?`<div class="dk-msg warn">Bạn đang có lịch ${esc(truc.join(", "))} – nhờ người trực thay ở mục bên dưới.</div>`:"");
 }
 function veDK(){
   const el=$("dk"); if(!el)return;
@@ -474,7 +498,9 @@ function veDK(){
   /* Form đăng ký nghỉ – chỉ của bản thân */
   if(toi)h+=`<form class="dk-card" id="dk-nghi"><h3>Đăng ký nghỉ của ${esc(toi.ten)}</h3><div class="dk-tk" id="dk-tk"></div>
       <div id="dk-cal"></div><div class="dk-grid">
-      <label>Kiểu nghỉ <small>(cho các ngày đã chọn)</small><select data-f="kieu">${KIEU_NGHI.map(k=>`<option${F.kieu===k?" selected":""}>${k}</option>`).join("")}</select></label>
+      <label>Loại nghỉ <small>(cho các ngày đã chọn)</small><select data-f="loai">${LOAI_NGHI.map(k=>`<option${F.loai===k?" selected":""}>${k}</option>`).join("")}</select></label>
+      <fieldset class="seg"><legend>Buổi</legend>${BUOI_CHON.map(b=>`<label><input type="radio" name="dk-buoi" data-f="buoi" value="${b}"${F.buoi===b?" checked":""}><span>${b}</span></label>`).join("")}</fieldset>
+      ${F.loai==="Phép khác"?`<label class="w2">Loại phép khác <small>(bắt buộc – vd: phép cưới, phép tang)</small><input data-f="khac" value="${esc(F.khac)}" maxlength="80" required></label>`:""}
       <label>Người làm thay <small>(tuỳ chọn)</small><select data-f="thay"><option value="">— Không —</option>${khac.map(x=>`<option${F.thay===x.ten?" selected":""}>${esc(x.ten)}</option>`).join("")}</select></label>
       <label class="w2">Ghi chú <small>(tuỳ chọn)</small><input data-f="ghiChu" value="${esc(F.ghiChu)}" maxlength="200"></label></div>
       <div id="dk-xem"></div><button class="btn primary"${dkBan?" disabled":""}>Gửi đăng ký nghỉ</button></form>`;
@@ -496,7 +522,7 @@ function veDK(){
   el.innerHTML=h;
   /* sự kiện */
   el.querySelectorAll("[data-f]").forEach(i=>{i.oninput=i.onchange=()=>{const k=i.dataset.f,cu=F[k];F[k]=i.value;
-    if(k==="ca"&&cu!==i.value){F.nhan="";F.doi="";veDK()}else if(k==="nhan"&&cu!==i.value){F.doi="";veDK()}else xemTruoc()}});
+    if(k==="ca"&&cu!==i.value){F.nhan="";F.doi="";veDK()}else if(k==="nhan"&&cu!==i.value){F.doi="";veDK()}else if(k==="loai"&&cu!==i.value){veDK()}else xemTruoc()}});
   xemTruoc();
   $("dk-thoat").onclick=()=>{S=null;luuS(false);dkMsg=null;dkDoiMa=false;veDK()};
   $("dk-ma-nut").onclick=()=>{dkDoiMa=!dkDoiMa;dkMsg=null;veDK();if(dkDoiMa)$("dk-m1").focus()};
@@ -508,7 +534,9 @@ function veDK(){
   $("dk-moi").onclick=()=>chay("cuaToi",{},{cho:"Đang tải…",cuon:false});
   const fn=$("dk-nghi");if(fn)fn.onsubmit=e=>{e.preventDefault();
     if(!F.ngays.length){dkMsg={t:"err",s:"Chọn ít nhất 1 ngày nghỉ trên lịch"};veDK();return}
-    chay("guiNghi",{ngays:F.ngays,kieu:F.kieu,nguoiThay:F.thay,ghiChu:F.ghiChu},{ok:()=>{Object.assign(F,{ngays:[],thay:"",ghiChu:""})}})};
+    if(F.loai==="Phép khác"&&!F.khac.trim()){dkMsg={t:"err",s:"Ghi rõ loại phép khác"};veDK();return}
+    const gc=F.loai==="Phép khác"?F.khac.trim()+(F.ghiChu?" · "+F.ghiChu:""):F.ghiChu;
+    chay("guiNghi",{ngays:F.ngays,kieu:ghep(),nguoiThay:F.thay,ghiChu:gc},{ok:()=>{Object.assign(F,{ngays:[],thay:"",ghiChu:"",khac:"",loai:"Phép tháng",buoi:"Cả ngày"})}})};
   const fd=$("dk-doi");if(fd)fd.onsubmit=e=>{e.preventDefault();const [ngay,vai]=F.ca.split("|");
     chay("guiDoiTruc",{ngay,vai,nguoiNhan:F.nhan,ngayDoi:F.doi},{ok:()=>{Object.assign(F,{ca:"",nhan:"",doi:""})}})};
   el.querySelectorAll("[data-tl]").forEach(b=>b.onclick=()=>chay("traLoi",{ma:b.dataset.tl,dongY:!!b.dataset.y}));
