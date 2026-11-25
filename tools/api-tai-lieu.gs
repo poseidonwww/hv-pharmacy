@@ -110,7 +110,7 @@ function thu() { Logger.log(doGet({ parameter: { fresh: '1' } }).getContent().sl
 
 /* ===== Lịch làm việc dược (25/11/2026) =====
    Đọc thư mục "LỊCH LÀM VIỆC": mỗi tháng 1 Google Sheet (tên có "Tháng N" hoặc "_TN_YYYY", năm lấy từ tên hoặc thư mục "2026"),
-   trang tính lưới (tên bắt đầu "Lịch", không có thì trang đầu tiên) dạng lưới theo tuần (dòng ngày + các dòng vai trò).
+   trang tính lưới (tên dạng "Lịch T12", không có thì trang đầu tiên) dạng lưới theo tuần (dòng ngày + các dòng vai trò).
    Trả về lịch tháng trước / tháng này / tháng sau. BỎ mọi dòng có chữ "NGHỈ" (không công khai thông tin nghỉ của nhân viên).
    KHÔNG trả id/link file (thư mục đang chia sẻ quyền sửa). */
 const THU_MUC_LICH = '<ID thư mục LỊCH LÀM VIỆC – chỉ ghi trong dự án Apps Script, KHÔNG đưa vào repo vì thư mục đang chia sẻ quyền sửa>';
@@ -271,7 +271,7 @@ function congNgay_(k, n) { const [y, m, d] = k.split('-').map(Number); return Ut
 function dsNgay_(tu, den) { const o = []; for (let k = tu; k <= den && o.length < 62; k = congNgay_(k, 1)) o.push(k); return o; }
 function maDon_(p) { return p + Utilities.formatDate(new Date(), TZ_VN, 'MMdd') + '-' + Utilities.getUuid().slice(0, 4).toUpperCase(); }
 function maVai_(s) { const t = nn_(s); return Object.keys(VAI_TRUC).find(k => k === s || t.indexOf(VAI_TRUC[k][1]) === 0) || ''; }
-function luoi_(ss) { return ss.getSheets().find(s => /^lich/.test(nn_(s.getName()))) || ss.getSheets()[0]; }
+function luoi_(ss) { return ss.getSheets().find(s => /^lich t\d{1,2}\b/.test(nn_(s.getName()))) || ss.getSheets()[0]; } // mẫu mới: "Lịch T12"; file cũ: trang đầu
 const dkHL_ = r => r.tt === '' || r.tt === 'Đã duyệt';
 
 /* ---- Đọc file tháng ---- */
