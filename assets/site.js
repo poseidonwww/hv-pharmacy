@@ -40,3 +40,6 @@ const DOC_TEN = {
   "1Ij2sHaz5jqLSLvORE4hQamJ-gFICXpq2":["Quy trình giám sát phản ứng có hại của thuốc (ADR)","QT.15.DUOC.DLS"],
   "1IjZVbkw6HAz1cARfG5BF7R-_dwhWspY9":["Quy trình quản lý thuốc có nguy cơ cao","QT.16.DUOC.DLS"],
 };
+
+/* Cài như ứng dụng (PWA): service worker sw.js – mở nhanh, xem lại được khi mạng yếu */
+if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
