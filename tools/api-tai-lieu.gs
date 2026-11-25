@@ -1,5 +1,5 @@
 /**
- * API danh sách tài liệu cho website HV-Pharmacy (CHỈ ĐỌC – không sửa/xoá file nào).
+ * API danh sách tài liệu cho website HV-Pharmacy. doGet CHỈ ĐỌC; doPost chỉ ghi vào file lịch làm việc (đăng ký nghỉ/đổi trực – xem cuối file).
  * Dự án Apps Script "API tai lieu HV-Pharmacy" của khoaduochv@gmail.com (bật dịch vụ nâng cao Drive API v3, mã nhận dạng "Drive"),
  * triển khai Web app: Thực thi với tư cách "Tôi", Người có quyền truy cập "Bất kỳ ai".
  * Website gọi: <link /exec>  → JSON { t, nhom: { "quy-trinh": [...], "guideline": [...], "ban-tin": [...], "video-qt": [...] } }
@@ -110,7 +110,7 @@ function thu() { Logger.log(doGet({ parameter: { fresh: '1' } }).getContent().sl
 
 /* ===== Lịch làm việc dược (25/11/2026) =====
    Đọc thư mục "LỊCH LÀM VIỆC": mỗi tháng 1 Google Sheet (tên có "Tháng N" hoặc "_TN_YYYY", năm lấy từ tên hoặc thư mục "2026"),
-   trang tính ĐẦU TIÊN dạng lưới theo tuần (dòng ngày + các dòng vai trò).
+   trang tính lưới (tên bắt đầu "Lịch", không có thì trang đầu tiên) dạng lưới theo tuần (dòng ngày + các dòng vai trò).
    Trả về lịch tháng trước / tháng này / tháng sau. BỎ mọi dòng có chữ "NGHỈ" (không công khai thông tin nghỉ của nhân viên).
    KHÔNG trả id/link file (thư mục đang chia sẻ quyền sửa). */
 const THU_MUC_LICH = '<ID thư mục LỊCH LÀM VIỆC – chỉ ghi trong dự án Apps Script, KHÔNG đưa vào repo vì thư mục đang chia sẻ quyền sửa>';
@@ -147,15 +147,25 @@ function lichLamViec_() {
     const ds = files.filter(o => o.tm.nam === c.nam && o.tm.thang === c.thang).sort((a, b) => String(b.f.sua).localeCompare(String(a.f.sua)));
     if (ds.length) chon.push({ nam: c.nam, thang: c.thang, f: ds[0].f });
   }
-  const ngay = {}, chu = {}, vai = [], nghi = {}, chuNghi = {};
+  const ngay = {}, chu = {}, vai = [], nghi = {}, chuNghi = {}, nhanSu = {}, lamThay = {};
+  let nhanVien = [], dinhMuc = [], dangKy = false;
   /* SpreadsheetApp (quyền xem bảng tính): giá trị hiển thị ("30/11", "01"…) của trang tính đầu tiên.
      Lịch nghỉ: file có sheet "Tổng hợp nghỉ" (mẫu mới, 25/11/2026) → đọc sheet đó; file cũ → đọc chữ trong các dòng NGHỈ của lưới. */
   for (const c of chon) {
     const ss = SpreadsheetApp.openById(c.f.id), th = ss.getSheetByName('Tổng hợp nghỉ');
-    docLuoi_(ss.getSheets()[0].getDataRange().getDisplayValues(), c, ngay, chu, vai, th ? null : { nghi: nghi, chuNghi: chuNghi });
+    docLuoi_(luoi_(ss).getDataRange().getDisplayValues(), c, ngay, chu, vai, th ? null : { nghi: nghi, chuNghi: chuNghi });
     if (th) docNghiTongHop_(th.getDataRange().getDisplayValues(), c, nghi, chuNghi);
+    /* Mẫu tự đăng ký (26/11/2026): nhân sự theo buổi so với định mức, làm thay đã duyệt */
+    const T = taiThang_(c.f.id);
+    if (T) {
+      dangKy = true; nhanVien = T.nv.map(x => ({ ten: x.ten, viTri: x.viTri, chinh: x.chinh })); dinhMuc = T.dm.map(d => ({ boPhan: d.boPhan, buoi: d.buoi, can: d.can, khong: d.khong }));
+      const ns = nhanSuCongKhai_(T);
+      for (const k of Object.keys(ns)) if (!nhanSu[k] || +k.slice(5, 7) === c.thang) nhanSu[k] = ns[k];
+      for (const r of T.lt) if (dkHL_(r) && r.ngay && r.viTri) (lamThay[r.ngay] = lamThay[r.ngay] || []).push({ ten: r.ten, buoi: r.buoi, viTri: r.viTri });
+    }
   }
-  return { capNhat: new Date().toISOString(), thang: chon.map(c => ({ nam: c.nam, thang: c.thang, ten: c.f.ten, sua: c.f.sua })), vaiTro: vai, ngay: ngay, nghi: nghi };
+  return { capNhat: new Date().toISOString(), thang: chon.map(c => ({ nam: c.nam, thang: c.thang, ten: c.f.ten, sua: c.f.sua })), vaiTro: vai, ngay: ngay, nghi: nghi,
+    dangKy: dangKy, nhanVien: nhanVien, dinhMuc: dinhMuc, nhanSu: nhanSu, lamThay: lamThay };
 }
 /* Lưới tuần: dòng có >= 3 ô dạng "dd" hoặc "dd/mm" = dòng ngày; các dòng sau = vai trò (cột A) × ngày (cùng cột) */
 function docLuoi_(rows, c, ngay, chu, vai, cu) {
@@ -235,4 +245,442 @@ function docNghiTongHop_(rows, c, nghi, chuNghi) {
     (nghi[k] = nghi[k] || []).push({ ten: String(r[1]).trim(), viTri: String(r[2]).trim(), kieu: kieuCongKhai_(r[3]) });
     if (cuaThang) chuNghi[k] = true;
   }
+}
+
+/* ===== Nhân viên tự đăng ký nghỉ · đổi trực · làm thay (26/11/2026) =====
+   Web gửi POST (Content-Type text/plain, nội dung JSON) → doPost. Đăng nhập = tên + MÃ CÁ NHÂN 6 số.
+   Bảng mã: Google Sheet riêng của khoaduochv, KHÔNG chia sẻ (tạo bằng taoMaCaNhan; ID lưu ở Thuộc tính tập lệnh "MA_SHEET").
+   File tháng (mẫu mới) cần các sheet: Nhân viên khoa · Đăng ký nghỉ · Làm thay · Đổi trực · Định mức · Bảng trực · Nhật ký.
+   - Nhân sự theo VỊ TRÍ CỐ ĐỊNH (Nhân viên khoa), người đang trực vẫn tính; "Làm thay" chuyển 1 người sang vị trí khác theo buổi.
+   - Thiếu định mức → đơn "Chờ duyệt" (lãnh đạo duyệt trên web). Đổi trực: người nhận đồng ý → tự ghi vào lưới (nếu vẫn đủ định mức). */
+const KIEU_NGHI = ['Nghỉ sáng', 'Nghỉ chiều', 'Nghỉ trực cả ngày', 'Nghỉ trực sáng', 'Nghỉ phép năm', 'Nghỉ phép ốm', 'Đi học', 'Công tác'];
+const VAI_TRUC = { cp: ['Trực cấp phát', 'truc cap phat'], kho: ['Trực kho', 'truc kho'], kem: ['Kèm buổi trưa', 'kem'] };
+const LANH_DAO = 'Lãnh đạo';
+const nn_ = s => boDau_(s).replace(/\s+/g, ' ').trim();
+const dmy_ = k => k ? k.slice(8, 10) + '/' + k.slice(5, 7) + '/' + k.slice(0, 4) : '';
+const homNay_ = () => Utilities.formatDate(new Date(), TZ_VN, 'yyyy-MM-dd');
+function buoiCua_(k) { const t = boDau_(k); return /sang/.test(t) ? ['S'] : /chieu/.test(t) ? ['C'] : ['S', 'C']; }
+function isoCua_(v, tz) {
+  if (v instanceof Date) return Utilities.formatDate(v, tz, 'yyyy-MM-dd');
+  const m = String(v || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/) || String(v || '').match(/^(\d{4})-(\d\d)-(\d\d)$/);
+  if (!m) return '';
+  return m[1].length === 4 ? m[0] : m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+}
+function ngayCua_(k) { const [y, m, d] = k.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d, 5)); } // 12:00 giờ VN
+function congNgay_(k, n) { const [y, m, d] = k.split('-').map(Number); return Utilities.formatDate(new Date(Date.UTC(y, m - 1, d + n, 5)), TZ_VN, 'yyyy-MM-dd'); }
+function dsNgay_(tu, den) { const o = []; for (let k = tu; k <= den && o.length < 62; k = congNgay_(k, 1)) o.push(k); return o; }
+function maDon_(p) { return p + Utilities.formatDate(new Date(), TZ_VN, 'MMdd') + '-' + Utilities.getUuid().slice(0, 4).toUpperCase(); }
+function maVai_(s) { const t = nn_(s); return Object.keys(VAI_TRUC).find(k => k === s || t.indexOf(VAI_TRUC[k][1]) === 0) || ''; }
+function luoi_(ss) { return ss.getSheets().find(s => /^lich/.test(nn_(s.getName()))) || ss.getSheets()[0]; }
+const dkHL_ = r => r.tt === '' || r.tt === 'Đã duyệt';
+
+/* ---- Đọc file tháng ---- */
+function baThang_() {
+  const hom = new Date(), y = +Utilities.formatDate(hom, TZ_VN, 'yyyy'), m = +Utilities.formatDate(hom, TZ_VN, 'M');
+  return [-1, 0, 1].map(d => { const x = new Date(y, m - 1 + d, 1); return { nam: x.getFullYear(), thang: x.getMonth() + 1 }; });
+}
+function fileThang_(nam, thang) {
+  const c = CacheService.getScriptCache(), k = 'file-lich-' + nam + '-' + thang;
+  let id = c.get(k);
+  if (id === null) {
+    const ds = dsSheetLich_(THU_MUC_LICH, '', []).filter(f => { const t = thangCuaFile_(f); return t && t.nam === nam && t.thang === thang; })
+      .sort((a, b) => String(b.sua).localeCompare(String(a.sua)));
+    id = ds.length ? ds[0].id : '';
+    c.put(k, id, 600);
+  }
+  return id || null;
+}
+const MEMO_ = {};
+function taiThang_(id) {
+  if (!id) return null;
+  if (MEMO_[id] !== undefined) return MEMO_[id];
+  const ss = SpreadsheetApp.openById(id), tz = ss.getSpreadsheetTimeZone(), sh = n => ss.getSheetByName(n);
+  if (!sh('Đăng ký nghỉ') || !sh('Định mức') || !sh('Bảng trực') || !sh('Làm thay') || !sh('Đổi trực')) return (MEMO_[id] = null);
+  const T = { id, ss, tz, nv: [], dm: [], truc: {}, oLuoi: {}, ngays: [], dk: [], lt: [], dt: [] };
+  for (const r of sh('Nhân viên khoa').getDataRange().getValues().slice(1))
+    if (String(r[0]).trim()) T.nv.push({ ten: String(r[0]).trim(), viTri: String(r[1]).trim() || 'Khác', chinh: nn_(r[2]) === 'co' });
+  for (const r of sh('Định mức').getDataRange().getValues().slice(1))
+    if (String(r[0]).trim() && String(r[1]).trim() && r[2] !== '')
+      T.dm.push({ boPhan: String(r[0]).trim(), buoi: /chieu/.test(nn_(r[1])) ? 'C' : 'S', can: +r[2], khong: String(r[3] || '').split(',').map(nn_).filter(Boolean) });
+  for (const r of sh('Bảng trực').getDataRange().getValues().slice(1)) {
+    const k = isoCua_(r[0], tz); if (!k) continue;
+    T.truc[k] = { cp: String(r[2]).trim(), kho: String(r[3]).trim(), kem: String(r[4]).trim() };
+    if (r[16] !== '' && r[17] !== '') { T.oLuoi[k] = { hang: +r[16], cot: +r[17] }; T.ngays.push(k); }
+  }
+  sh('Đăng ký nghỉ').getRange(4, 1, 200, 11).getValues().forEach((r, i) => {
+    if (!r[0] && !String(r[2]).trim()) return;
+    const tu = isoCua_(r[0], tz);
+    T.dk.push({ hang: i + 4, tu: tu, den: isoCua_(r[1], tz) || tu, ten: String(r[2]).trim(), kieu: String(r[4]).trim(), ghiChu: String(r[5]),
+      tt: String(r[6]).trim(), thay: String(r[7]).trim(), ma: String(r[9]).trim(), note: String(r[10]) });
+  });
+  sh('Làm thay').getRange(2, 1, 299, 9).getValues().forEach((r, i) => {
+    if (!r[0] || !String(r[2]).trim()) return;
+    T.lt.push({ hang: i + 2, ngay: isoCua_(r[0], tz), buoi: String(r[1]).trim() || 'Cả ngày', ten: String(r[2]).trim(), viTri: String(r[4]).trim(),
+      ghiChu: String(r[5]), tt: String(r[6]).trim(), ma: String(r[7]).trim() });
+  });
+  sh('Đổi trực').getRange(2, 1, 299, 10).getValues().forEach((r, i) => {
+    if (!String(r[0]).trim()) return;
+    T.dt.push({ hang: i + 2, ma: String(r[0]).trim(), ngay: isoCua_(r[2], tz), vai: maVai_(r[3]), nguoi: String(r[4]).trim(), nhan: String(r[5]).trim(),
+      ngayDoi: isoCua_(r[6], tz), tt: String(r[7]).trim(), note: String(r[8]) });
+  });
+  return (MEMO_[id] = T);
+}
+/* File tháng chứa ngày k (thử tháng của ngày, tháng sau, tháng trước – lưới tháng sau có thể chứa vài ngày cuối tháng trước) */
+function thangCuaNgay_(k) {
+  const y = +k.slice(0, 4), m = +k.slice(5, 7);
+  for (const d of [0, 1, -1]) {
+    const x = new Date(y, m - 1 + d, 1), T = taiThang_(fileThang_(x.getFullYear(), x.getMonth() + 1));
+    if (T && T.ngays.indexOf(k) >= 0) return T;
+  }
+  throw new Error('Ngày ' + dmy_(k) + ' chưa có lịch theo mẫu mới – báo lãnh đạo khoa');
+}
+function cacThang_() { const o = []; for (const c of baThang_()) { const T = taiThang_(fileThang_(c.nam, c.thang)); if (T) o.push(T); } return o; }
+
+/* ---- Tính nhân sự ---- g = giả định: { dk:[đơn thêm], bo:{mã đơn nghỉ bỏ qua}, lt:[làm thay thêm], boLt:{mã}, truc:{ngày:{cp,kho,kem}} } */
+function trucNgay_(T, k, g) { return (g && g.truc && g.truc[k]) || T.truc[k] || {}; }
+function kieuNghi_(T, ten, k, g) {
+  const n = nn_(ten);
+  for (const r of T.dk.concat(g && g.dk || []))
+    if (dkHL_(r) && !(g && g.bo && g.bo[r.ma]) && nn_(r.ten) === n && r.kieu && r.tu <= k && k <= r.den) return r.kieu;
+  const t = trucNgay_(T, congNgay_(k, -1), g);
+  return (nn_(t.cp) === n || nn_(t.kho) === n) ? 'Nghỉ trực cả ngày' : '';
+}
+function viTriLam_(T, ten, k, b, g) {
+  const n = nn_(ten);
+  for (const r of T.lt.concat(g && g.lt || []))
+    if (dkHL_(r) && !(g && g.boLt && g.boLt[r.ma]) && nn_(r.ten) === n && r.ngay === k && buoiCua_(r.buoi).indexOf(b) >= 0 && r.viTri) return r.viTri;
+  return null;
+}
+function demNguoi_(T, k, g) {
+  const co = {};
+  for (const x of T.nv) {
+    const kn = kieuNghi_(T, x.ten, k, g), vang = kn ? buoiCua_(kn) : [];
+    for (const b of ['S', 'C']) {
+      if (vang.indexOf(b) >= 0) continue;
+      const p = viTriLam_(T, x.ten, k, b, g) || x.viTri;
+      if (T.dm.some(d => d.boPhan === p && d.buoi === b && d.khong.indexOf(nn_(x.ten)) >= 0)) continue;
+      co[p + '|' + b] = (co[p + '|' + b] || 0) + 1;
+    }
+  }
+  return co;
+}
+/* Chỗ thiếu định mức MỚI do thay đổi g gây ra (so với g0) */
+function thieuMoi_(T, ks, g, g0) {
+  const out = [];
+  for (const k of ks.filter((x, i) => ks.indexOf(x) === i && T.ngays.indexOf(x) >= 0)) {
+    const sau = demNguoi_(T, k, g), truoc = demNguoi_(T, k, g0 || null);
+    for (const d of T.dm) {
+      const key = d.boPhan + '|' + d.buoi, c = sau[key] || 0;
+      if (c < d.can && c < (truoc[key] || 0)) out.push({ ngay: k, boPhan: d.boPhan, buoi: d.buoi, co: c, can: d.can });
+    }
+  }
+  return out;
+}
+const moTaThieu_ = ds => ds.map(x => x.boPhan + ' ' + (x.buoi === 'S' ? 'sáng' : 'chiều') + ' ' + dmy_(x.ngay).slice(0, 5) + ' còn ' + x.co + '/' + x.can).join('; ');
+function nhanSuCongKhai_(T) {
+  const o = {};
+  for (const k of T.ngays) { const co = demNguoi_(T, k, null); o[k] = T.dm.map(d => [d.boPhan, d.buoi, co[d.boPhan + '|' + d.buoi] || 0, d.can]); }
+  return o;
+}
+
+/* ---- Mã cá nhân ---- */
+function bangMa_() {
+  const id = PropertiesService.getScriptProperties().getProperty('MA_SHEET');
+  if (!id) throw new Error('Chưa có bảng mã cá nhân – lãnh đạo chạy taoMaCaNhan trong Apps Script');
+  return SpreadsheetApp.openById(id).getSheets()[0];
+}
+function dsMa_() {
+  const c = CacheService.getScriptCache(); let s = c.get('ds-ma');
+  if (!s) { s = JSON.stringify(bangMa_().getDataRange().getValues().slice(1).filter(r => String(r[0]).trim() && String(r[1]).trim()).map(r => [String(r[0]).trim(), String(r[1]).trim(), String(r[2]).trim()])); c.put('ds-ma', s, 300); }
+  return JSON.parse(s);
+}
+function xacThuc_(ten, ma) {
+  const c = CacheService.getScriptCache(), k = 'sai-ma-' + nn_(ten), sai = +c.get(k) || 0;
+  if (sai >= 5) throw new Error('Nhập sai mã quá 5 lần – thử lại sau 15 phút');
+  const r = dsMa_().find(x => nn_(x[0]) === nn_(ten) && x[1] === String(ma || '').trim());
+  if (!r) { c.put(k, String(sai + 1), 900); throw new Error('Sai tên hoặc mã cá nhân'); }
+  return { ten: r[0], laLD: nn_(r[2]) === nn_(LANH_DAO) };
+}
+/* Chạy trong trình soạn thảo: tạo bảng mã (lần đầu) + thêm mã cho người mới trong "Nhân viên khoa". Mã KHÔNG hiện ở nhật ký. */
+function taoMaCaNhan() {
+  const p = PropertiesService.getScriptProperties();
+  let id = p.getProperty('MA_SHEET'), sh;
+  if (id) sh = SpreadsheetApp.openById(id).getSheets()[0];
+  else {
+    const ss = SpreadsheetApp.create('Mã cá nhân – Lịch làm việc Khoa Dược (KHÔNG CHIA SẺ)');
+    sh = ss.getSheets()[0]; sh.setName('Mã cá nhân');
+    sh.getRange(1, 1, 1, 4).setValues([['Nhân viên (đúng tên trong lịch)', 'Mã cá nhân (6 số)', 'Quyền (Nhân viên / Lãnh đạo)', 'Ghi chú']]).setFontWeight('bold');
+    sh.setFrozenRows(1); sh.getRange('B:B').setNumberFormat('@'); sh.setColumnWidths(1, 4, 200);
+    id = ss.getId(); p.setProperty('MA_SHEET', id);
+  }
+  const cu = sh.getDataRange().getValues().slice(1), co = {};
+  cu.forEach(r => { co[nn_(r[0])] = 1; });
+  const ma = () => String(100000 + parseInt(Utilities.getUuid().replace(/-/g, '').slice(0, 10), 16) % 900000);
+  const moi = [];
+  if (!cu.some(r => nn_(r[2]) === nn_(LANH_DAO))) moi.push(['Lãnh đạo khoa', ma(), LANH_DAO, 'Có thể đổi thành tên mình (giữ Quyền = Lãnh đạo)']);
+  for (const T of cacThang_()) for (const x of T.nv) if (!co[nn_(x.ten)]) { co[nn_(x.ten)] = 1; moi.push([x.ten, ma(), 'Nhân viên', '']); }
+  if (moi.length) sh.getRange(sh.getLastRow() + 1, 1, moi.length, 4).setValues(moi);
+  CacheService.getScriptCache().remove('ds-ma');
+  Logger.log('Bảng mã cá nhân: ' + SpreadsheetApp.openById(id).getUrl() + ' – thêm ' + moi.length + ' người');
+}
+
+/* ---- Ghi sheet ---- */
+function dongTrong_(T, ten, tu, dung, het) { const s = {}; dung.forEach(h => { s[h] = 1; }); let h = tu; while (s[h] && h <= het) h++; if (h > het) throw new Error('Sheet "' + ten + '" đã hết dòng – báo lãnh đạo'); return h; }
+function ghiDon_(T, o) {
+  const sh = T.ss.getSheetByName('Đăng ký nghỉ'), h = dongTrong_(T, 'Đăng ký nghỉ', 4, T.dk.map(r => r.hang), 203);
+  sh.getRange(h, 1, 1, 3).setValues([[ngayCua_(o.tu), o.den !== o.tu ? ngayCua_(o.den) : '', o.ten]]);
+  sh.getRange(h, 5, 1, 7).setValues([[o.kieu, o.ghiChu || '', o.tt, o.thay || '', new Date(), o.ma, o.note || '']]);
+  o.hang = h; T.dk.push(o);
+}
+function ghiLamThay_(T, o) {
+  const sh = T.ss.getSheetByName('Làm thay'), h = dongTrong_(T, 'Làm thay', 2, T.lt.map(r => r.hang), 300);
+  sh.getRange(h, 1, 1, 3).setValues([[ngayCua_(o.ngay), o.buoi, o.ten]]);
+  sh.getRange(h, 5, 1, 5).setValues([[o.viTri, o.ghiChu || '', o.tt, o.ma, new Date()]]);
+  o.hang = h; T.lt.push(o);
+}
+function ghiDoi_(T, o) {
+  const sh = T.ss.getSheetByName('Đổi trực'), h = dongTrong_(T, 'Đổi trực', 2, T.dt.map(r => r.hang), 300);
+  sh.getRange(h, 1, 1, 10).setValues([[o.ma, new Date(), ngayCua_(o.ngay), VAI_TRUC[o.vai][0], o.nguoi, o.nhan, o.ngayDoi ? ngayCua_(o.ngayDoi) : '', o.tt, o.note || '', '']]);
+  o.hang = h; T.dt.push(o);
+}
+function datTT_(T, ten, o, tt, note) {
+  const sh = T.ss.getSheetByName(ten), col = { 'Đăng ký nghỉ': [7, 11], 'Làm thay': [7, 6], 'Đổi trực': [8, 9] }[ten];
+  sh.getRange(o.hang, col[0]).setValue(tt); o.tt = tt;
+  if (note != null) { const v = (o.note && ten !== 'Làm thay' ? o.note + ' · ' : '') + note; sh.getRange(o.hang, col[1]).setValue(v); o.note = v; }
+  if (ten === 'Đổi trực') sh.getRange(o.hang, 10).setValue(new Date());
+}
+function nhatKy_(T, ai, hd, ct) { T.ss.getSheetByName('Nhật ký').appendRow([new Date(), ai, hd, ct]); }
+function ghiTruc_(T, k, vai, ten) {
+  const o = T.oLuoi[k]; if (!o) throw new Error('Không tìm thấy ô lịch ngày ' + dmy_(k));
+  const g = luoi_(T.ss), nhan = g.getRange(o.hang + 1, 1, 16, 1).getValues();
+  const i = nhan.findIndex(x => nn_(x[0]).indexOf(VAI_TRUC[vai][1]) === 0);
+  if (i < 0) throw new Error('Không tìm thấy dòng ' + VAI_TRUC[vai][0] + ' trong lịch');
+  g.getRange(o.hang + 1 + i, o.cot).setValue(ten);
+  T.truc[k] = Object.assign({}, T.truc[k]); T.truc[k][vai] = ten;
+}
+
+/* ---- Kiểm tra đổi trực ---- */
+function loiTruc_(T, P, vai, k, g) {
+  const t = trucNgay_(T, k, g), n = nn_(P), loi = [];
+  for (const v of Object.keys(VAI_TRUC)) if (v !== vai && nn_(t[v]) === n) loi.push(P + ' đã ' + VAI_TRUC[v][0].toLowerCase() + ' ngày ' + dmy_(k).slice(0, 5));
+  const kn = kieuNghi_(T, P, k, g);
+  if (kn) loi.push(P + ' nghỉ ngày ' + dmy_(k).slice(0, 5) + ' (' + kieuCongKhai_(kn).toLowerCase() + ')');
+  if (vai !== 'kem') {
+    const s = trucNgay_(T, congNgay_(k, 1), g);
+    if (['cp', 'kho', 'kem'].some(v => nn_(s[v]) === n)) loi.push(P + ' có lịch trực ngày ' + dmy_(congNgay_(k, 1)).slice(0, 5) + ' (là ngày nghỉ sau trực)');
+  }
+  return loi;
+}
+function kiemDoi_(T, r) {
+  const loi = [], t = T.truc[r.ngay] || {}, nvB = T.nv.find(x => nn_(x.ten) === nn_(r.nhan)), nvA = T.nv.find(x => nn_(x.ten) === nn_(r.nguoi));
+  if (!nvB) loi.push(r.nhan + ' không có trong danh sách nhân viên');
+  if (nn_(t[r.vai]) !== nn_(r.nguoi)) loi.push('Lịch đã thay đổi: ' + r.nguoi + ' không còn ' + VAI_TRUC[r.vai][0].toLowerCase() + ' ngày ' + dmy_(r.ngay).slice(0, 5));
+  if (nvB && r.vai !== 'kem' && !nvB.chinh) loi.push(r.nhan + ' không thuộc danh sách trực chính');
+  const g = { truc: {} }; g.truc[r.ngay] = Object.assign({}, t); g.truc[r.ngay][r.vai] = r.nhan;
+  let vaiE = '';
+  if (r.ngayDoi) {
+    const e = Object.assign({}, trucNgay_(T, r.ngayDoi, g));
+    vaiE = Object.keys(VAI_TRUC).find(v => nn_(e[v]) === nn_(r.nhan)) || '';
+    if (!vaiE) loi.push(r.nhan + ' không có lịch trực ngày ' + dmy_(r.ngayDoi).slice(0, 5));
+    else { if (vaiE !== 'kem' && nvA && !nvA.chinh) loi.push(r.nguoi + ' không thuộc danh sách trực chính'); e[vaiE] = r.nguoi; g.truc[r.ngayDoi] = e; }
+  }
+  if (!loi.length) { loi.push(...loiTruc_(T, r.nhan, r.vai, r.ngay, g)); if (vaiE) loi.push(...loiTruc_(T, r.nguoi, vaiE, r.ngayDoi, g)); }
+  const ks = [r.ngay, congNgay_(r.ngay, 1)].concat(r.ngayDoi ? [r.ngayDoi, congNgay_(r.ngayDoi, 1)] : []);
+  return { loi: loi, thieu: loi.length ? [] : thieuMoi_(T, ks, g, null), vaiE: vaiE };
+}
+function apDungDoi_(T, r, k) { ghiTruc_(T, r.ngay, r.vai, r.nhan); if (r.ngayDoi && k.vaiE) ghiTruc_(T, r.ngayDoi, k.vaiE, r.nguoi); }
+
+/* ---- Thao tác ---- */
+function timTheoMa_(ma) {
+  for (const T of cacThang_()) {
+    const dk = T.dk.find(r => r.ma === ma); if (dk) return { T, loai: 'nghi', r: dk };
+    const dt = T.dt.find(r => r.ma === ma); if (dt) return { T, loai: 'doi', r: dt };
+  }
+  throw new Error('Không tìm thấy đơn ' + ma);
+}
+function canhBaoTruc_(T, ten, ks) {
+  const n = nn_(ten), o = [];
+  for (const k of ks) { const t = T.truc[k] || {}; for (const v of Object.keys(VAI_TRUC)) if (nn_(t[v]) === n) o.push(VAI_TRUC[v][0].toLowerCase() + ' ' + dmy_(k).slice(0, 5)); }
+  return o.length ? 'Đang có lịch ' + o.join(', ') + ' – nhớ nhờ người trực thay' : '';
+}
+const HANH_DONG_ = {
+  dangNhap: (ai) => ({ cuaToi: cuaToi_(ai) }),
+  cuaToi: (ai) => ({ cuaToi: cuaToi_(ai) }),
+  guiNghi: (ai, b) => {
+    const tu = String(b.tu || ''), den = String(b.den || b.tu || ''), kieu = String(b.kieu || '');
+    if (!/^\d{4}-\d\d-\d\d$/.test(tu) || !/^\d{4}-\d\d-\d\d$/.test(den) || den < tu) throw new Error('Ngày không hợp lệ');
+    if (KIEU_NGHI.indexOf(kieu) < 0) throw new Error('Kiểu nghỉ không hợp lệ');
+    if (!ai.laLD && tu < homNay_()) throw new Error('Không đăng ký được ngày đã qua – báo lãnh đạo khoa');
+    const T = thangCuaNgay_(tu), ks = dsNgay_(tu, den);
+    if (ks.length > 31) throw new Error('Mỗi đơn tối đa 31 ngày');
+    const ngoai = ks.find(k => T.ngays.indexOf(k) < 0);
+    if (ngoai) throw new Error('Lịch tháng này chưa có ngày ' + dmy_(ngoai) + ' – tách đơn cho tháng sau');
+    const nv = T.nv.find(x => nn_(x.ten) === nn_(ai.laLD && b.nguoi ? b.nguoi : ai.ten));
+    if (!nv) throw new Error((b.nguoi || ai.ten) + ' không có trong danh sách "Nhân viên khoa"');
+    const trung = T.dk.find(r => nn_(r.ten) === nn_(nv.ten) && /^(|Đã duyệt|Chờ duyệt|Chờ người làm thay)$/.test(r.tt) && r.tu <= den && tu <= r.den);
+    if (trung) throw new Error('Đã có đơn "' + trung.kieu + '" ' + dmy_(trung.tu).slice(0, 5) + (trung.den !== trung.tu ? '–' + dmy_(trung.den).slice(0, 5) : '') + ' trùng ngày – huỷ đơn đó trước');
+    const don = { tu: tu, den: den, ten: nv.ten, kieu: kieu, ghiChu: String(b.ghiChu || '').slice(0, 200), tt: 'Đã duyệt', ma: maDon_('N'), note: '' };
+    const thieu = thieuMoi_(T, ks, { dk: [don] }, null), cb = canhBaoTruc_(T, nv.ten, ks);
+    let thay = null; const lts = [];
+    if (b.nguoiThay) {
+      thay = T.nv.find(x => nn_(x.ten) === nn_(b.nguoiThay));
+      if (!thay || thay === nv) throw new Error('Người làm thay không hợp lệ');
+      const bu = buoiCua_(kieu), buoi = bu.length === 2 ? 'Cả ngày' : bu[0] === 'S' ? 'Sáng' : 'Chiều';
+      for (const k of ks) {
+        const kn = kieuNghi_(T, thay.ten, k, null);
+        if (kn && buoiCua_(kn).some(x => bu.indexOf(x) >= 0)) throw new Error(thay.ten + ' nghỉ ngày ' + dmy_(k).slice(0, 5));
+        lts.push({ ngay: k, buoi: buoi, ten: thay.ten, viTri: nv.viTri, ghiChu: 'Làm thay ' + nv.ten, tt: 'Chờ xác nhận', ma: don.ma });
+      }
+    }
+    let tb;
+    if (ai.laLD) { don.note = 'Lãnh đạo ghi' + (thieu.length ? ' – lưu ý: ' + moTaThieu_(thieu) : ''); tb = 'Đã ghi nghỉ cho ' + nv.ten + '.'; if (thay) lts.forEach(x => { x.tt = 'Đã duyệt'; }); }
+    else if (thay) { don.tt = 'Chờ người làm thay'; don.thay = thay.ten; don.note = thieu.length ? 'Nếu không có người làm thay: ' + moTaThieu_(thieu) : ''; tb = 'Đã gửi. Chờ ' + thay.ten + ' xác nhận làm thay.'; }
+    else if (thieu.length) { don.tt = 'Chờ duyệt'; don.note = 'Thiếu định mức: ' + moTaThieu_(thieu); tb = 'Ngày này bộ phận không đủ người (' + moTaThieu_(thieu) + '). Đơn đã chuyển lãnh đạo duyệt.'; }
+    else tb = 'Đã duyệt tự động (đủ định mức).';
+    if (cb) don.note = (don.note ? don.note + ' · ' : '') + cb;
+    ghiDon_(T, don); lts.forEach(x => ghiLamThay_(T, x));
+    nhatKy_(T, ai.ten, 'Đăng ký nghỉ', don.ma + ' · ' + nv.ten + ' · ' + kieu + ' ' + dmy_(tu) + (den !== tu ? '–' + dmy_(den) : '') + ' → ' + don.tt + (thay ? ' · làm thay: ' + thay.ten : ''));
+    return { thongBao: tb + (cb ? ' ' + cb + '.' : ''), tt: don.tt };
+  },
+  huy: (ai, b) => {
+    const f = timTheoMa_(String(b.ma || '')), T = f.T, r = f.r;
+    if (f.loai === 'nghi') {
+      if (!ai.laLD && nn_(r.ten) !== nn_(ai.ten)) throw new Error('Chỉ huỷ được đơn của mình');
+      if (!/^(Đã duyệt|Chờ duyệt|Chờ người làm thay)$/.test(r.tt)) throw new Error('Đơn đã ' + (r.tt || 'xử lý').toLowerCase());
+      if (!ai.laLD && r.tu < homNay_()) throw new Error('Đơn đã bắt đầu – báo lãnh đạo khoa để huỷ');
+      datTT_(T, 'Đăng ký nghỉ', r, 'Đã huỷ', 'Huỷ bởi ' + ai.ten);
+      T.lt.filter(x => x.ma === r.ma && x.tt !== 'Từ chối').forEach(x => datTT_(T, 'Làm thay', x, 'Đã huỷ'));
+    } else {
+      if (!ai.laLD && nn_(r.nguoi) !== nn_(ai.ten)) throw new Error('Chỉ huỷ được đề nghị của mình');
+      if (!/^Chờ/.test(r.tt)) throw new Error('Đề nghị đã ' + r.tt.toLowerCase());
+      datTT_(T, 'Đổi trực', r, 'Đã huỷ', 'Huỷ bởi ' + ai.ten);
+    }
+    nhatKy_(T, ai.ten, 'Huỷ', r.ma);
+    return { thongBao: 'Đã huỷ.' };
+  },
+  guiDoiTruc: (ai, b) => {
+    const ngay = String(b.ngay || ''), vai = maVai_(String(b.vai || ''));
+    if (!vai) throw new Error('Vai trò không hợp lệ');
+    if (ngay < homNay_()) throw new Error('Không đổi được ca đã qua');
+    const T = thangCuaNgay_(ngay);
+    const nhan = T.nv.find(x => nn_(x.ten) === nn_(b.nguoiNhan));
+    if (!nhan) throw new Error('Chọn người nhận trong danh sách');
+    if (nn_(nhan.ten) === nn_(ai.ten)) throw new Error('Người nhận phải là người khác');
+    const ngayDoi = String(b.ngayDoi || '');
+    if (ngayDoi && (T.ngays.indexOf(ngayDoi) < 0 || ngayDoi < homNay_())) throw new Error('Ngày đổi lại phải nằm trong lịch tháng này và chưa qua');
+    if (T.dt.some(x => x.ngay === ngay && x.vai === vai && /^Chờ/.test(x.tt))) throw new Error('Ca này đang có đề nghị đổi chờ xử lý');
+    const me = T.nv.find(x => nn_(x.ten) === nn_(ai.ten)) || { ten: ai.ten };
+    const r = { ma: maDon_('D'), ngay: ngay, vai: vai, nguoi: me.ten, nhan: nhan.ten, ngayDoi: ngayDoi, tt: 'Chờ xác nhận', note: '' };
+    const k = kiemDoi_(T, r);
+    if (k.loi.length) throw new Error(k.loi.join('; '));
+    if (k.thieu.length) r.note = 'Lưu ý thiếu định mức: ' + moTaThieu_(k.thieu);
+    ghiDoi_(T, r);
+    nhatKy_(T, ai.ten, 'Đề nghị đổi trực', r.ma + ' · ' + VAI_TRUC[vai][0] + ' ' + dmy_(ngay) + ' → ' + nhan.ten + (ngayDoi ? ' (đổi lấy ' + dmy_(ngayDoi) + ')' : ''));
+    return { thongBao: 'Đã gửi tới ' + nhan.ten + '. Khi ' + nhan.ten + ' đồng ý, lịch tự cập nhật' + (k.thieu.length ? ' (riêng ca này cần lãnh đạo duyệt vì thiếu định mức)' : '') + '.' };
+  },
+  traLoi: (ai, b) => {
+    const ma = String(b.ma || ''), dongY = !!b.dongY;
+    for (const T of cacThang_()) {
+      const r = T.dt.find(x => x.ma === ma);
+      if (r) {
+        if (nn_(r.nhan) !== nn_(ai.ten) || r.tt !== 'Chờ xác nhận') throw new Error('Đề nghị không còn chờ bạn');
+        if (!dongY) { datTT_(T, 'Đổi trực', r, 'Từ chối', ai.ten + ' từ chối'); nhatKy_(T, ai.ten, 'Từ chối đổi trực', ma); return { thongBao: 'Đã từ chối.' }; }
+        const k = kiemDoi_(T, r);
+        if (k.loi.length) { datTT_(T, 'Đổi trực', r, 'Từ chối', 'Không hợp lệ: ' + k.loi.join('; ')); nhatKy_(T, ai.ten, 'Đổi trực không hợp lệ', ma); return { thongBao: 'Không đổi được: ' + k.loi.join('; ') }; }
+        if (k.thieu.length) { datTT_(T, 'Đổi trực', r, 'Chờ duyệt', 'Thiếu định mức: ' + moTaThieu_(k.thieu)); nhatKy_(T, ai.ten, 'Đồng ý đổi trực → chờ duyệt', ma); return { thongBao: 'Đã đồng ý. Vì thiếu định mức (' + moTaThieu_(k.thieu) + ') nên chờ lãnh đạo duyệt.' }; }
+        apDungDoi_(T, r, k); datTT_(T, 'Đổi trực', r, 'Đã áp dụng', ai.ten + ' đồng ý');
+        nhatKy_(T, ai.ten, 'Đổi trực đã áp dụng', ma);
+        return { thongBao: 'Đã đổi trực – lịch đã cập nhật.' };
+      }
+      const rows = T.lt.filter(x => x.ma === ma && nn_(x.ten) === nn_(ai.ten) && x.tt === 'Chờ xác nhận');
+      if (rows.length) {
+        rows.forEach(x => datTT_(T, 'Làm thay', x, dongY ? 'Đã duyệt' : 'Từ chối'));
+        const don = T.dk.find(x => x.ma === ma);
+        let tb = dongY ? 'Đã nhận làm thay.' : 'Đã từ chối làm thay.';
+        if (don && don.tt === 'Chờ người làm thay') {
+          const thieu = thieuMoi_(T, dsNgay_(don.tu, don.den), { dk: [Object.assign({}, don, { tt: 'Đã duyệt', ma: '' })] }, { boLt: { [ma]: 1 } });
+          if (thieu.length) datTT_(T, 'Đăng ký nghỉ', don, 'Chờ duyệt', (dongY ? '' : ai.ten + ' từ chối làm thay – ') + 'thiếu định mức: ' + moTaThieu_(thieu));
+          else datTT_(T, 'Đăng ký nghỉ', don, 'Đã duyệt', dongY ? ai.ten + ' làm thay' : 'Đủ định mức');
+          tb += thieu.length ? ' Đơn nghỉ của ' + don.ten + ' chuyển lãnh đạo duyệt.' : ' Đơn nghỉ của ' + don.ten + ' đã được duyệt.';
+        }
+        nhatKy_(T, ai.ten, dongY ? 'Nhận làm thay' : 'Từ chối làm thay', ma);
+        return { thongBao: tb };
+      }
+    }
+    throw new Error('Không tìm thấy yêu cầu');
+  },
+  duyet: (ai, b) => {
+    if (!ai.laLD) throw new Error('Chỉ lãnh đạo khoa được duyệt');
+    const f = timTheoMa_(String(b.ma || '')), T = f.T, r = f.r, dongY = !!b.dongY, gc = String(b.ghiChu || '').slice(0, 200);
+    if (f.loai === 'nghi') {
+      if (!/^Chờ/.test(r.tt)) throw new Error('Đơn đã ' + (r.tt || 'duyệt').toLowerCase());
+      datTT_(T, 'Đăng ký nghỉ', r, dongY ? 'Đã duyệt' : 'Từ chối', (dongY ? 'Lãnh đạo duyệt' : 'Lãnh đạo không duyệt') + (gc ? ': ' + gc : ''));
+      T.lt.filter(x => x.ma === r.ma && x.tt === 'Chờ xác nhận').forEach(x => datTT_(T, 'Làm thay', x, 'Đã huỷ'));
+    } else {
+      if (r.tt !== 'Chờ duyệt' && r.tt !== 'Chờ xác nhận') throw new Error('Đề nghị đã ' + r.tt.toLowerCase());
+      if (dongY) {
+        const k = kiemDoi_(T, r);
+        if (k.loi.length) throw new Error('Không áp dụng được: ' + k.loi.join('; '));
+        apDungDoi_(T, r, k);
+      }
+      datTT_(T, 'Đổi trực', r, dongY ? 'Đã áp dụng' : 'Từ chối', (dongY ? 'Lãnh đạo duyệt' : 'Lãnh đạo không duyệt') + (gc ? ': ' + gc : ''));
+    }
+    nhatKy_(T, ai.ten, dongY ? 'Duyệt' : 'Không duyệt', r.ma + (gc ? ' · ' + gc : ''));
+    return { thongBao: dongY ? 'Đã duyệt.' : 'Đã từ chối.' };
+  }
+};
+function cuaToi_(ai) {
+  const hom = homNay_(), tu = congNgay_(hom, -31), n = nn_(ai.ten), o = { don: [], doi: [], choToi: [], truc: [], choDuyet: [] };
+  for (const T of cacThang_()) {
+    for (const r of T.dk) if (nn_(r.ten) === n && r.den >= tu)
+      o.don.push({ ma: r.ma, tu: r.tu, den: r.den, kieu: r.kieu, tt: r.tt || 'Đã duyệt', thay: r.thay, note: r.note, huy: !!r.ma && r.tu >= hom && /^(Đã duyệt|Chờ duyệt|Chờ người làm thay)$/.test(r.tt) });
+    for (const r of T.dt) if (nn_(r.nguoi) === n && r.ngay >= tu)
+      o.doi.push({ ma: r.ma, ngay: r.ngay, vai: VAI_TRUC[r.vai] ? VAI_TRUC[r.vai][0] : '', nhan: r.nhan, ngayDoi: r.ngayDoi, tt: r.tt, note: r.note, huy: /^Chờ/.test(r.tt) });
+    for (const r of T.dt) if (nn_(r.nhan) === n && r.tt === 'Chờ xác nhận')
+      o.choToi.push({ loai: 'doi', ma: r.ma, ngay: r.ngay, vai: VAI_TRUC[r.vai] ? VAI_TRUC[r.vai][0] : '', nguoi: r.nguoi, ngayDoi: r.ngayDoi, note: r.note });
+    const nhom = {};
+    for (const r of T.lt) if (nn_(r.ten) === n && r.tt === 'Chờ xác nhận') (nhom[r.ma] = nhom[r.ma] || []).push(r);
+    for (const ma of Object.keys(nhom)) {
+      const don = T.dk.find(x => x.ma === ma) || {};
+      o.choToi.push({ loai: 'lamThay', ma: ma, ngays: nhom[ma].map(x => x.ngay), buoi: nhom[ma][0].buoi, viTri: nhom[ma][0].viTri, nguoi: don.ten || '' });
+    }
+    for (const k of T.ngays) if (k >= hom) for (const v of Object.keys(VAI_TRUC)) if (nn_((T.truc[k] || {})[v]) === n) o.truc.push({ ngay: k, vai: v, ten: VAI_TRUC[v][0] });
+    if (ai.laLD) {
+      for (const r of T.dk) if (/^Chờ/.test(r.tt)) o.choDuyet.push({ loai: 'nghi', ma: r.ma, ten: r.ten, tu: r.tu, den: r.den, kieu: r.kieu, tt: r.tt, thay: r.thay, ghiChu: r.ghiChu, note: r.note });
+      for (const r of T.dt) if (/^Chờ/.test(r.tt)) o.choDuyet.push({ loai: 'doi', ma: r.ma, ngay: r.ngay, vai: VAI_TRUC[r.vai] ? VAI_TRUC[r.vai][0] : '', nguoi: r.nguoi, nhan: r.nhan, ngayDoi: r.ngayDoi, tt: r.tt, note: r.note });
+    }
+  }
+  const s = (a, b) => String(a.tu || a.ngay).localeCompare(String(b.tu || b.ngay));
+  o.don.sort(s); o.doi.sort(s); o.choDuyet.sort(s); o.truc.sort(s);
+  return o;
+}
+function lamMoiLich_() {
+  const lich = lichLamViec_(), c = CacheService.getScriptCache(), s = layCache_(c);
+  if (s) { try { const o = JSON.parse(s); o.lich = lich; luuCache_(c, JSON.stringify(o)); } catch (err) {} }
+  return lich;
+}
+function doPost(e) {
+  let out;
+  try {
+    const b = JSON.parse((e && e.postData && e.postData.contents) || '{}'), f = HANH_DONG_[b.hd];
+    if (!f) throw new Error('Thao tác không hợp lệ');
+    const ai = xacThuc_(b.ten, b.ma);
+    if (b.hd === 'dangNhap' || b.hd === 'cuaToi') out = Object.assign({ ok: true, ten: ai.ten, laLD: ai.laLD }, f(ai, b));
+    else {
+      const lock = LockService.getScriptLock(); lock.waitLock(25000);
+      try { out = Object.assign({ ok: true, ten: ai.ten, laLD: ai.laLD }, f(ai, b)); SpreadsheetApp.flush(); } finally { lock.releaseLock(); }
+      for (const k of Object.keys(MEMO_)) delete MEMO_[k];
+      out.lich = lamMoiLich_();
+      out.cuaToi = cuaToi_(ai);
+    }
+  } catch (err) { out = { ok: false, loi: String(err && err.message || err) }; }
+  return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
+}
+/* Chạy thử trong trình soạn thảo (không ghi gì): định mức + kiểm tra một đơn nghỉ giả định */
+function thuDangKy() {
+  const T = cacThang_().slice(-1)[0] || cacThang_()[0];
+  if (!T) { Logger.log('Chưa có file tháng theo mẫu mới'); return; }
+  const k = T.ngays[3], x = T.nv.find(v => v.viTri === 'Ngoại trú');
+  Logger.log(JSON.stringify({ nv: T.nv.length, dm: T.dm, ngay: k, nhanSu: demNguoi_(T, k, null),
+    thuNghi: x && thieuMoi_(T, [k], { dk: [{ tu: k, den: k, ten: x.ten, kieu: 'Nghỉ phép năm', tt: 'Đã duyệt', ma: 'thu' }] }, null) }));
 }
