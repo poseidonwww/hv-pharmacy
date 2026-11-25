@@ -589,21 +589,13 @@ const HANH_DONG_ = {
     }
     return { thongBao: kq.join('\n') };
   },
+  /* Huỷ 1 hoặc nhiều đơn (mas) – đơn nghỉ của mình chưa bắt đầu: huỷ ngay, không cần duyệt */
   huy: (ai, b) => {
-    const f = timTheoMa_(String(b.ma || '')), T = f.T, r = f.r;
-    if (f.loai === 'nghi') {
-      if (!ai.laLD && nn_(r.ten) !== nn_(ai.ten)) throw new Error('Chỉ huỷ được đơn của mình');
-      if (!/^(Đã duyệt|Chờ duyệt|Chờ người làm thay)$/.test(r.tt)) throw new Error('Đơn đã ' + (r.tt || 'xử lý').toLowerCase());
-      if (!ai.laLD && r.tu < homNay_()) throw new Error('Đơn đã bắt đầu – báo lãnh đạo khoa để huỷ');
-      datTT_(T, 'Đăng ký nghỉ', r, 'Đã huỷ', 'Huỷ bởi ' + ai.ten);
-      T.lt.filter(x => x.ma === r.ma && x.tt !== 'Từ chối').forEach(x => datTT_(T, 'Làm thay', x, 'Đã huỷ'));
-    } else {
-      if (!ai.laLD && nn_(r.nguoi) !== nn_(ai.ten)) throw new Error('Chỉ huỷ được đề nghị của mình');
-      if (!/^Chờ/.test(r.tt)) throw new Error('Đề nghị đã ' + r.tt.toLowerCase());
-      datTT_(T, 'Đổi trực', r, 'Đã huỷ', 'Huỷ bởi ' + ai.ten);
-    }
-    nhatKy_(T, ai.ten, 'Huỷ', r.ma);
-    return { thongBao: 'Đã huỷ.' };
+    const mas = Array.isArray(b.mas) ? b.mas.map(String) : [String(b.ma || '')], kq = [];
+    for (const ma of mas) { try { huyMot_(ai, ma); kq.push('ok'); } catch (e) { kq.push(e.message); } }
+    const loi = kq.filter(x => x !== 'ok');
+    if (loi.length === mas.length) throw new Error(loi.join('; '));
+    return { thongBao: (mas.length > 1 ? 'Đã huỷ ' + (mas.length - loi.length) + ' đơn.' : 'Đã huỷ.') + (loi.length ? ' Không huỷ được: ' + loi.join('; ') : '') };
   },
   guiDoiTruc: (ai, b) => {
     const ngay = String(b.ngay || ''), vai = maVai_(String(b.vai || ''));
@@ -676,6 +668,21 @@ const HANH_DONG_ = {
     return { thongBao: dongY ? 'Đã duyệt.' : 'Đã từ chối.' };
   }
 };
+function huyMot_(ai, ma) {
+  const f = timTheoMa_(ma), T = f.T, r = f.r;
+  if (f.loai === 'nghi') {
+    if (!ai.laLD && nn_(r.ten) !== nn_(ai.ten)) throw new Error('Chỉ huỷ được đơn của mình');
+    if (!/^(Đã duyệt|Chờ duyệt|Chờ người làm thay)$/.test(r.tt)) throw new Error('Đơn đã ' + (r.tt || 'xử lý').toLowerCase());
+    if (!ai.laLD && r.tu < homNay_()) throw new Error('Đơn đã bắt đầu – báo lãnh đạo khoa để huỷ');
+    datTT_(T, 'Đăng ký nghỉ', r, 'Đã huỷ', 'Huỷ bởi ' + ai.ten);
+    T.lt.filter(x => x.ma === r.ma && x.tt !== 'Từ chối').forEach(x => datTT_(T, 'Làm thay', x, 'Đã huỷ'));
+  } else {
+    if (!ai.laLD && nn_(r.nguoi) !== nn_(ai.ten)) throw new Error('Chỉ huỷ được đề nghị của mình');
+    if (!/^Chờ/.test(r.tt)) throw new Error('Đề nghị đã ' + r.tt.toLowerCase());
+    datTT_(T, 'Đổi trực', r, 'Đã huỷ', 'Huỷ bởi ' + ai.ten);
+  }
+  nhatKy_(T, ai.ten, 'Huỷ', r.ma);
+}
 function nghiMotNgay_(ai, k, kieu, b) {
   const T = thangCuaNgay_(k), nv = T.nv.find(x => nn_(x.ten) === nn_(ai.ten));
   if (!nv) throw new Error(ai.ten + ' không có trong danh sách "Nhân viên khoa"');
