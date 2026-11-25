@@ -147,13 +147,18 @@ function lichLamViec_() {
     const ds = files.filter(o => o.tm.nam === c.nam && o.tm.thang === c.thang).sort((a, b) => String(b.f.sua).localeCompare(String(a.f.sua)));
     if (ds.length) chon.push({ nam: c.nam, thang: c.thang, f: ds[0].f });
   }
-  const ngay = {}, chu = {}, vai = [];
-  /* SpreadsheetApp (quyền xem bảng tính, đã cấp 25/11/2026): giá trị hiển thị ("30/11", "01"…) của trang tính đầu tiên */
-  for (const c of chon) docLuoi_(SpreadsheetApp.openById(c.f.id).getSheets()[0].getDataRange().getDisplayValues(), c, ngay, chu, vai);
-  return { capNhat: new Date().toISOString(), thang: chon.map(c => ({ nam: c.nam, thang: c.thang, ten: c.f.ten, sua: c.f.sua })), vaiTro: vai, ngay: ngay };
+  const ngay = {}, chu = {}, vai = [], nghi = {}, chuNghi = {};
+  /* SpreadsheetApp (quyền xem bảng tính): giá trị hiển thị ("30/11", "01"…) của trang tính đầu tiên.
+     Lịch nghỉ: file có sheet "Tổng hợp nghỉ" (mẫu mới, 25/11/2026) → đọc sheet đó; file cũ → đọc chữ trong các dòng NGHỈ của lưới. */
+  for (const c of chon) {
+    const ss = SpreadsheetApp.openById(c.f.id), th = ss.getSheetByName('Tổng hợp nghỉ');
+    docLuoi_(ss.getSheets()[0].getDataRange().getDisplayValues(), c, ngay, chu, vai, th ? null : { nghi: nghi, chuNghi: chuNghi });
+    if (th) docNghiTongHop_(th.getDataRange().getDisplayValues(), c, nghi, chuNghi);
+  }
+  return { capNhat: new Date().toISOString(), thang: chon.map(c => ({ nam: c.nam, thang: c.thang, ten: c.f.ten, sua: c.f.sua })), vaiTro: vai, ngay: ngay, nghi: nghi };
 }
 /* Lưới tuần: dòng có >= 3 ô dạng "dd" hoặc "dd/mm" = dòng ngày; các dòng sau = vai trò (cột A) × ngày (cùng cột) */
-function docLuoi_(rows, c, ngay, chu, vai) {
+function docLuoi_(rows, c, ngay, chu, vai, cu) {
   let cot = null, thangHT = c.thang, truoc = 0, dau = true;
   for (const r of rows) {
     const o = r.map(x => String(x).replace(/\s+/g, ' ').trim());
@@ -174,7 +179,20 @@ function docLuoi_(rows, c, ngay, chu, vai) {
     }
     if (!cot) continue;
     const nhan = o[0];
-    if (!nhan || /nghi/.test(boDau_(nhan))) continue;
+    if (!nhan) continue;
+    if (/nghi/.test(boDau_(nhan))) {   /* dòng NGHỈ: chỉ đọc ở file mẫu cũ (cu != null) */
+      if (cu) for (const [i, k, cuaThang] of cot) {
+        const v = o[i]; if (!v) continue;
+        if (cu.chuNghi[k] && !cuaThang) continue;
+        for (const p of v.split(/\s*,\s*/)) {
+          const ten = p.replace(/\(.*?\)/g, '').trim();
+          if (!ten || ten.split(/\s+/).length > 3 || /\d/.test(ten)) continue;
+          (cu.nghi[k] = cu.nghi[k] || []).push({ ten: ten, viTri: viTriTuNhan_(nhan), kieu: kieuTuGhiChu_(p) });
+          if (cuaThang) cu.chuNghi[k] = true;
+        }
+      }
+      continue;
+    }
     if (vai.indexOf(nhan) < 0) vai.push(nhan);
     for (const [i, k, cuaThang] of cot) {
       /* bỏ phần ghi chú nghỉ lọt vào dòng làm việc: (f), (F), (pn), (p), "nghỉ" */
@@ -187,3 +205,34 @@ function docLuoi_(rows, c, ngay, chu, vai) {
 }
 /* Chạy thử trong trình soạn thảo */
 function thuLich() { const l = lichLamViec_(); Logger.log(JSON.stringify({ thang: l.thang, vaiTro: l.vaiTro, soNgay: Object.keys(l.ngay).length, mau: l.ngay[Object.keys(l.ngay).sort()[30]] })); }
+
+/* ===== Lịch nghỉ (25/11/2026) ===== */
+/* Công khai: "Nghỉ phép ốm" hiện là "Nghỉ phép" (không công khai lý do sức khoẻ) */
+function kieuCongKhai_(k) { return /ốm|\bom\b/i.test(String(k)) ? 'Nghỉ phép' : String(k).trim(); }
+function viTriTuNhan_(nhan) {
+  const t = boDau_(nhan);
+  return /ngoai tru/.test(t) ? 'Ngoại trú' : /kho vat tu/.test(t) ? 'Kho vật tư' : /kho thuoc/.test(t) ? 'Kho thuốc' : /hanh chinh/.test(t) ? 'Hành chính' : 'Khác';
+}
+/* Ghi chú tay ở mẫu cũ: (f)/(p)/(pn) phép · (s)/(sáng) sáng · (c)/(chiều) chiều */
+function kieuTuGhiChu_(p) {
+  const t = boDau_(p);
+  if (/\((?:f|p|pn)\)/.test(t)) return 'Nghỉ phép';
+  if (/\(\s*(?:s|sang)\s*\)|\bsang\b/.test(t)) return 'Nghỉ sáng';
+  if (/\(\s*(?:c|chieu)\s*\)|\bchieu\b/.test(t)) return 'Nghỉ chiều';
+  if (/\bom\b/.test(t)) return 'Nghỉ phép';
+  return 'Nghỉ';
+}
+/* Mẫu mới: sheet "Tổng hợp nghỉ" – A Ngày (dd/mm/yyyy) · B Nhân viên · C Vị trí · D Kiểu nghỉ · E Nguồn */
+function docNghiTongHop_(rows, c, nghi, chuNghi) {
+  const moi = {};
+  for (const r of rows.slice(1)) {
+    const m = String(r[0]).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!m || !r[1] || !r[3]) continue;
+    const k = m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+    const cuaThang = +m[2] === c.thang && +m[3] === c.nam;
+    if (chuNghi[k] && !cuaThang) continue;
+    if (cuaThang && !moi[k]) { nghi[k] = []; moi[k] = true; }
+    (nghi[k] = nghi[k] || []).push({ ten: String(r[1]).trim(), viTri: String(r[2]).trim(), kieu: kieuCongKhai_(r[3]) });
+    if (cuaThang) chuNghi[k] = true;
+  }
+}
