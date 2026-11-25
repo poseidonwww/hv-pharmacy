@@ -87,10 +87,15 @@ table.wk{border-collapse:collapse;width:100%;min-width:760px;font-size:var(--fs-
 .off{padding:10px 18px 14px;border-top:1px solid var(--line);background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
 .off b.h{display:block;font-size:var(--fs-xs);color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.nc{display:inline-flex;align-items:baseline;gap:5px;font-size:var(--fs-sm);font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:3px 10px}
-.nc small{font-size:11.5px;font-weight:600;color:var(--muted)}
-.nc.tr{border-color:color-mix(in srgb,var(--brand) 40%,var(--line))}
-.nc.tr small{color:var(--brand)}
+body{--c-thang:color-mix(in srgb,var(--brand) 26%,var(--surface));--c-nam:color-mix(in srgb,#1c8a4c 28%,var(--surface));--c-om:color-mix(in srgb,#e08a00 32%,var(--surface));--c-khac:color-mix(in srgb,#8e5bd6 26%,var(--surface));--c-truc:color-mix(in srgb,var(--muted) 18%,var(--surface))}
+.nc{display:inline-flex;align-items:baseline;gap:5px;font-size:var(--fs-sm);font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px 9px;white-space:nowrap}
+.nc b{font-weight:600}
+.nc small{font-size:11.5px;font-weight:600;color:color-mix(in srgb,var(--ink) 70%,transparent)}
+.nc.l-thang{background:var(--c-thang);border-color:transparent}.nc.l-nam{background:var(--c-nam);border-color:transparent}
+.nc.l-om,.nc.l-conom{background:var(--c-om);border-color:transparent}.nc.l-hoc,.nc.l-ct,.nc.l-khac{background:var(--c-khac);border-color:transparent}
+.nc.l-truc{background:var(--c-truc);border-color:transparent}
+.wk tr.offrow td .nc{display:flex;flex-direction:column;align-items:flex-start;gap:0;line-height:1.25;margin:0 0 4px;white-space:normal}
+.wk tr.offrow td .nc b{white-space:nowrap}
 .nc.me{background:color-mix(in srgb,var(--accent) 14%,var(--surface));border-color:var(--accent)}
 .wk tr.offrow th{color:var(--muted)}
 .wk tr.offrow td .nc{font-size:12px;padding:2px 8px;margin:0 4px 4px 0}
@@ -148,6 +153,7 @@ table.wk{border-collapse:collapse;width:100%;min-width:760px;font-size:var(--fs-
 .cd.tr::after{content:"";position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--accent)}
 .cd.nua{background:linear-gradient(135deg,var(--surface-2) 50%,var(--surface) 50%)}
 .dk{--c-thang:color-mix(in srgb,var(--brand) 34%,var(--surface));--c-nam:color-mix(in srgb,#1c8a4c 34%,var(--surface));--c-om:color-mix(in srgb,#e08a00 40%,var(--surface));--c-khac:color-mix(in srgb,#8e5bd6 32%,var(--surface));--c-truc:color-mix(in srgb,var(--muted) 24%,var(--surface))}
+.ns-ok{font-weight:600;opacity:.8}
 .dk .cd{height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1}
 .dk .cd b{font-size:var(--fs-sm)}
 .dk .cd .dots{font-size:11px;letter-spacing:1px;height:9px;color:var(--ink);opacity:.7}
@@ -331,19 +337,30 @@ const oTen=v=>{const s=esc(hoaTen(String(v)));return coToi(v)?`<mark class="me">
 const gt=(x,v)=>x?v.nhans.map(n=>x[n]).filter(Boolean).join(", "):"";
 /* Lịch nghỉ: L.nghi["YYYY-MM-DD"] = [{ten, viTri, kieu}] (API đã đổi "phép ốm" → "phép") */
 const NGAN={"nghi truc ca ngay":"nghỉ trực","nghi truc sang":"nghỉ trực sáng","nghi phep nam":"phép năm","nghi phep":"phép","nghi sang":"nghỉ sáng","nghi chieu":"nghỉ chiều","di hoc":"đi học","cong tac":"công tác","nghi":"nghỉ"};
-const kieuNgan=k=>NGAN[norm(k)]||String(k).toLowerCase().replace(/^nghỉ phép\b/,"phép");
-const nghiNgay=d=>{const gap={};for(const n of (L.nghi||{})[iso(d)]||[])gap[norm(n.ten)+"|"+norm(n.kieu)]=n;  /* bỏ trùng (cùng người, cùng kiểu) */
-  return Object.values(gap).sort((a,b)=>a.ten.localeCompare(b.ten,"vi"))};
-const chipNghi=n=>`<span class="nc${/truc/.test(norm(n.kieu))?" tr":""}${me&&norm(n.ten)===me?" me":""}" title="${esc(n.viTri||"")}">${esc(hoaTen(n.ten))}<small>${esc(kieuNgan(n.kieu))}</small></span>`;
+const kieuNgan=k=>String(k).split(/\s*\+\s*/).map(x=>NGAN[norm(x)]||x.toLowerCase().replace(/^nghỉ phép\b/,"phép").replace(/\s*\((sáng|chiều)\)/g," $1")).join(" + ");
+/* Gộp các đơn của 1 người trong ngày: "X (sáng) + X (chiều)" → "X" (cả ngày); "Nghỉ trực sáng + chiều" → "Nghỉ trực cả ngày" */
+function gopKieu(ks){
+  const ps=[...new Set(ks.flatMap(k=>String(k).split(/\s*\+\s*/)).filter(Boolean))];
+  if(ps.length<2)return ps[0]||"";
+  const ca=ps.find(p=>buoiCua(p).length===2);if(ca)return ca;
+  const goc=p=>p.replace(/\s*\((sáng|chiều)\)$/i,"").replace(/^Nghỉ trực (sáng|chiều)$/i,"Nghỉ trực").trim();
+  const g=[...new Set(ps.map(goc))],b=new Set(ps.flatMap(p=>buoiCua(p)));
+  if(g.length===1&&b.has("S")&&b.has("C"))return g[0]==="Nghỉ trực"?"Nghỉ trực cả ngày":g[0];
+  return ps.join(" + ");
+}
+const nghiNgay=d=>{const gap={};for(const n of (L.nghi||{})[iso(d)]||[]){const k=norm(n.ten);(gap[k]=gap[k]||{ten:n.ten,viTri:n.viTri,ks:[]}).ks.push(n.kieu)}
+  return Object.values(gap).map(n=>({ten:n.ten,viTri:n.viTri,kieu:gopKieu(n.ks)})).sort((a,b)=>a.ten.localeCompare(b.ten,"vi"))};
+const chipNghi=n=>`<span class="nc l-${LOAI_TK(n.kieu)}${me&&norm(n.ten)===me?" me":""}" title="${esc((n.viTri?n.viTri+" · ":"")+n.kieu)}"><b>${esc(hoaTen(n.ten))}</b><small>${esc(kieuNgan(n.kieu))}</small></span>`;
 function theNgay(d,nhanDe){
   const k=iso(d), x=(L.ngay||{})[k], la=+d===+HOM;
   const ds=VAI.filter(v=>gt(x,v));
   return `<article class="day${la?" today":""}"><header><b>${nhanDe||THU[d.getDay()]}</b><span>${THU[d.getDay()]} · ${ddmm(d)}/${d.getFullYear()}</span></header>`
    +(ds.length?`<ul class="roles">${ds.map(v=>`<li class="${v.key?"key":""}"><span class="r">${esc(v.ten)}</span><span class="p">${oTen(gt(x,v))}</span></li>`).join("")}</ul>`
      :`<div class="empty-day">Chưa có lịch cho ngày này.</div>`)
-   +oLamThay(k)+(()=>{const n=nghiNgay(d);return n.length?`<div class="off"><b class="h">Nghỉ (${n.length})</b><div class="chips">${n.map(chipNghi).join("")}</div></div>`:""})()+oNhanSu(k)+`</article>`;
+   +oLamThay(k)+(()=>{const n=nghiNgay(d);return n.length?`<div class="off"><b class="h">Nghỉ (${n.length})</b><div class="chips">${n.map(chipNghi).join("")}</div></div>`:""})()+oNhanSu(k,0,!!nhanDe)+`</article>`;
 }
 function ve(){
+  const dkEl=$("dk");if(dkEl&&$("app").contains(dkEl))$("app").after(dkEl);   /* tách khung đăng ký ra trước khi vẽ lại */
   const ngayCo=Object.keys(L.ngay||{}).sort();
   if(!ngayCo.length){$("app").innerHTML=`<div class="wrap"><div class="state">Chưa có lịch làm việc cho tháng này. Khoa Dược sẽ cập nhật sớm.</div></div>`;return}
   const dau=tuIso(ngayCo[0]), cuoi=tuIso(ngayCo[ngayCo.length-1]);
@@ -355,7 +372,7 @@ function ve(){
     const ten=(TEN.find(x=>norm(x.ten)===me)||{}).ten||me;
     const cua=[];
     for(const k of ngayCo){const d=tuIso(k);if(d<HOM)continue;const x=L.ngay[k];for(const v of VAI){const t=gt(x,v);if(t&&coToi(t))cua.push({d,v,txt:t})}}
-    for(const k of Object.keys(L.nghi||{}).sort()){const d=tuIso(k);if(d<HOM)continue;for(const n of L.nghi[k])if(norm(n.ten)===me)cua.push({d,v:{ten:n.kieu,key:false},txt:me,nghi:1})}
+    for(const k of Object.keys(L.nghi||{}).sort()){const d=tuIso(k);if(d<HOM)continue;for(const n of nghiNgay(d))if(norm(n.ten)===me)cua.push({d,v:{ten:n.kieu,key:false},txt:me,nghi:1})}
     cua.sort((a,b)=>a.d-b.d);
     const ky=cua.filter(c=>c.v.key).length;
     h+=`<section class="blk"><div class="wrap"><h2>Lịch của ${esc(ten)} <small>${cua.length?`${cua.length} lượt từ hôm nay · ${ky} lượt trực`:"không có lịch từ hôm nay"}</small></h2>`
@@ -379,6 +396,7 @@ function ve(){
   h+=`<div class="wk-list">${ngay7.map(d=>theNgay(d)).join("")}</div>`;
   h+=`<p class="src">Nguồn: lịch làm việc của Khoa Dược trên Google Drive, tự cập nhật trong khoảng 10 phút sau khi khoa sửa. Lịch nghỉ lấy từ sheet “Đăng ký nghỉ” (hôm trước trực thì hôm sau tự ghi nghỉ trực); lý do nghỉ ốm hiển thị chung là “phép”. Nhân sự: số người có mặt theo vị trí cố định (người đang trực vẫn tính, bác Dũng không tính vào kho thuốc) so với định mức tối thiểu, dạng có mặt/tối thiểu – S sáng, C chiều.</p></div></section>`;
   $("app").innerHTML=h;
+  if(dkEl){const b1=$("app").querySelector("section.blk");if(b1)b1.after(dkEl)}
   const go=n=>{tuan=n;ve();document.querySelector(".wk-nav").scrollIntoView({block:"nearest"})};
   $("wk-prev").onclick=()=>go(congNgay(tuan,-7));
   $("wk-next").onclick=()=>go(congNgay(tuan,7));
@@ -397,10 +415,11 @@ function taiIcs(){
 /* ====== Nhân sự theo định mức · làm thay (API: lich.nhanSu, lich.lamThay, lich.dinhMuc) ====== */
 const BP_NGAN={"Ngoại trú":"Ngoại trú","Kho thuốc":"Kho thuốc","Kho vật tư":"Kho VT"};
 const BUOI={S:"sáng",C:"chiều"};
-function oNhanSu(k,gon){
+function oNhanSu(k,gon,day){
   const ns=(L.nhanSu||{})[k]; if(!ns||!ns.length)return "";
   const thieu=ns.filter(x=>x[2]<x[3]);
-  if(gon)return thieu.length?`<span class="ns-t">${thieu.map(([b,bu,co,can])=>`${esc(BP_NGAN[b]||b)} ${BUOI[bu]} ${co}/${can}`).join("<br>")}</span>`:`<span class="ns-ok">Đủ định mức</span>`;
+  if(gon)return thieu.length?`<span class="ns-t">${thieu.map(([b,bu,co,can])=>`${esc(BP_NGAN[b]||b)} ${BUOI[bu]} ${co}/${can}`).join("<br>")}</span>`:`<span class="ns-ok" title="Đủ định mức">✓ đủ người</span>`;
+  if(!day&&!thieu.length)return `<div class="ns"><b class="h">Nhân sự · đủ định mức ✓</b></div>`;
   const bp={};for(const [b,bu,co,can] of ns)(bp[b]=bp[b]||[]).push([bu,co,can]);
   return `<div class="ns${thieu.length?" bad":""}"><b class="h">Nhân sự ${thieu.length?"· thiếu người":"· đủ định mức"}</b><div class="chips">${Object.entries(bp).map(([b,a])=>`<span class="nsb${a.some(x=>x[1]<x[2])?" thieu":""}">${esc(BP_NGAN[b]||b)} ${a.map(([bu,co,can])=>`<small>${bu}</small>${co}/${can}`).join(" ")}</span>`).join("")}</div></div>`;
 }
@@ -473,7 +492,7 @@ function nenO(ds){
   const m={S:null,C:null};for(const x of ds){const c=MAU_LOAI[LOAI_TK(x.kieu)];for(const b of buoiCua(x.kieu))m[b]=m[b]||c}
   return m.S&&m.S===m.C?`background:${m.S}`:`background:linear-gradient(to bottom,${m.S||"var(--surface)"} 50%,${m.C||"var(--surface)"} 50%)`;
 }
-function nhomNghi(k){const vt=nvToi().viTri,gap={};for(const n of (L.nghi||{})[k]||[])if(n.viTri===vt&&norm(n.ten)!==norm(S.ten))gap[norm(n.ten)]=n;return Object.values(gap)}
+function nhomNghi(k){const vt=nvToi().viTri;return nghiNgay(tuIso(k)).filter(n=>n.viTri===vt&&norm(n.ten)!==norm(S.ten))}
 const vuaDu=k=>{const vt=nvToi().viTri,ns=(L.nhanSu||{})[k];return !!ns&&ns.some(x=>x[0]===vt&&x[2]<=x[3])};
 function veLichChon(){
   const el=$("dk-cal"); if(!el)return;
@@ -568,6 +587,7 @@ function oThongKe(){
 function xemTruoc(){veLichChon();veNgay();if($("dk-tk"))$("dk-tk").innerHTML=oThongKe()}
 function veDK(){
   const el=$("dk"); if(!el)return;
+  {const b1=$("app").querySelector("section.blk");if(b1&&!$("app").contains(el))b1.after(el)}   /* ngay sau "Hôm nay & ngày mai" */
   $("dk-link").hidden=!(L&&L.dangKy);
   if(!L||!L.dangKy){el.innerHTML="";return}
   const nv=L.nhanVien||[];
@@ -580,7 +600,7 @@ function veDK(){
       <button class="btn primary"${dkBan?" disabled":""}>Đăng nhập</button></form>${msgHtml()}
       <p class="dk-note">Lần đầu: mã cá nhân là <b>mã nhân viên</b> (vd 00123) – đăng nhập xong nên bấm “Đổi mã”. Quên mã: báo lãnh đạo khoa. Nghỉ mà bộ phận vẫn đủ người (ngoại trú sáng ≥3, chiều ≥2; kho thuốc ≥3; kho vật tư ≥1) thì được duyệt ngay; thiếu người thì chuyển lãnh đạo duyệt. Đổi trực: người nhận đồng ý là lịch tự cập nhật.</p></div></section>`;
     $("dk-login").onsubmit=e=>{e.preventDefault();const nho=$("dk-nho").checked;S={ten:$("dk-ten").value,ma:$("dk-ma").value.trim()};
-      chay("dangNhap",{},{cho:"Đang đăng nhập…",ok:()=>{luuS(nho);dkMsg=null;taiThongKe();if(!me&&TEN.some(x=>norm(x.ten)===norm(S.ten))){me=norm(S.ten);$("me").value=me;ve()}},loi:()=>{S=null;luuS(false)}})};
+      chay("dangNhap",{},{cho:"Đang đăng nhập…",ok:()=>{luuS(nho);dkMsg=null;taiThongKe();if(TEN.some(x=>norm(x.ten)===norm(S.ten))&&me!==norm(S.ten)){me=norm(S.ten);$("me").value=me;try{localStorage.setItem("hv-lich-toi",me)}catch(x){}ve()}},loi:()=>{S=null;luuS(false)}})};
     return;
   }
   const C=S.cuaToi, toi=nv.find(x=>norm(x.ten)===norm(S.ten)), khac=nv.filter(x=>x!==toi);
