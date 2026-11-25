@@ -283,7 +283,7 @@ function fileThang_(nam, thang) {
   const c = CacheService.getScriptCache(), k = 'file-lich-' + nam + '-' + thang;
   let id = c.get(k);
   if (id === null) {
-    const ds = dsSheetLich_(THU_MUC_LICH, '', []).filter(f => { const t = thangCuaFile_(f); return t && t.nam === nam && t.thang === thang; })
+    const ds = dsFileLich_().filter(f => { const t = thangCuaFile_(f); return t && t.nam === nam && t.thang === thang; })
       .sort((a, b) => String(b.sua).localeCompare(String(a.sua)));
     id = ds.length ? ds[0].id : '';
     c.put(k, id, 600);
@@ -488,7 +488,7 @@ function kiemDoi_(T, r) {
   const ks = [r.ngay, congNgay_(r.ngay, 1)].concat(r.ngayDoi ? [r.ngayDoi, congNgay_(r.ngayDoi, 1)] : []);
   return { loi: loi, thieu: loi.length ? [] : thieuMoi_(T, ks, g, null), vaiE: vaiE };
 }
-function apDungDoi_(T, r, k) { ghiTruc_(T, r.ngay, r.vai, r.nhan); if (r.ngayDoi && k.vaiE) ghiTruc_(T, r.ngayDoi, k.vaiE, r.nguoi); }
+function apDungDoi_(r, k) { ghiTruc_(thangCuaNgay_(r.ngay), r.ngay, r.vai, r.nhan); if (r.ngayDoi && k.vaiE) ghiTruc_(thangCuaNgay_(r.ngayDoi), r.ngayDoi, k.vaiE, r.nguoi); }
 
 /* ---- Thao tác ---- */
 function timTheoMa_(ma) {
@@ -518,41 +518,21 @@ const HANH_DONG_ = {
     return { thongBao: 'Đã đổi mã. Lần sau đăng nhập bằng mã mới.' };
   },
   cuaToi: (ai) => ({ cuaToi: cuaToi_(ai) }),
+  /* Đăng ký nghỉ CỦA BẢN THÂN, chọn từng ngày (nhiều ngày 1 lần) – mỗi ngày 1 đơn riêng (duyệt/huỷ riêng) */
   guiNghi: (ai, b) => {
-    const tu = String(b.tu || ''), den = String(b.den || b.tu || ''), kieu = String(b.kieu || '');
-    if (!/^\d{4}-\d\d-\d\d$/.test(tu) || !/^\d{4}-\d\d-\d\d$/.test(den) || den < tu) throw new Error('Ngày không hợp lệ');
+    const kieu = String(b.kieu || '');
+    let ks = Array.isArray(b.ngays) ? b.ngays.map(String) : dsNgay_(String(b.tu || ''), String(b.den || b.tu || ''));
+    ks = ks.filter((k, i) => /^\d{4}-\d\d-\d\d$/.test(k) && ks.indexOf(k) === i).sort();
+    if (!ks.length) throw new Error('Chọn ít nhất 1 ngày nghỉ');
+    if (ks.length > 31) throw new Error('Mỗi lần tối đa 31 ngày');
     if (KIEU_NGHI.indexOf(kieu) < 0) throw new Error('Kiểu nghỉ không hợp lệ');
-    if (!ai.laLD && tu < homNay_()) throw new Error('Không đăng ký được ngày đã qua – báo lãnh đạo khoa');
-    const T = thangCuaNgay_(tu), ks = dsNgay_(tu, den);
-    if (ks.length > 31) throw new Error('Mỗi đơn tối đa 31 ngày');
-    const ngoai = ks.find(k => T.ngays.indexOf(k) < 0);
-    if (ngoai) throw new Error('Lịch tháng này chưa có ngày ' + dmy_(ngoai) + ' – tách đơn cho tháng sau');
-    const nv = T.nv.find(x => nn_(x.ten) === nn_(ai.laLD && b.nguoi ? b.nguoi : ai.ten));
-    if (!nv) throw new Error((b.nguoi || ai.ten) + ' không có trong danh sách "Nhân viên khoa"');
-    const trung = T.dk.find(r => nn_(r.ten) === nn_(nv.ten) && /^(|Đã duyệt|Chờ duyệt|Chờ người làm thay)$/.test(r.tt) && r.tu <= den && tu <= r.den);
-    if (trung) throw new Error('Đã có đơn "' + trung.kieu + '" ' + dmy_(trung.tu).slice(0, 5) + (trung.den !== trung.tu ? '–' + dmy_(trung.den).slice(0, 5) : '') + ' trùng ngày – huỷ đơn đó trước');
-    const don = { tu: tu, den: den, ten: nv.ten, kieu: kieu, ghiChu: String(b.ghiChu || '').slice(0, 200), tt: 'Đã duyệt', ma: maDon_('N'), note: '' };
-    const thieu = thieuMoi_(T, ks, { dk: [don] }, null), cb = canhBaoTruc_(T, nv.ten, ks);
-    let thay = null; const lts = [];
-    if (b.nguoiThay) {
-      thay = T.nv.find(x => nn_(x.ten) === nn_(b.nguoiThay));
-      if (!thay || thay === nv) throw new Error('Người làm thay không hợp lệ');
-      const bu = buoiCua_(kieu), buoi = bu.length === 2 ? 'Cả ngày' : bu[0] === 'S' ? 'Sáng' : 'Chiều';
-      for (const k of ks) {
-        const kn = kieuNghi_(T, thay.ten, k, null);
-        if (kn && buoiCua_(kn).some(x => bu.indexOf(x) >= 0)) throw new Error(thay.ten + ' nghỉ ngày ' + dmy_(k).slice(0, 5));
-        lts.push({ ngay: k, buoi: buoi, ten: thay.ten, viTri: nv.viTri, ghiChu: 'Làm thay ' + nv.ten, tt: 'Chờ xác nhận', ma: don.ma });
-      }
+    if (ks[0] < homNay_()) throw new Error('Không đăng ký được ngày đã qua – báo lãnh đạo khoa');
+    const kq = [];
+    for (const k of ks) {
+      try { kq.push(dmy_(k).slice(0, 5) + ': ' + nghiMotNgay_(ai, k, kieu, b)); }
+      catch (e) { kq.push(dmy_(k).slice(0, 5) + ': KHÔNG ghi được – ' + e.message); }
     }
-    let tb;
-    if (ai.laLD) { don.note = 'Lãnh đạo ghi' + (thieu.length ? ' – lưu ý: ' + moTaThieu_(thieu) : ''); tb = 'Đã ghi nghỉ cho ' + nv.ten + '.'; if (thay) lts.forEach(x => { x.tt = 'Đã duyệt'; }); }
-    else if (thay) { don.tt = 'Chờ người làm thay'; don.thay = thay.ten; don.note = thieu.length ? 'Nếu không có người làm thay: ' + moTaThieu_(thieu) : ''; tb = 'Đã gửi. Chờ ' + thay.ten + ' xác nhận làm thay.'; }
-    else if (thieu.length) { don.tt = 'Chờ duyệt'; don.note = 'Thiếu định mức: ' + moTaThieu_(thieu); tb = 'Ngày này bộ phận không đủ người (' + moTaThieu_(thieu) + '). Đơn đã chuyển lãnh đạo duyệt.'; }
-    else tb = 'Đã duyệt tự động (đủ định mức).';
-    if (cb) don.note = (don.note ? don.note + ' · ' : '') + cb;
-    ghiDon_(T, don); lts.forEach(x => ghiLamThay_(T, x));
-    nhatKy_(T, ai.ten, 'Đăng ký nghỉ', don.ma + ' · ' + nv.ten + ' · ' + kieu + ' ' + dmy_(tu) + (den !== tu ? '–' + dmy_(den) : '') + ' → ' + don.tt + (thay ? ' · làm thay: ' + thay.ten : ''));
-    return { thongBao: tb + (cb ? ' ' + cb + '.' : ''), tt: don.tt };
+    return { thongBao: kq.join('\n') };
   },
   huy: (ai, b) => {
     const f = timTheoMa_(String(b.ma || '')), T = f.T, r = f.r;
@@ -579,11 +559,11 @@ const HANH_DONG_ = {
     if (!nhan) throw new Error('Chọn người nhận trong danh sách');
     if (nn_(nhan.ten) === nn_(ai.ten)) throw new Error('Người nhận phải là người khác');
     const ngayDoi = String(b.ngayDoi || '');
-    if (ngayDoi && (T.ngays.indexOf(ngayDoi) < 0 || ngayDoi < homNay_())) throw new Error('Ngày đổi lại phải nằm trong lịch tháng này và chưa qua');
+    if (ngayDoi) { if (ngayDoi < homNay_()) throw new Error('Ca đổi lại đã qua'); thangCuaNgay_(ngayDoi); }
     if (T.dt.some(x => x.ngay === ngay && x.vai === vai && /^Chờ/.test(x.tt))) throw new Error('Ca này đang có đề nghị đổi chờ xử lý');
     const me = T.nv.find(x => nn_(x.ten) === nn_(ai.ten)) || { ten: ai.ten };
     const r = { ma: maDon_('D'), ngay: ngay, vai: vai, nguoi: me.ten, nhan: nhan.ten, ngayDoi: ngayDoi, tt: 'Chờ xác nhận', note: '' };
-    const k = kiemDoi_(T, r);
+    const k = kiemDoi_(xemDoi_(r), r);
     if (k.loi.length) throw new Error(k.loi.join('; '));
     if (k.thieu.length) r.note = 'Lưu ý thiếu định mức: ' + moTaThieu_(k.thieu);
     ghiDoi_(T, r);
@@ -597,10 +577,10 @@ const HANH_DONG_ = {
       if (r) {
         if (nn_(r.nhan) !== nn_(ai.ten) || r.tt !== 'Chờ xác nhận') throw new Error('Đề nghị không còn chờ bạn');
         if (!dongY) { datTT_(T, 'Đổi trực', r, 'Từ chối', ai.ten + ' từ chối'); nhatKy_(T, ai.ten, 'Từ chối đổi trực', ma); return { thongBao: 'Đã từ chối.' }; }
-        const k = kiemDoi_(T, r);
+        const k = kiemDoi_(xemDoi_(r), r);
         if (k.loi.length) { datTT_(T, 'Đổi trực', r, 'Từ chối', 'Không hợp lệ: ' + k.loi.join('; ')); nhatKy_(T, ai.ten, 'Đổi trực không hợp lệ', ma); return { thongBao: 'Không đổi được: ' + k.loi.join('; ') }; }
         if (k.thieu.length) { datTT_(T, 'Đổi trực', r, 'Chờ duyệt', 'Thiếu định mức: ' + moTaThieu_(k.thieu)); nhatKy_(T, ai.ten, 'Đồng ý đổi trực → chờ duyệt', ma); return { thongBao: 'Đã đồng ý. Vì thiếu định mức (' + moTaThieu_(k.thieu) + ') nên chờ lãnh đạo duyệt.' }; }
-        apDungDoi_(T, r, k); datTT_(T, 'Đổi trực', r, 'Đã áp dụng', ai.ten + ' đồng ý');
+        apDungDoi_(r, k); datTT_(T, 'Đổi trực', r, 'Đã áp dụng', ai.ten + ' đồng ý');
         nhatKy_(T, ai.ten, 'Đổi trực đã áp dụng', ma);
         return { thongBao: 'Đã đổi trực – lịch đã cập nhật.' };
       }
@@ -631,9 +611,9 @@ const HANH_DONG_ = {
     } else {
       if (r.tt !== 'Chờ duyệt' && r.tt !== 'Chờ xác nhận') throw new Error('Đề nghị đã ' + r.tt.toLowerCase());
       if (dongY) {
-        const k = kiemDoi_(T, r);
+        const k = kiemDoi_(xemDoi_(r), r);
         if (k.loi.length) throw new Error('Không áp dụng được: ' + k.loi.join('; '));
-        apDungDoi_(T, r, k);
+        apDungDoi_(r, k);
       }
       datTT_(T, 'Đổi trực', r, dongY ? 'Đã áp dụng' : 'Từ chối', (dongY ? 'Lãnh đạo duyệt' : 'Lãnh đạo không duyệt') + (gc ? ': ' + gc : ''));
     }
@@ -641,8 +621,59 @@ const HANH_DONG_ = {
     return { thongBao: dongY ? 'Đã duyệt.' : 'Đã từ chối.' };
   }
 };
+function nghiMotNgay_(ai, k, kieu, b) {
+  const T = thangCuaNgay_(k), nv = T.nv.find(x => nn_(x.ten) === nn_(ai.ten));
+  if (!nv) throw new Error(ai.ten + ' không có trong danh sách "Nhân viên khoa"');
+  const trung = T.dk.find(r => nn_(r.ten) === nn_(nv.ten) && /^(|Đã duyệt|Chờ duyệt|Chờ người làm thay)$/.test(r.tt) && r.tu <= k && k <= r.den);
+  if (trung) throw new Error('đã có đơn "' + trung.kieu + '" ngày này');
+  const ks = [k], don = { tu: k, den: k, ten: nv.ten, kieu: kieu, ghiChu: String(b.ghiChu || '').slice(0, 200), tt: 'Đã duyệt', ma: maDon_('N'), note: '' };
+  const thieu = thieuMoi_(T, ks, { dk: [don] }, null), cb = canhBaoTruc_(T, nv.ten, ks);
+  let thay = null; const lts = [];
+  if (b.nguoiThay) {
+    thay = T.nv.find(x => nn_(x.ten) === nn_(b.nguoiThay));
+    if (!thay || thay === nv) throw new Error('người làm thay không hợp lệ');
+    const bu = buoiCua_(kieu), buoi = bu.length === 2 ? 'Cả ngày' : bu[0] === 'S' ? 'Sáng' : 'Chiều';
+    const kn = kieuNghi_(T, thay.ten, k, null);
+    if (kn && buoiCua_(kn).some(x => bu.indexOf(x) >= 0)) throw new Error(thay.ten + ' cũng nghỉ ngày này');
+    lts.push({ ngay: k, buoi: buoi, ten: thay.ten, viTri: nv.viTri, ghiChu: 'Làm thay ' + nv.ten, tt: 'Chờ xác nhận', ma: don.ma });
+  }
+  let tb;
+  if (ai.laLD) { don.note = 'Lãnh đạo tự đăng ký' + (thieu.length ? ' – lưu ý: ' + moTaThieu_(thieu) : ''); tb = 'đã duyệt'; if (thay) lts.forEach(x => { x.tt = 'Đã duyệt'; }); }
+  else if (thay) { don.tt = 'Chờ người làm thay'; don.thay = thay.ten; don.note = thieu.length ? 'Nếu không có người làm thay: ' + moTaThieu_(thieu) : ''; tb = 'chờ ' + thay.ten + ' xác nhận làm thay'; }
+  else if (thieu.length) { don.tt = 'Chờ duyệt'; don.note = 'Thiếu định mức: ' + moTaThieu_(thieu); tb = 'chờ lãnh đạo duyệt (thiếu người: ' + moTaThieu_(thieu) + ')'; }
+  else tb = 'đã duyệt (đủ định mức)';
+  if (cb) { don.note = (don.note ? don.note + ' · ' : '') + cb; tb += ' – ' + cb.charAt(0).toLowerCase() + cb.slice(1); }
+  ghiDon_(T, don); lts.forEach(x => ghiLamThay_(T, x));
+  nhatKy_(T, ai.ten, 'Đăng ký nghỉ', don.ma + ' · ' + nv.ten + ' · ' + kieu + ' ' + dmy_(k) + ' → ' + don.tt + (thay ? ' · làm thay: ' + thay.ten : ''));
+  return tb;
+}
+/* Đổi trực có thể khác tháng (ca của mình tháng này, đổi lấy ca tháng sau): gộp dữ liệu 2 file để kiểm tra */
+function xemDoi_(r) {
+  const T1 = thangCuaNgay_(r.ngay), T2 = r.ngayDoi ? thangCuaNgay_(r.ngayDoi) : T1;
+  if (T1 === T2) return T1;
+  const truc = {};
+  for (const T of [T2, T1]) for (const k of Object.keys(T.truc)) if (!truc[k] || T.ngays.indexOf(k) >= 0) truc[k] = T.truc[k];
+  return { nv: T1.nv, dm: T1.dm, truc: truc, ngays: T1.ngays.concat(T2.ngays), dk: T1.dk.concat(T2.dk), lt: T1.lt.concat(T2.lt) };
+}
+/* Danh sách file lịch (bộ nhớ đệm 10 phút) */
+function dsFileLich_() {
+  const c = CacheService.getScriptCache(); let s = c.get('ds-file-lich');
+  if (!s) { s = JSON.stringify(dsSheetLich_(THU_MUC_LICH, '', [])); c.put('ds-file-lich', s, 600); }
+  return JSON.parse(s);
+}
+/* Các ngày nghỉ đã đăng ký của 1 người trong năm nay (mọi file tháng mẫu mới) – chỉ trả cho chính người đó */
+function nghiNam_(ten) {
+  const nam = homNay_().slice(0, 4), n = nn_(ten), moi = {}, out = [], co = {};
+  for (const f of dsFileLich_()) { const t = thangCuaFile_(f); if (t && String(t.nam) === nam && (!moi[t.thang] || String(f.sua) > String(moi[t.thang].sua))) moi[t.thang] = f; }
+  for (const f of Object.values(moi)) {
+    const T = taiThang_(f.id); if (!T) continue;
+    for (const r of T.dk) if (nn_(r.ten) === n && r.kieu && /^(|Đã duyệt|Chờ duyệt|Chờ người làm thay)$/.test(r.tt))
+      for (const k of dsNgay_(r.tu, r.den)) if (k.slice(0, 4) === nam && !co[k + r.kieu]) { co[k + r.kieu] = 1; out.push({ ngay: k, kieu: r.kieu, tt: r.tt || 'Đã duyệt' }); }
+  }
+  return out.sort((a, b) => a.ngay.localeCompare(b.ngay));
+}
 function cuaToi_(ai) {
-  const hom = homNay_(), tu = congNgay_(hom, -31), n = nn_(ai.ten), o = { don: [], doi: [], choToi: [], truc: [], choDuyet: [] };
+  const hom = homNay_(), tu = congNgay_(hom, -31), n = nn_(ai.ten), o = { don: [], doi: [], choToi: [], truc: [], choDuyet: [], nghiNam: nghiNam_(ai.ten) };
   for (const T of cacThang_()) {
     for (const r of T.dk) if (nn_(r.ten) === n && r.den >= tu)
       o.don.push({ ma: r.ma, tu: r.tu, den: r.den, kieu: r.kieu, tt: r.tt || 'Đã duyệt', thay: r.thay, note: r.note, huy: !!r.ma && r.tu >= hom && /^(Đã duyệt|Chờ duyệt|Chờ người làm thay)$/.test(r.tt) });
