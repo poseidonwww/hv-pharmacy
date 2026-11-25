@@ -32,6 +32,7 @@
       <li><a href="#tra-cuu">Tra cứu</a></li>
       <li><a href="#tai-lieu">Tài liệu dược</a></li>
       <li><a href="#y-khoa">Tài liệu y khoa</a></li>
+      <li><a href="lich-lam-viec.html">Lịch làm việc</a></li>
       <li><a href="#video">Hướng dẫn</a></li>
       <li><a href="#lien-he">Liên hệ</a></li>
     </ul>
@@ -71,6 +72,14 @@
           <div><b id="n-docs">0</b><small>Tài liệu</small></div>
         </div>
       </aside>
+    </div>
+  </div>
+
+  <div class="today-bar" id="today-bar" hidden>
+    <div class="wrap">
+      <span class="tb-lbl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg><b>Hôm nay trực</b><small id="tb-day"></small></span>
+      <span class="tb-list" id="tb-list"></span>
+      <a class="tb-go" href="lich-lam-viec.html">Lịch làm việc dược →</a>
     </div>
   </div>
 
@@ -440,13 +449,26 @@ async function loadDocs(){
   fetch('data/huong-dan-byt.json').then(r=>r.json()).then(d=>{BYT=d.stt||{};
     BYT_DS=Object.entries(BYT).map(([k,v])=>({stt:+k,so:v[0].split('/')[0],iso:v[1].split('/').reverse().join('-'),y:v[1].slice(-4)}));
     capNhatSoDocs();renderDocs(qi.value)}).catch(()=>{});
-  const apply=d=>{DOCDATA=d.nhom||DOCDATA;DOC_BAN_TAM=!!d.banTam;capNhatSoDocs();renderDocs(qi.value)};
+  const apply=d=>{veHomNayTruc(d.lich);DOCDATA=d.nhom||DOCDATA;DOC_BAN_TAM=!!d.banTam;capNhatSoDocs();renderDocs(qi.value)};
   let cached=null;try{cached=JSON.parse(localStorage.getItem('hv-docs-v1')||'null')}catch(e){}
   if(cached)apply(cached);
   for(const u of [TAI_LIEU_API,'data/tai-lieu.json'].filter(Boolean)){
     try{const r=await fetch(u);if(!r.ok)throw 0;const d=await r.json();if(!d.nhom)throw 0;apply(d);try{localStorage.setItem('hv-docs-v1',JSON.stringify(d))}catch(e){};return}catch(e){}
   }
   if(!cached)renderDocs(qi.value);
+}
+/* Dải "Hôm nay trực" (dữ liệu lịch từ API – xem lich-lam-viec.html) */
+function veHomNayTruc(lich){
+  const bar=$('today-bar'); if(!lich||!lich.ngay)return;
+  const d=new Date(), k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'), x=lich.ngay[k];
+  if(!x){bar.hidden=true;return}
+  const VAI=[[/truc cap phat/,'Cấp phát'],[/truc kho/,'Kho'],[/kem/,'Kèm trưa']];
+  const ds=VAI.map(([re,t])=>{const n=Object.keys(x).find(l=>re.test(norm(l)));return n&&x[n]?[t,x[n]]:null}).filter(Boolean);
+  if(!ds.length){bar.hidden=true;return}
+  const hoa=s=>String(s).replace(/(^|\s)(\S)/g,(m,a,b)=>a+b.toUpperCase());
+  $('tb-day').textContent=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'][d.getDay()]+' '+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+  $('tb-list').innerHTML=ds.map(([t,v])=>`<span><small>${t}</small><b>${hoa(v).replace(/[<>&]/g,'')}</b></span>`).join('');
+  bar.hidden=false;
 }
 /* Số tài liệu ở khung "Truy cập nhanh" = số dòng thực hiện (đã gộp bản trùng) */
 const capNhatSoDocs=()=>{$('n-docs').textContent=['quy-trinh','ban-tin','guideline'].reduce((a,k)=>a+docItems(k).length,0)};

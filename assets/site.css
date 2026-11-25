@@ -332,3 +332,17 @@ dialog.detail::backdrop{background:rgb(8 20 32 / .55);backdrop-filter:blur(2px)}
   .card{padding:24px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* Trang chủ: dải "Hôm nay trực" dưới hero */
+.today-bar{background:var(--surface);border-bottom:1px solid var(--line)}
+.today-bar .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;padding-top:14px;padding-bottom:14px}
+.tb-lbl{display:inline-flex;align-items:center;gap:8px;color:var(--brand)}
+.tb-lbl b{font-size:var(--fs-base)}
+.tb-lbl small{color:var(--muted);font-size:var(--fs-xs);font-weight:600}
+.tb-list{display:flex;flex-wrap:wrap;gap:8px 18px}
+.tb-list span{display:inline-flex;align-items:baseline;gap:6px}
+.tb-list small{font-size:var(--fs-xs);color:var(--muted);font-weight:600}
+.tb-list b{font-size:var(--fs-base)}
+.tb-go{margin-left:auto;font-size:var(--fs-sm);font-weight:600;color:var(--brand);text-decoration:none}
+.tb-go:hover{text-decoration:underline}
+@media (max-width:760px){.tb-go{margin-left:0}}

@@ -23,7 +23,9 @@ function doGet(e) {
   if (!out) {
     const nhom = {};
     for (const [k, id] of Object.entries(THU_MUC)) nhom[k] = docThuMuc_(id, '');
-    out = JSON.stringify({ t: new Date().toISOString(), nhom });
+    let lich = null;
+    try { lich = lichLamViec_(); } catch (err) { lich = { loi: String(err) }; }
+    out = JSON.stringify({ t: new Date().toISOString(), nhom, lich });
     luuCache_(cache, out);
   }
   return ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
@@ -105,3 +107,83 @@ function docCham_(folder, duongDan) {
 
 /* Chạy thử trong trình soạn thảo để cấp quyền và xem kết quả */
 function thu() { Logger.log(doGet({ parameter: { fresh: '1' } }).getContent().slice(0, 500)); }
+
+/* ===== Lịch làm việc dược (25/11/2026) =====
+   Đọc thư mục "LỊCH LÀM VIỆC": mỗi tháng 1 Google Sheet (tên có "Tháng N" hoặc "_TN_YYYY", năm lấy từ tên hoặc thư mục "2026"),
+   trang tính ĐẦU TIÊN dạng lưới theo tuần (dòng ngày + các dòng vai trò).
+   Trả về lịch tháng trước / tháng này / tháng sau. BỎ mọi dòng có chữ "NGHỈ" (không công khai thông tin nghỉ của nhân viên).
+   KHÔNG trả id/link file (thư mục đang chia sẻ quyền sửa). */
+const THU_MUC_LICH = '<ID thư mục LỊCH LÀM VIỆC – chỉ ghi trong dự án Apps Script, KHÔNG đưa vào repo vì thư mục đang chia sẻ quyền sửa>';
+const TZ_VN = 'Asia/Ho_Chi_Minh';
+function boDau_(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase(); }
+function dsSheetLich_(id, tenCha, out) {
+  let token;
+  do {
+    const r = Drive.Files.list({ q: "'" + id + "' in parents and trashed = false", pageSize: 1000, pageToken: token,
+      fields: 'nextPageToken, files(id, name, mimeType, modifiedTime)' });
+    for (const f of r.files || []) {
+      if (f.mimeType === 'application/vnd.google-apps.folder') dsSheetLich_(f.id, f.name, out);
+      else if (f.mimeType === 'application/vnd.google-apps.spreadsheet') out.push({ id: f.id, ten: f.name, cha: tenCha, sua: f.modifiedTime });
+    }
+    token = r.nextPageToken;
+  } while (token);
+  return out;
+}
+function thangCuaFile_(f) {
+  const t = boDau_(f.ten);
+  const m = t.match(/thang\s*(\d{1,2})/) || t.match(/(?:^|[_\s-])t(\d{1,2})(?=[_\s-]|$)/);
+  if (!m) return null;
+  const thang = +m[1];
+  if (thang < 1 || thang > 12) return null;
+  const nam = +((t.match(/20\d\d/) || [])[0] || (String(f.cha).match(/^\s*(20\d\d)\s*$/) || [])[1] || 0);
+  return nam ? { thang: thang, nam: nam } : null;
+}
+function lichLamViec_() {
+  const hom = new Date(), y = +Utilities.formatDate(hom, TZ_VN, 'yyyy'), m = +Utilities.formatDate(hom, TZ_VN, 'M');
+  const can = [-1, 0, 1].map(d => { const x = new Date(y, m - 1 + d, 1); return { nam: x.getFullYear(), thang: x.getMonth() + 1 }; });
+  const files = dsSheetLich_(THU_MUC_LICH, '', []).map(f => ({ f: f, tm: thangCuaFile_(f) })).filter(o => o.tm);
+  const chon = [];
+  for (const c of can) {
+    const ds = files.filter(o => o.tm.nam === c.nam && o.tm.thang === c.thang).sort((a, b) => String(b.f.sua).localeCompare(String(a.f.sua)));
+    if (ds.length) chon.push({ nam: c.nam, thang: c.thang, f: ds[0].f });
+  }
+  const ngay = {}, chu = {}, vai = [];
+  /* SpreadsheetApp (quyền xem bảng tính, đã cấp 25/11/2026): giá trị hiển thị ("30/11", "01"…) của trang tính đầu tiên */
+  for (const c of chon) docLuoi_(SpreadsheetApp.openById(c.f.id).getSheets()[0].getDataRange().getDisplayValues(), c, ngay, chu, vai);
+  return { capNhat: new Date().toISOString(), thang: chon.map(c => ({ nam: c.nam, thang: c.thang, ten: c.f.ten, sua: c.f.sua })), vaiTro: vai, ngay: ngay };
+}
+/* Lưới tuần: dòng có >= 3 ô dạng "dd" hoặc "dd/mm" = dòng ngày; các dòng sau = vai trò (cột A) × ngày (cùng cột) */
+function docLuoi_(rows, c, ngay, chu, vai) {
+  let cot = null, thangHT = c.thang, truoc = 0, dau = true;
+  for (const r of rows) {
+    const o = r.map(x => String(x).replace(/\s+/g, ' ').trim());
+    const ds = [];
+    o.forEach((x, i) => { const mm = x.match(/^(\d{1,2})(?:\/(\d{1,2}))?$/); if (i > 0 && mm && +mm[1] >= 1 && +mm[1] <= 31 && (!mm[2] || +mm[2] <= 12)) ds.push([i, +mm[1], mm[2] ? +mm[2] : 0]); });
+    if (ds.length >= 3) {
+      cot = ds.map(([i, d, mo]) => {
+        let th, nm = c.nam;
+        if (mo) { th = mo; if (th - c.thang > 6) nm--; else if (c.thang - th > 6) nm++; }
+        else {
+          if (dau && d > 20) thangHT = c.thang - 1; else if (!dau && d < truoc) thangHT++;
+          truoc = d; dau = false; th = thangHT;
+          if (th < 1) { th += 12; nm--; } else if (th > 12) { th -= 12; nm++; }
+        }
+        return [i, nm + '-' + String(th).padStart(2, '0') + '-' + String(d).padStart(2, '0'), th === c.thang && nm === c.nam];
+      });
+      continue;
+    }
+    if (!cot) continue;
+    const nhan = o[0];
+    if (!nhan || /nghi/.test(boDau_(nhan))) continue;
+    if (vai.indexOf(nhan) < 0) vai.push(nhan);
+    for (const [i, k, cuaThang] of cot) {
+      /* bỏ phần ghi chú nghỉ lọt vào dòng làm việc: (f), (F), (pn), (p), "nghỉ" */
+      const v = String(o[i] || '').split(/\s*,\s*/).filter(p => p && !/\((?:f|pn|p|om|ốm)\)|nghỉ|\bnghi\b/i.test(p)).join(', ');
+      if (!v) continue;
+      ngay[k] = ngay[k] || {}; chu[k] = chu[k] || {};
+      if (cuaThang || !chu[k][nhan]) { ngay[k][nhan] = v; chu[k][nhan] = cuaThang; }
+    }
+  }
+}
+/* Chạy thử trong trình soạn thảo */
+function thuLich() { const l = lichLamViec_(); Logger.log(JSON.stringify({ thang: l.thang, vaiTro: l.vaiTro, soNgay: Object.keys(l.ngay).length, mau: l.ngay[Object.keys(l.ngay).sort()[30]] })); }

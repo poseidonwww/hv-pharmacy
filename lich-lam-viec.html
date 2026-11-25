@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lịch làm việc dược · Khoa Dược BVĐK Hùng Vương</title>
+<meta name="description" content="Lịch trực và lịch làm việc của Khoa Dược – Bệnh viện Đa khoa Hùng Vương: hôm nay ai trực, lịch theo tuần, lịch của từng người.">
+<meta name="theme-color" content="#1577bc">
+<link rel="icon" type="image/png" href="assets/favicon-bvhv.png">
+<link rel="apple-touch-icon" href="assets/favicon-bvhv.png">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* ===== Riêng trang Lịch làm việc dược ===== */
+.page-hero .lead{margin-bottom:18px;max-width:64ch}
+.who{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:6px}
+.who label{font-size:var(--fs-sm);color:rgb(255 255 255 / .85);font-weight:600}
+.who select{font:600 var(--fs-base) var(--font);color:var(--ink);background:var(--surface);border:0;border-radius:var(--r-sm);padding:10px 36px 10px 14px;min-width:220px;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 52%,calc(100% - 13px) 52%;background-size:5px 5px;background-repeat:no-repeat;cursor:pointer}
+.who .meta{font-size:var(--fs-xs);color:rgb(255 255 255 / .75)}
+.blk{padding:36px 0}
+.blk+.blk{border-top:1px solid var(--line)}
+.blk h2{font-size:var(--fs-md);font-weight:700;margin:0 0 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.blk h2 small{font-size:var(--fs-xs);font-weight:600;color:var(--muted)}
+
+/* Hôm nay / ngày mai */
+.days2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm)}
+.day.today{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand),var(--shadow-sm)}
+.day header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:14px 18px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.day.today header{background:var(--brand);color:#fff;border-color:var(--brand)}
+.day header b{font-size:var(--fs-md)}
+.day header span{font-size:var(--fs-sm);opacity:.85}
+.roles{list-style:none;margin:0;padding:6px 0}
+.roles li{display:grid;grid-template-columns:minmax(120px,42%) 1fr;gap:12px;padding:9px 18px;align-items:baseline}
+.roles li+li{border-top:1px dashed var(--line)}
+.roles .r{font-size:var(--fs-sm);color:var(--muted);font-weight:600}
+.roles .p{font-size:var(--fs-base);font-weight:600}
+.roles li.key .r{color:var(--accent)}
+.empty-day{padding:18px;color:var(--muted);font-size:var(--fs-sm)}
+mark.me{background:color-mix(in srgb,var(--accent) 18%,transparent);color:inherit;border-radius:4px;padding:0 3px;box-shadow:inset 0 -2px 0 var(--accent)}
+
+/* Lịch của tôi */
+.mine{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.mi{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 14px}
+.mi .d{flex:none;width:52px;text-align:center;border-radius:8px;background:var(--tint);color:var(--brand);padding:4px 0;line-height:1.15}
+.mi .d b{display:block;font-size:20px}
+.mi .d small{font-size:11px;font-weight:600}
+.mi.today .d{background:var(--brand);color:#fff}
+.mi .t{font-size:var(--fs-sm);font-weight:600}
+.mi .t small{display:block;font-weight:500;color:var(--muted);font-size:var(--fs-xs);margin-top:2px}
+.mine-tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.mine-tools .ics-note{font-size:var(--fs-xs);color:var(--muted)}
+
+/* Lịch tuần */
+.wk-nav{display:flex;align-items:center;gap:8px;margin-left:auto}
+.wk-nav button{font:600 var(--fs-sm) var(--font);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:var(--r-sm);padding:7px 12px;cursor:pointer}
+.wk-nav button:hover{border-color:var(--brand);color:var(--brand)}
+.wk-nav button:disabled{opacity:.4;cursor:default}
+.wk-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table.wk{border-collapse:collapse;width:100%;min-width:760px;font-size:var(--fs-sm);table-layout:fixed}
+.wk th,.wk td{border-bottom:1px solid var(--line);padding:10px 10px;text-align:left;vertical-align:top}
+.wk td+td,.wk th+th{border-left:1px solid var(--line)}
+.wk thead th{background:var(--surface-2);font-weight:700;white-space:nowrap}
+.wk thead th small{display:block;font-weight:500;color:var(--muted);font-size:var(--fs-xs)}
+.wk tbody th{font-weight:600;color:var(--muted);white-space:nowrap;background:var(--surface-2);width:150px}
+.wk tbody tr.key th{color:var(--accent)}
+.wk .wkend{background:color-mix(in srgb,var(--surface-2) 60%,transparent)}
+.wk .tod{background:var(--tint)}
+.wk thead th.tod{background:var(--brand);color:#fff}
+.wk thead th.tod small{color:rgb(255 255 255 / .85)}
+.wk tr:last-child>*{border-bottom:0}
+/* điện thoại: lịch tuần thành danh sách ngày */
+.wk-list{display:none}
+@media (max-width:760px){
+  .days2{grid-template-columns:1fr}
+  .mine{grid-template-columns:1fr 1fr}
+  .mi{padding:8px 10px;gap:10px}
+  .mi .d{width:44px}
+  .wk-wrap{display:none}
+  .wk-list{display:grid;gap:12px}
+  .wk-nav{margin-left:0;width:100%;justify-content:space-between}
+}
+.src{margin-top:18px;font-size:var(--fs-xs);color:var(--muted);line-height:1.6}
+@media print{
+  .topbar,header.nav,.page-hero,.no-print,footer{display:none!important}
+  .wk-wrap{display:block!important;border:0}.wk-list{display:none!important}
+  table.wk{min-width:0;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <span>Bệnh viện Đa khoa Hùng Vương · Khoa Dược</span>
+  <span>Email: <a href="mailto:khoaduochv@gmail.com">khoaduochv@gmail.com</a></span>
+</div></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="./" aria-label="Khoa Dược – BVĐK Hùng Vương, trang chủ">
+      <img src="assets/favicon-bvhv.png" width="44" height="44" alt="">
+      <span><b>Khoa Dược</b><small>Bệnh viện Đa khoa Hùng Vương</small></span>
+    </a>
+    <ul>
+      <li><a href="danh-muc.html">Danh mục thuốc</a></li>
+      <li><a href="tuong-tac.html">Tương tác</a></li>
+      <li><a href="tiem-truyen.html">Tiêm truyền</a></li>
+      <li><a href="dac-biet.html">Người bệnh đặc biệt</a></li>
+      <li><a href="icd10.html">ICD-10</a></li>
+      <li><a href="quy-trinh.html">Quy trình</a></li>
+      <li><a href="lich-lam-viec.html" aria-current="page">Lịch làm việc</a></li>
+    </ul>
+    <button class="theme" id="theme" aria-label="Đổi giao diện sáng/tối">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="hero page-hero">
+    <div class="wrap">
+      <nav class="crumb" aria-label="Đường dẫn"><a href="./">Trang chủ</a><span>/</span><span>Lịch làm việc dược</span></nav>
+      <h1>Lịch làm việc dược</h1>
+      <p class="lead">Ai trực hôm nay, lịch theo tuần và lịch riêng của từng người – lấy từ lịch Khoa Dược đang dùng, tự cập nhật khi khoa sửa lịch.</p>
+      <div class="who no-print">
+        <label for="me">Xem lịch của:</label>
+        <select id="me"><option value="">— Chọn tên của bạn —</option></select>
+        <span class="meta" id="meta"></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="app"><div class="wrap"><div class="state" id="state">Đang tải lịch…</div></div></div>
+</main>
+
+<footer>
+  <div class="copy"><div class="wrap"><span>© 2026 Khoa Dược &amp; CNTT – Bệnh viện Đa khoa Hùng Vương</span><span><a href="./" style="color:inherit">← Về trang chủ</a></span></div></div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script>
+/* ====== CẤU HÌNH ======
+   Dữ liệu: API tài liệu (TAI_LIEU_API trong assets/site.js) → trường "lich":
+     { capNhat, thang:[{nam,thang,ten}], vaiTro:[nhãn dòng], ngay:{ "2026-11-25": { "TRỰC CẤP PHÁT":"Tuấn", … } } }
+   Apps Script đọc thư mục Drive "LỊCH LÀM VIỆC" (file Google Sheet mỗi tháng, trang tính đầu dạng lưới tuần),
+   lấy tháng trước/này/sau và BỎ các dòng "NGHỈ". Web không biết link file gốc.
+   VAI_UU_TIEN: thứ tự & tên hiển thị các dòng (khớp theo từ khoá, không dấu). Dòng lạ hiện cuối, tên viết hoa kiểu câu. */
+const VAI_UU_TIEN=[
+  [/truc cap phat/,"Trực cấp phát",1],[/truc kho/,"Trực kho",1],[/kem/,"Kèm buổi trưa",1],
+  [/nha thuoc.*1/,"Nhà thuốc – ca 1",0],[/nha thuoc.*2/,"Nhà thuốc – ca 2",0],
+  [/ngoai tru/,"Ngoại trú",0],[/kho vat tu/,"Kho vật tư",0],[/kho thuoc/,"Kho thuốc",0],[/hanh chinh/,"Hành chính",0]
+];
+/* Các dòng dùng để lấy danh sách tên (ô chỉ ghi tên người) */
+const VAI_CO_TEN=/truc|kem|nha thuoc/;
+
+const $=id=>document.getElementById(id);
+const norm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/gi,"d").toLowerCase();
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const THU=["Chủ nhật","Thứ Hai","Thứ Ba","Thứ Tư","Thứ Năm","Thứ Sáu","Thứ Bảy"];
+const THU_NGAN=["CN","T2","T3","T4","T5","T6","T7"];
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const tuIso=s=>{const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const ddmm=d=>String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0");
+const congNgay=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const dauTuan=d=>{const x=new Date(d);const w=(x.getDay()+6)%7;x.setDate(x.getDate()-w);x.setHours(0,0,0,0);return x};
+/* Viết hoa chữ đầu mỗi từ cho tên (ô ghi "lương", "vân anh") – giữ nguyên ô có câu dài */
+const hoaTen=s=>{s=String(s);if(s.split(/[\s,]+/).filter(Boolean).length>4)return s.charAt(0).toUpperCase()+s.slice(1);  /* câu dài: chỉ viết hoa chữ đầu */
+  return s.split(/(\s+)/).map(w=>w.length&&!/^\(/.test(w)?w.charAt(0).toUpperCase()+w.slice(1):w).join("")};
+
+let L=null, VAI=[], TEN=[], me="", tuan=null;
+const HOM=new Date(); HOM.setHours(0,0,0,0);
+
+function vaiInfo(nhan){
+  const t=norm(nhan), i=VAI_UU_TIEN.findIndex(([re])=>re.test(t));
+  if(i>=0)return {nhan,ten:VAI_UU_TIEN[i][1],key:!!VAI_UU_TIEN[i][2],rank:i};
+  const s=nhan.toLowerCase().replace(/\s*\((lam|làm)\)/i,"");return {nhan,ten:s.charAt(0).toUpperCase()+s.slice(1),key:false,rank:99};
+}
+function setLich(lich){
+  L=lich;
+  /* gộp các dòng cùng tên hiển thị (vd "HÀNH CHÍNH (LÀM)" và "HÀNH CHÍNH (LÀM)+") */
+  const gop={};for(const v of (lich.vaiTro||[]).map(vaiInfo)){(gop[v.ten]=gop[v.ten]||{...v,nhans:[]}).nhans.push(v.nhan)}
+  VAI=Object.values(gop).sort((a,b)=>a.rank-b.rank);
+  /* danh sách tên: tách ô theo dấu phẩy/“và”, bỏ ghi chú trong ngoặc */
+  const dem={};
+  for(const ngay of Object.values(lich.ngay||{}))for(const [nhan,v] of Object.entries(ngay)){
+    if(!VAI_CO_TEN.test(norm(nhan)))continue;
+    for(let p of String(v).split(/,|;|\+| và /)){p=p.replace(/\(.*?\)/g,"").replace(/\./g," ").replace(/\s+/g," ").trim();if(!p||p.split(/\s+/).length>3||/\d/.test(p)||/^\S\s/.test(p))continue;  /* bỏ viết tắt kiểu "V.Anh" */
+      const k=norm(p);dem[k]=dem[k]||{ten:hoaTen(p.toLowerCase()),n:0};dem[k].n++}
+  }
+  TEN=Object.values(dem).filter(x=>x.n>=1).sort((a,b)=>a.ten.localeCompare(b.ten,"vi"));
+  try{me=localStorage.getItem("hv-lich-toi")||""}catch(e){}
+  if(me&&!TEN.some(x=>norm(x.ten)===me))me="";
+  $("me").innerHTML='<option value="">— Chọn tên của bạn —</option>'+TEN.map(x=>`<option value="${esc(norm(x.ten))}"${norm(x.ten)===me?" selected":""}>${esc(x.ten)}</option>`).join("");
+  const th=(lich.thang||[]).map(t=>"T"+t.thang+"/"+t.nam).join(", ");
+  $("meta").textContent=(th?"Lịch "+th:"")+(lich.capNhat?" · cập nhật "+new Date(lich.capNhat).toLocaleString("vi-VN",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"}):"");
+  if(!tuan)tuan=dauTuan(HOM);
+  ve();
+}
+/* tô sáng tên người đang chọn trong ô */
+const coToi=v=>me&&new RegExp("(^|[^a-z])"+me.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"($|[^a-z])").test(norm(v));
+const oTen=v=>{const s=esc(hoaTen(String(v)));return coToi(v)?`<mark class="me">${s}</mark>`:s};
+
+const gt=(x,v)=>x?v.nhans.map(n=>x[n]).filter(Boolean).join(", "):"";
+function theNgay(d,nhanDe){
+  const k=iso(d), x=(L.ngay||{})[k], la=+d===+HOM;
+  const ds=VAI.filter(v=>gt(x,v));
+  return `<article class="day${la?" today":""}"><header><b>${nhanDe||THU[d.getDay()]}</b><span>${THU[d.getDay()]} · ${ddmm(d)}/${d.getFullYear()}</span></header>`
+   +(ds.length?`<ul class="roles">${ds.map(v=>`<li class="${v.key?"key":""}"><span class="r">${esc(v.ten)}</span><span class="p">${oTen(gt(x,v))}</span></li>`).join("")}</ul>`
+     :`<div class="empty-day">Chưa có lịch cho ngày này.</div>`)+`</article>`;
+}
+function ve(){
+  const ngayCo=Object.keys(L.ngay||{}).sort();
+  if(!ngayCo.length){$("app").innerHTML=`<div class="wrap"><div class="state">Chưa có lịch làm việc cho tháng này. Khoa Dược sẽ cập nhật sớm.</div></div>`;return}
+  const dau=tuIso(ngayCo[0]), cuoi=tuIso(ngayCo[ngayCo.length-1]);
+  let h="";
+  /* 1) Hôm nay – ngày mai */
+  h+=`<section class="blk"><div class="wrap"><h2>Hôm nay &amp; ngày mai</h2><div class="days2">${theNgay(HOM,"Hôm nay")}${theNgay(congNgay(HOM,1),"Ngày mai")}</div></div></section>`;
+  /* 2) Lịch của tôi */
+  if(me){
+    const ten=(TEN.find(x=>norm(x.ten)===me)||{}).ten||me;
+    const cua=[];
+    for(const k of ngayCo){const d=tuIso(k);if(d<HOM)continue;const x=L.ngay[k];for(const v of VAI){const t=gt(x,v);if(t&&coToi(t))cua.push({d,v,txt:t})}}
+    const ky=cua.filter(c=>c.v.key).length;
+    h+=`<section class="blk"><div class="wrap"><h2>Lịch của ${esc(ten)} <small>${cua.length?`${cua.length} lượt từ hôm nay · ${ky} lượt trực`:"không có lịch từ hôm nay"}</small></h2>`
+      +(cua.length?`<div class="mine">${cua.slice(0,60).map(c=>`<div class="mi${+c.d===+HOM?" today":""}"><span class="d"><small>${THU_NGAN[c.d.getDay()]}</small><b>${c.d.getDate()}</b><small>Th${c.d.getMonth()+1}</small></span><span class="t">${esc(c.v.ten)}${norm(c.txt)!==me?`<small>${esc(hoaTen(c.txt))}</small>`:""}</span></div>`).join("")}</div>`
+        +`<div class="mine-tools no-print"><button class="btn" id="ics">Thêm vào lịch điện thoại (.ics)</button><span class="ics-note">Tải file rồi mở bằng ứng dụng Lịch (Google Calendar, iPhone…). Lịch thay đổi thì tải lại.</span></div>`:"")
+      +`</div></section>`;
+  }
+  /* 3) Lịch theo tuần */
+  const ngay7=[...Array(7)].map((_,i)=>congNgay(tuan,i));
+  const x7=ngay7.map(d=>(L.ngay||{})[iso(d)]||{});
+  const dong=VAI.filter(v=>x7.some(x=>gt(x,v)));
+  const laTuanNay=+tuan===+dauTuan(HOM);
+  h+=`<section class="blk"><div class="wrap"><h2>Lịch theo tuần <small>${ddmm(ngay7[0])} – ${ddmm(ngay7[6])}/${ngay7[6].getFullYear()}${laTuanNay?" · tuần này":""}</small>
+      <span class="wk-nav no-print"><button id="wk-prev"${ngay7[0]<=dau?" disabled":""}>← Tuần trước</button><button id="wk-now"${laTuanNay?" disabled":""}>Tuần này</button><button id="wk-next"${ngay7[6]>=cuoi?" disabled":""}>Tuần sau →</button><button id="wk-print">In</button></span></h2>`;
+  h+=`<div class="wk-wrap"><table class="wk"><thead><tr><th>Vị trí</th>${ngay7.map(d=>`<th class="${+d===+HOM?"tod":(d.getDay()%6===0?"wkend":"")}">${THU[d.getDay()]}<small>${ddmm(d)}</small></th>`).join("")}</tr></thead><tbody>`
+    +(dong.length?dong.map(v=>`<tr class="${v.key?"key":""}"><th>${esc(v.ten)}</th>${x7.map((x,i)=>`<td class="${+ngay7[i]===+HOM?"tod":(ngay7[i].getDay()%6===0?"wkend":"")}">${gt(x,v)?oTen(gt(x,v)):""}</td>`).join("")}</tr>`).join("")
+      :`<tr><td colspan="8" class="empty-day">Chưa có lịch cho tuần này.</td></tr>`)+`</tbody></table></div>`;
+  h+=`<div class="wk-list">${ngay7.map(d=>theNgay(d)).join("")}</div>`;
+  h+=`<p class="src">Nguồn: lịch làm việc của Khoa Dược trên Google Drive, tự cập nhật trong khoảng 10 phút sau khi khoa sửa. Trang chỉ hiển thị phân công làm việc và trực; không hiển thị thông tin nghỉ.</p></div></section>`;
+  $("app").innerHTML=h;
+  const go=n=>{tuan=n;ve();document.querySelector(".wk-nav").scrollIntoView({block:"nearest"})};
+  $("wk-prev").onclick=()=>go(congNgay(tuan,-7));
+  $("wk-next").onclick=()=>go(congNgay(tuan,7));
+  $("wk-now").onclick=()=>go(dauTuan(HOM));
+  $("wk-print").onclick=()=>print();
+  if($("ics"))$("ics").onclick=taiIcs;
+}
+/* Xuất lịch của người đang chọn ra file .ics (sự kiện cả ngày) */
+function taiIcs(){
+  const ten=(TEN.find(x=>norm(x.ten)===me)||{}).ten||me, ds=[];
+  const f=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
+  for(const k of Object.keys(L.ngay).sort()){const d=tuIso(k);if(d<HOM)continue;for(const v of VAI){const t=gt(L.ngay[k],v);if(t&&coToi(t))ds.push(["BEGIN:VEVENT","UID:"+k+"-"+norm(v.ten).replace(/\W+/g,"")+"-"+me.replace(/\W+/g,"")+"@hv-pharmacy","DTSTAMP:"+new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z","DTSTART;VALUE=DATE:"+f(d),"DTEND;VALUE=DATE:"+f(congNgay(d,1)),"SUMMARY:"+v.ten+" – Khoa Dược","END:VEVENT"].join("\r\n"))}}
+  const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//HV-Pharmacy//Lich lam viec//VI","CALSCALE:GREGORIAN",...ds,"END:VCALENDAR"].join("\r\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));a.download="lich-khoa-duoc-"+norm(ten).replace(/\s+/g,"-")+".ics";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+$("me").addEventListener("change",e=>{me=e.target.value;try{localStorage.setItem("hv-lich-toi",me)}catch(x){};ve()});
+
+/* ---------- Tải dữ liệu: bộ nhớ đệm chung với trang chủ → API ---------- */
+(async()=>{
+  let cached=null;try{cached=JSON.parse(localStorage.getItem("hv-docs-v1")||"null")}catch(e){}
+  if(cached&&cached.lich&&cached.lich.ngay)setLich(cached.lich);
+  try{const r=await fetch(TAI_LIEU_API);if(!r.ok)throw 0;const d=await r.json();
+    if(d.lich&&d.lich.ngay){setLich(d.lich);try{localStorage.setItem("hv-docs-v1",JSON.stringify(d))}catch(e){}}
+    else if(!L)$("state").textContent="Lịch làm việc đang được cập nhật. Vui lòng quay lại sau.";
+  }catch(e){if(!L)$("state").innerHTML="Không tải được lịch. Kiểm tra kết nối mạng rồi tải lại trang."}
+})();
+
+const root=document.documentElement;
+try{const s=localStorage.getItem("hv-theme");if(s)root.dataset.theme=s}catch(e){}
+$("theme").onclick=()=>{const dark=root.dataset.theme?root.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;root.dataset.theme=dark?"light":"dark";try{localStorage.setItem("hv-theme",root.dataset.theme)}catch(e){}};
+</script>
+</body>
+</html>
