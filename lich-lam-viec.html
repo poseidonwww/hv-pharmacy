@@ -382,25 +382,35 @@ const thuDm=s=>s?THU_NGAN[tuIso(s).getDay()]+" "+dm(s):"";
 const khoang=(a,b)=>thuDm(a)+(b&&b!==a?" – "+thuDm(b):"");
 let S=null, dkMsg=null, dkBan=false, dkDoiMa=false;
 const F={ngays:[],loai:"Phép tháng",buoi:"Cả ngày",khac:"",thay:"",ghiChu:"",ca:"",nhan:"",doi:""};
-try{S=JSON.parse(localStorage.getItem("hv-lich-dn")||"null")}catch(e){}
-const luuS=nho=>{try{if(nho)localStorage.setItem("hv-lich-dn",JSON.stringify({ten:S.ten,ma:S.ma}));else localStorage.removeItem("hv-lich-dn")}catch(e){}};
+try{S=JSON.parse(localStorage.getItem("hv-lich-dn")||"null");if(S)S.nho=true}catch(e){}
+/* "Ghi nhớ trên máy này": lưu cả dữ liệu lần trước để mở lại trang hiện ngay, rồi cập nhật ngầm */
+const luuS=nho=>{try{if(nho&&S){S.nho=true;localStorage.setItem("hv-lich-dn",JSON.stringify({ten:S.ten,ma:S.ma,laLD:S.laLD,cuaToi:S.cuaToi,nghiNam:S.nghiNam}))}else localStorage.removeItem("hv-lich-dn")}catch(e){}};
 async function goiApi(hd,du){
   const r=await fetch(TAI_LIEU_API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({hd,ten:S.ten,ma:S.ma},du||{}))});
   if(!r.ok)throw new Error("Máy chủ không phản hồi – thử lại sau");
   const d=await r.json(); if(!d.ok)throw new Error(d.loi||"Có lỗi");
-  S.ten=d.ten||S.ten; S.laLD=!!d.laLD; if(d.cuaToi)S.cuaToi=d.cuaToi;
+  S.ten=d.ten||S.ten; S.laLD=!!d.laLD; if(d.cuaToi)S.cuaToi=d.cuaToi; if(d.nghiNam)S.nghiNam=d.nghiNam;
+  if(S.nho)luuS(true);
   if(d.lich&&d.lich.ngay){setLich(d.lich);try{const c=JSON.parse(localStorage.getItem("hv-docs-v1")||"null");if(c){c.lich=d.lich;localStorage.setItem("hv-docs-v1",JSON.stringify(c))}}catch(e){}}
   return d;
 }
+/* o.truoc: hiện kết quả ngay (lạc quan) trước khi máy chủ trả lời; lỗi thì trả lại như cũ. o.nen: chạy ngầm, không khoá nút */
 async function chay(hd,du,o){
-  o=o||{}; dkBan=true; dkMsg={t:"cho",s:o.cho||"Đang xử lý… (khoảng 5–15 giây)"}; veDK();
-  try{const d=await goiApi(hd,du);dkMsg=d.thongBao?{t:/không|thiếu|chờ/i.test(d.thongBao)?"warn":"ok",s:d.thongBao}:null;if(o.ok)o.ok(d)}
-  catch(e){dkMsg={t:"err",s:e.message};if(o.loi)o.loi(e)}
-  dkBan=false; veDK();
-  const m=document.querySelector("#dk .dk-msg");if(m&&o.cuon!==false)m.scrollIntoView({block:"nearest",behavior:"smooth"});
+  o=o||{};
+  const cu=o.truoc&&S?JSON.stringify({c:S.cuaToi,n:S.nghiNam,l:L}):null;
+  if(o.truoc){try{o.truoc()}catch(e){}ve()}
+  if(!o.nen){dkBan=true;dkMsg={t:"cho",s:o.cho||"Đang lưu…"};veDK()}
+  try{const d=await goiApi(hd,du);if(!o.nen)dkMsg=d.thongBao?{t:/không|thiếu|chờ/i.test(d.thongBao)?"warn":"ok",s:d.thongBao}:null;if(o.ok)o.ok(d)}
+  catch(e){if(cu){const x=JSON.parse(cu);S.cuaToi=x.c;S.nghiNam=x.n;L=x.l;ve()}if(!o.nen||/mã|tên/i.test(e.message))dkMsg={t:"err",s:e.message};if(o.loi)o.loi(e)}
+  if(!o.nen)dkBan=false; veDK();
+  const m=document.querySelector("#dk .dk-msg");if(m&&!o.nen&&o.cuon!==false)m.scrollIntoView({block:"nearest",behavior:"smooth"});
 }
+/* Thống kê tải sau (không chặn đăng nhập) */
+function taiThongKe(){if(S&&S.ma)goiApi("thongKe",{}).then(()=>{if($("dk-tk"))xemTruoc()}).catch(()=>{})}
+/* Kiểu nghỉ hiện công khai (ốm → nghỉ phép), giống máy chủ */
+const kieuCK=k=>/ốm/i.test(k)?"Nghỉ phép"+(/sáng/i.test(k)?" (sáng)":/chiều/i.test(k)?" (chiều)":""):k;
 const msgHtml=()=>dkMsg?`<div class="dk-msg ${dkMsg.t}" role="status">${esc(dkMsg.s)}</div>`:"";
-const pill=t=>`<span class="pill ${/^(Đã duyệt|Đã áp dụng)$/.test(t)?"ok":/^Chờ/.test(t)?"warn":"mute"}">${esc(t)}</span>`;
+const pill=t=>`<span class="pill ${/^(Đã duyệt|Đã áp dụng)$/.test(t)?"ok":/^(Chờ|Đang)/.test(t)?"warn":"mute"}">${esc(t)}</span>`;
 /* Vai trực của 1 người trong lưới công khai (để chọn ca đổi lại) */
 function trucCua(ten){
   const o=[],hom=iso(HOM);
@@ -412,7 +422,9 @@ function veLichChon(){
   const el=$("dk-cal"); if(!el)return;
   const hom=iso(HOM), ks=Object.keys(L.nhanSu||{}).filter(k=>k>=hom).sort();
   if(!ks.length){el.innerHTML=`<p class="dk-note">Chưa có lịch tháng nào mở đăng ký.</p>`;return}
-  const daCo={},kin={},trucN={};for(const x of (S.cuaToi.nghiNam||[])){(daCo[x.ngay]=daCo[x.ngay]||[]).push(x);kin[x.ngay]=(kin[x.ngay]||0)+SO_NGAY(x.kieu)}for(const t of S.cuaToi.truc)trucN[t.ngay]=t.ten;
+  const daCo={},kin={},trucN={};
+  for(const r of S.cuaToi.don)if(!/^(Từ chối|Đã huỷ)$/.test(r.tt))for(let d=tuIso(r.tu);iso(d)<=r.den;d=congNgay(d,1)){const k=iso(d);(daCo[k]=daCo[k]||[]).push({kieu:r.kieu,tt:r.tt});kin[k]=(kin[k]||0)+SO_NGAY(r.kieu)}
+  for(const t of S.cuaToi.truc)trucN[t.ngay]=t.ten;
   el.innerHTML=[...new Set(ks.map(k=>k.slice(0,7)))].map(m=>{const [y,mo]=m.split("-").map(Number),f=+ks.find(k=>k.startsWith(m)).slice(8),s0=Math.max(1,f-(new Date(y,mo-1,f).getDay()+6)%7),lech=(new Date(y,mo-1,s0).getDay()+6)%7,n=new Date(y,mo,0).getDate();
     let c=`<div class="cal"><b class="cal-h">Tháng ${mo}/${y}</b><div class="cal-g">${["T2","T3","T4","T5","T6","T7","CN"].map(x=>`<span class="cal-w">${x}</span>`).join("")}${"<span></span>".repeat(lech)}`;
     for(let i=s0;i<=n;i++){const k=m+"-"+String(i).padStart(2,"0"),co=daCo[k],kin1=(kin[k]||0)>=1,tt=[co?co.map(x=>x.kieu+(/^Chờ/.test(x.tt)?" (chờ duyệt)":"")).join(" + "):"",trucN[k]?"Có lịch "+trucN[k].toLowerCase():""].filter(Boolean).join(" · ");
@@ -427,7 +439,8 @@ const TEN_TK={thang:"Phép tháng",nam:"Phép năm",om:"Phép ốm",conom:"Phép
 const SO_NGAY=k=>{const t=norm(k);return /truc/.test(t)&&!/sang|chieu/.test(t)?1:/sang|chieu/.test(t)?0.5:1};
 const soVN=x=>String(x).replace(".",",");
 function oThongKe(){
-  const ds=S.cuaToi.nghiNam||[], nam=iso(HOM).slice(0,4), cho=x=>/^Chờ/.test(x.tt);
+  if(!S.nghiNam)return `<p class="dk-note tk-n">Đang tải thống kê ngày nghỉ…</p>`;
+  const ds=S.nghiNam, nam=iso(HOM).slice(0,4), cho=x=>/^(Chờ|Đang)/.test(x.tt);
   const chip=a=>a.map(x=>`<span class="nc${cho(x)?" cho":""}">${thuDm(x.ngay)}<small>${esc(kieuNgan(x.kieu))}${x.cu?" · lịch cũ":""}${cho(x)?" · chờ duyệt":""}</small></span>`).join("");
   const tong=a=>{const d=a.filter(x=>!cho(x)),c=a.length-d.length;return `${soVN(d.reduce((s,x)=>s+SO_NGAY(x.kieu),0))} ngày${c?` <small>(+${c} chờ duyệt)</small>`:""}`};
   const thMuon=[...new Set([iso(HOM).slice(0,7)].concat(F.ngays.map(k=>k.slice(0,7))))].sort();
@@ -474,7 +487,7 @@ function veDK(){
       <button class="btn primary"${dkBan?" disabled":""}>Đăng nhập</button></form>${msgHtml()}
       <p class="dk-note">Lần đầu: mã cá nhân là <b>mã nhân viên</b> (vd 00123) – đăng nhập xong nên bấm “Đổi mã”. Quên mã: báo lãnh đạo khoa. Nghỉ mà bộ phận vẫn đủ người (ngoại trú sáng ≥3, chiều ≥2; kho thuốc ≥3; kho vật tư ≥1) thì được duyệt ngay; thiếu người thì chuyển lãnh đạo duyệt. Đổi trực: người nhận đồng ý là lịch tự cập nhật.</p></div></section>`;
     $("dk-login").onsubmit=e=>{e.preventDefault();const nho=$("dk-nho").checked;S={ten:$("dk-ten").value,ma:$("dk-ma").value.trim()};
-      chay("dangNhap",{},{cho:"Đang đăng nhập…",ok:()=>{luuS(nho);dkMsg=null;if(!me&&TEN.some(x=>norm(x.ten)===norm(S.ten))){me=norm(S.ten);$("me").value=me;ve()}},loi:()=>{S=null;luuS(false)}})};
+      chay("dangNhap",{},{cho:"Đang đăng nhập…",ok:()=>{luuS(nho);dkMsg=null;taiThongKe();if(!me&&TEN.some(x=>norm(x.ten)===norm(S.ten))){me=norm(S.ten);$("me").value=me;ve()}},loi:()=>{S=null;luuS(false)}})};
     return;
   }
   const C=S.cuaToi, toi=nv.find(x=>norm(x.ten)===norm(S.ten)), khac=nv.filter(x=>x!==toi);
@@ -531,20 +544,27 @@ function veDK(){
     if(m1!==m2){dkMsg={t:"err",s:"Hai lần nhập mã mới không khớp"};veDK();return}
     let nho=false;try{nho=!!localStorage.getItem("hv-lich-dn")}catch(x){}
     chay("doiMa",{maMoi:m1},{ok:()=>{S.ma=m1;dkDoiMa=false;luuS(nho)}})}}
-  $("dk-moi").onclick=()=>chay("cuaToi",{},{cho:"Đang tải…",cuon:false});
+  $("dk-moi").onclick=()=>chay("cuaToi",{},{cho:"Đang tải…",cuon:false,ok:taiThongKe});
   const fn=$("dk-nghi");if(fn)fn.onsubmit=e=>{e.preventDefault();
     if(!F.ngays.length){dkMsg={t:"err",s:"Chọn ít nhất 1 ngày nghỉ trên lịch"};veDK();return}
     if(F.loai==="Phép khác"&&!F.khac.trim()){dkMsg={t:"err",s:"Ghi rõ loại phép khác"};veDK();return}
     const gc=F.loai==="Phép khác"?F.khac.trim()+(F.ghiChu?" · "+F.ghiChu:""):F.ghiChu;
-    chay("guiNghi",{ngays:F.ngays,kieu:ghep(),nguoiThay:F.thay,ghiChu:gc},{ok:()=>{Object.assign(F,{ngays:[],thay:"",ghiChu:"",khac:"",loai:"Phép tháng",buoi:"Cả ngày"})}})};
+    const ngays=F.ngays.slice(),kieu=ghep(),nv=(L.nhanVien||[]).find(x=>norm(x.ten)===norm(S.ten))||{};
+    chay("guiNghi",{ngays,kieu,nguoiThay:F.thay,ghiChu:gc},{cho:"Đang lưu "+ngays.length+" ngày nghỉ… (đã hiện trên lịch, chờ máy chủ xác nhận)",
+      truoc:()=>{for(const k of ngays){S.cuaToi.don.push({ma:"",tu:k,den:k,kieu,tt:"Đang gửi…",huy:false});if(S.nghiNam)S.nghiNam.push({ngay:k,kieu,tt:"Đang gửi…"});
+        (L.nghi[k]=L.nghi[k]||[]).push({ten:S.ten,viTri:nv.viTri||"",kieu:kieuCK(kieu)});
+        const ns=(L.nhanSu||{})[k];if(ns)for(const b of buoiCua(kieu)){const x=ns.find(r=>r[0]===nv.viTri&&r[1]===b);if(x)x[2]--}}
+        Object.assign(F,{ngays:[],thay:"",ghiChu:"",khac:"",loai:"Phép tháng",buoi:"Cả ngày"})}})};
   const fd=$("dk-doi");if(fd)fd.onsubmit=e=>{e.preventDefault();const [ngay,vai]=F.ca.split("|");
-    chay("guiDoiTruc",{ngay,vai,nguoiNhan:F.nhan,ngayDoi:F.doi},{ok:()=>{Object.assign(F,{ca:"",nhan:"",doi:""})}})};
-  el.querySelectorAll("[data-tl]").forEach(b=>b.onclick=()=>chay("traLoi",{ma:b.dataset.tl,dongY:!!b.dataset.y}));
-  el.querySelectorAll("[data-dy]").forEach(b=>b.onclick=()=>{let gc="";if(!b.dataset.y){gc=prompt("Lý do không duyệt (tuỳ chọn):","");if(gc===null)return}chay("duyet",{ma:b.dataset.dy,dongY:!!b.dataset.y,ghiChu:gc})});
-  el.querySelectorAll("[data-huy]").forEach(b=>b.onclick=()=>{if(confirm("Huỷ đơn này?"))chay("huy",{ma:b.dataset.huy})});
+    const nhan=F.nhan,doi=F.doi;
+    chay("guiDoiTruc",{ngay,vai,nguoiNhan:nhan,ngayDoi:doi},{truoc:()=>{S.cuaToi.doi.push({ma:"",ngay,vai:(S.cuaToi.truc.find(t=>t.ngay===ngay&&t.vai===vai)||{}).ten||"",nhan,ngayDoi:doi,tt:"Đang gửi…",huy:false});Object.assign(F,{ca:"",nhan:"",doi:""})}})};
+  el.querySelectorAll("[data-tl]").forEach(b=>b.onclick=()=>chay("traLoi",{ma:b.dataset.tl,dongY:!!b.dataset.y},{truoc:()=>{S.cuaToi.choToi=S.cuaToi.choToi.filter(r=>r.ma!==b.dataset.tl)}}));
+  el.querySelectorAll("[data-dy]").forEach(b=>b.onclick=()=>{let gc="";if(!b.dataset.y){gc=prompt("Lý do không duyệt (tuỳ chọn):","");if(gc===null)return}chay("duyet",{ma:b.dataset.dy,dongY:!!b.dataset.y,ghiChu:gc},{truoc:()=>{S.cuaToi.choDuyet=S.cuaToi.choDuyet.filter(r=>r.ma!==b.dataset.dy)}})});
+  el.querySelectorAll("[data-huy]").forEach(b=>b.onclick=()=>{if(confirm("Huỷ đơn này?"))chay("huy",{ma:b.dataset.huy},{truoc:()=>{for(const r of S.cuaToi.don.concat(S.cuaToi.doi))if(r.ma===b.dataset.huy){r.tt="Đang huỷ…";r.huy=false}}})});
 }
 let dkTuDong=false;
-function batDauDK(){veDK();if(!dkTuDong&&S&&S.ma&&!S.cuaToi&&L&&L.dangKy){dkTuDong=true;chay("cuaToi",{},{cho:"Đang đăng nhập…",cuon:false,loi:e=>{if(/mã|tên/i.test(e.message)){S=null;luuS(false)}}})}}
+function batDauDK(){veDK();if(!dkTuDong&&S&&S.ma&&L&&L.dangKy){dkTuDong=true;
+  chay("cuaToi",{},{nen:!!S.cuaToi,cho:"Đang đăng nhập…",cuon:false,ok:taiThongKe,loi:e=>{if(/mã|tên/i.test(e.message)){S=null;luuS(false);veDK()}}})}}
 $("me").addEventListener("change",e=>{me=e.target.value;try{localStorage.setItem("hv-lich-toi",me)}catch(x){};ve()});
 
 /* ---------- Tải dữ liệu: bộ nhớ đệm chung với trang chủ → API ---------- */

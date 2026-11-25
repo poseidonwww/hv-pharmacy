@@ -19,6 +19,7 @@ const CACHE_GIAY = 1500; // 25 phút – hẹn giờ lamMoiCache làm mới mỗ
 function doGet(e) {
   const cache = CacheService.getScriptCache();
   const fresh = e && e.parameter && e.parameter.fresh === '1';
+  if (fresh) xoaDemLich_();
   let out = fresh ? null : layCache_(cache);
   if (!out) {
     const nhom = {};
@@ -71,7 +72,7 @@ function docNhanh_(id, duongDan) {
 }
 
 /* Hẹn giờ: tự làm mới danh sách mỗi 10 phút. Chạy caiHenGio() MỘT lần trong trình soạn thảo (cần cấp quyền). Đã cài 23/11/2026. */
-function lamMoiCache() { doGet({ parameter: { fresh: '1' } }); }
+function lamMoiCache() { doGet({ parameter: { fresh: '1' } }); }  // doGet fresh tự xoá đệm lịch
 function caiHenGio() {
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'lamMoiCache').forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('lamMoiCache').timeBased().everyMinutes(10).create();
@@ -141,7 +142,7 @@ function thangCuaFile_(f) {
 function lichLamViec_() {
   const hom = new Date(), y = +Utilities.formatDate(hom, TZ_VN, 'yyyy'), m = +Utilities.formatDate(hom, TZ_VN, 'M');
   const can = [-1, 0, 1].map(d => { const x = new Date(y, m - 1 + d, 1); return { nam: x.getFullYear(), thang: x.getMonth() + 1 }; });
-  const files = dsSheetLich_(THU_MUC_LICH, '', []).map(f => ({ f: f, tm: thangCuaFile_(f) })).filter(o => o.tm);
+  const files = dsFileLich_().map(f => ({ f: f, tm: thangCuaFile_(f) })).filter(o => o.tm);
   const chon = [];
   for (const c of can) {
     const ds = files.filter(o => o.tm.nam === c.nam && o.tm.thang === c.thang).sort((a, b) => String(b.f.sua).localeCompare(String(a.f.sua)));
@@ -154,7 +155,7 @@ function lichLamViec_() {
   for (const c of chon) {
     const ss = SpreadsheetApp.openById(c.f.id), th = ss.getSheetByName('Tổng hợp nghỉ');
     docLuoi_(luoi_(ss).getDataRange().getDisplayValues(), c, ngay, chu, vai, th ? null : { nghi: nghi, chuNghi: chuNghi });
-    const T = taiThang_(c.f.id);
+    const T = taiThang_(c.f.id, { nam: c.nam, thang: c.thang });
     if (th && !T) docNghiTongHop_(th.getDataRange().getDisplayValues(), c, nghi, chuNghi);
     /* Mẫu tự đăng ký (26/11/2026): nhân sự theo buổi so với định mức, làm thay đã duyệt */
     if (T) {
@@ -299,12 +300,34 @@ function fileThang_(nam, thang) {
   return id || null;
 }
 const MEMO_ = {};
-function taiThang_(id) {
+/* Bộ nhớ đệm dữ liệu file tháng (26/11/2026): đọc (đăng nhập, xem đơn) lấy từ đệm "T2-<id>" – không mở file;
+   ghi (gửi đơn, đổi trực, duyệt) đọc thẳng file (FRESH_) để không ghi đè sửa tay của lãnh đạo, ghi xong cập nhật đệm.
+   Hẹn giờ 10 phút xoá đệm và đọc lại (sửa tay trong Sheet lên web sau tối đa ~10 phút). */
+let FRESH_ = false;
+const KHOA_T = id => 'T2-' + id;
+function ganSs_(T, ss0) { let ss = ss0 || null; Object.defineProperty(T, 'ss', { get: () => ss || (ss = SpreadsheetApp.openById(T.id)), enumerable: false, configurable: true }); }
+function luuT_(T) {
+  if (!T) return;
+  const o = {}; for (const k of ['id', 'tz', 'nv', 'dm', 'truc', 'oLuoi', 'ngays', 'dk', 'lt', 'dt', 'c']) o[k] = T[k];
+  try { CacheService.getScriptCache().put(KHOA_T(T.id), JSON.stringify(o), 1500); } catch (e) {}
+}
+function xoaDemLich_() {
+  const c = CacheService.getScriptCache();
+  try { c.removeAll(dsSheetLich_(THU_MUC_LICH, '', []).map(f => KHOA_T(f.id)).concat(['ds-file-lich'])); } catch (e) {}
+}
+function taiThang_(id, cThang) {
   if (!id) return null;
-  if (MEMO_[id] !== undefined) return MEMO_[id];
+  if (MEMO_[id] !== undefined) { if (MEMO_[id] && cThang && !MEMO_[id].c) MEMO_[id].c = cThang; return MEMO_[id]; }
+  const dem = CacheService.getScriptCache().get(KHOA_T(id));
+  if (dem === 'null') return (MEMO_[id] = null);
+  if (dem && !FRESH_) { const T0 = JSON.parse(dem); ganSs_(T0); if (cThang && !T0.c) T0.c = cThang; return (MEMO_[id] = T0); }
   const ss = SpreadsheetApp.openById(id), tz = ss.getSpreadsheetTimeZone(), sh = n => ss.getSheetByName(n);
-  if (!sh('Đăng ký nghỉ') || !sh('Định mức') || !sh('Bảng trực') || !sh('Làm thay') || !sh('Đổi trực')) return (MEMO_[id] = null);
-  const T = { id, ss, tz, nv: [], dm: [], truc: {}, oLuoi: {}, ngays: [], dk: [], lt: [], dt: [] };
+  if (!sh('Đăng ký nghỉ') || !sh('Định mức') || !sh('Bảng trực') || !sh('Làm thay') || !sh('Đổi trực')) {
+    try { CacheService.getScriptCache().put(KHOA_T(id), 'null', 21600); } catch (e) {}
+    return (MEMO_[id] = null);
+  }
+  const T = { id, tz, nv: [], dm: [], truc: {}, oLuoi: {}, ngays: [], dk: [], lt: [], dt: [], c: cThang || null };
+  ganSs_(T, ss);
   for (const r of sh('Nhân viên khoa').getDataRange().getValues().slice(1))
     if (String(r[0]).trim()) T.nv.push({ ten: String(r[0]).trim(), viTri: String(r[1]).trim() || 'Khác', chinh: nn_(r[2]) === 'co' });
   for (const r of sh('Định mức').getDataRange().getValues().slice(1))
@@ -331,18 +354,19 @@ function taiThang_(id) {
     T.dt.push({ hang: i + 2, ma: String(r[0]).trim(), ngay: isoCua_(r[2], tz), vai: maVai_(r[3]), nguoi: String(r[4]).trim(), nhan: String(r[5]).trim(),
       ngayDoi: isoCua_(r[6], tz), tt: String(r[7]).trim(), note: String(r[8]) });
   });
+  luuT_(T);
   return (MEMO_[id] = T);
 }
 /* File tháng chứa ngày k (thử tháng của ngày, tháng sau, tháng trước – lưới tháng sau có thể chứa vài ngày cuối tháng trước) */
 function thangCuaNgay_(k) {
   const y = +k.slice(0, 4), m = +k.slice(5, 7);
   for (const d of [0, 1, -1]) {
-    const x = new Date(y, m - 1 + d, 1), T = taiThang_(fileThang_(x.getFullYear(), x.getMonth() + 1));
+    const x = new Date(y, m - 1 + d, 1), T = taiThang_(fileThang_(x.getFullYear(), x.getMonth() + 1), { nam: x.getFullYear(), thang: x.getMonth() + 1 });
     if (T && T.ngays.indexOf(k) >= 0) return T;
   }
   throw new Error('Ngày ' + dmy_(k) + ' chưa có lịch theo mẫu mới – báo lãnh đạo khoa');
 }
-function cacThang_() { const o = []; for (const c of baThang_()) { const T = taiThang_(fileThang_(c.nam, c.thang)); if (T) o.push(T); } return o; }
+function cacThang_() { const o = []; for (const c of baThang_()) { const T = taiThang_(fileThang_(c.nam, c.thang), c); if (T) o.push(T); } return o; }
 
 /* ---- Tính nhân sự ---- g = giả định: { dk:[đơn thêm], bo:{mã đơn nghỉ bỏ qua}, lt:[làm thay thêm], boLt:{mã}, truc:{ngày:{cp,kho,kem}} } */
 function trucNgay_(T, k, g) { return (g && g.truc && g.truc[k]) || T.truc[k] || {}; }
@@ -548,6 +572,7 @@ const HANH_DONG_ = {
     return { thongBao: 'Đã đổi mã. Lần sau đăng nhập bằng mã mới.' };
   },
   cuaToi: (ai) => ({ cuaToi: cuaToi_(ai) }),
+  thongKe: (ai) => ({ nghiNam: nghiNam_(ai.ten) }),
   /* Đăng ký nghỉ CỦA BẢN THÂN, chọn từng ngày (nhiều ngày 1 lần) – mỗi ngày 1 đơn riêng (duyệt/huỷ riêng) */
   guiNghi: (ai, b) => {
     const kieu = String(b.kieu || '');
@@ -734,7 +759,7 @@ function nghiCu_(f, t) {
   return JSON.parse(s);
 }
 function cuaToi_(ai) {
-  const hom = homNay_(), tu = congNgay_(hom, -31), n = nn_(ai.ten), o = { don: [], doi: [], choToi: [], truc: [], choDuyet: [], nghiNam: nghiNam_(ai.ten) };
+  const hom = homNay_(), tu = congNgay_(hom, -31), n = nn_(ai.ten), o = { don: [], doi: [], choToi: [], truc: [], choDuyet: [] };
   for (const T of cacThang_()) {
     for (const r of T.dk) if (nn_(r.ten) === n && r.den >= tu)
       o.don.push({ ma: r.ma, tu: r.tu, den: r.den, kieu: r.kieu, tt: r.tt || 'Đã duyệt', thay: r.thay, note: r.note, huy: !!r.ma && r.tu >= hom && /^(Đã duyệt|Chờ duyệt|Chờ người làm thay)$/.test(r.tt) });
@@ -763,22 +788,50 @@ function lamMoiLich_() {
   if (s) { try { const o = JSON.parse(s); o.lich = lich; luuCache_(c, JSON.stringify(o)); } catch (err) {} }
   return lich;
 }
+/* Cập nhật lịch công khai đã đệm từ các file tháng vừa sửa (không đọc lại Drive/Sheet) */
+function capNhatLich_() {
+  const c = CacheService.getScriptCache(), s = layCache_(c);
+  let o = null; try { o = s && JSON.parse(s); } catch (e) {}
+  if (!o || !o.lich || !o.lich.ngay || !o.lich.nhanSu) return lamMoiLich_();
+  const lich = o.lich; lich.lamThay = lich.lamThay || {};
+  for (const T of Object.values(MEMO_)) {
+    if (!T || !T.c) continue;
+    const cua = k => +k.slice(5, 7) === T.c.thang && +k.slice(0, 4) === T.c.nam, nghi = {}, ns = nhanSuCongKhai_(T);
+    nghiTuT_(T, T.c, nghi, {});
+    for (const k of T.ngays) {
+      if (cua(k) || !lich.nghi[k]) lich.nghi[k] = nghi[k] || [];
+      if (cua(k) || !lich.nhanSu[k]) lich.nhanSu[k] = ns[k];
+      delete lich.lamThay[k];
+      const x = lich.ngay[k], t = T.truc[k];
+      if (x && t && cua(k)) for (const nhan of Object.keys(x)) { const v = maVai_(nhan); if (v && t[v]) x[nhan] = t[v]; }
+    }
+    for (const r of T.lt) if (dkHL_(r) && r.ngay && r.viTri && T.ngays.indexOf(r.ngay) >= 0) (lich.lamThay[r.ngay] = lich.lamThay[r.ngay] || []).push({ ten: r.ten, buoi: r.buoi, viTri: r.viTri });
+  }
+  lich.capNhat = new Date().toISOString();
+  luuCache_(c, JSON.stringify(o));
+  return lich;
+}
 function doPost(e) {
   let out;
   try {
     const b = JSON.parse((e && e.postData && e.postData.contents) || '{}'), f = HANH_DONG_[b.hd];
     if (!f) throw new Error('Thao tác không hợp lệ');
     const ai = xacThuc_(b.ten, b.ma);
-    if (b.hd === 'dangNhap' || b.hd === 'cuaToi') out = Object.assign({ ok: true, ten: ai.ten, laLD: ai.laLD }, f(ai, b));
+    if (b.hd === 'dangNhap' || b.hd === 'cuaToi' || b.hd === 'thongKe') out = Object.assign({ ok: true, ten: ai.ten, laLD: ai.laLD }, f(ai, b));
     else if (b.hd === 'doiMa') {
       const lock = LockService.getScriptLock(); lock.waitLock(25000);
       try { out = Object.assign({ ok: true, ten: ai.ten, laLD: ai.laLD }, f(ai, b)); } finally { lock.releaseLock(); }
     } else {
       const lock = LockService.getScriptLock(); lock.waitLock(25000);
-      try { out = Object.assign({ ok: true, ten: ai.ten, laLD: ai.laLD }, f(ai, b)); SpreadsheetApp.flush(); } finally { lock.releaseLock(); }
-      for (const k of Object.keys(MEMO_)) delete MEMO_[k];
-      out.lich = lamMoiLich_();
+      try {
+        FRESH_ = true;
+        out = Object.assign({ ok: true, ten: ai.ten, laLD: ai.laLD }, f(ai, b));
+        SpreadsheetApp.flush();
+        for (const T of Object.values(MEMO_)) luuT_(T);
+      } finally { FRESH_ = false; lock.releaseLock(); }
+      out.lich = capNhatLich_();
       out.cuaToi = cuaToi_(ai);
+      out.nghiNam = nghiNam_(ai.ten);
     }
   } catch (err) { out = { ok: false, loi: String(err && err.message || err) }; }
   return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
