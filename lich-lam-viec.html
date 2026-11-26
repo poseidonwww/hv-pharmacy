@@ -363,6 +363,9 @@ function vaiInfo(nhan){
   if(i>=0)return {nhan,ten:VAI_UU_TIEN[i][1],key:!!VAI_UU_TIEN[i][2],rank:i};
   const s=nhan.toLowerCase().replace(/\s*\((lam|làm)\)/i,"");return {nhan,ten:s.charAt(0).toUpperCase()+s.slice(1),key:false,rank:99};
 }
+/* xếp ABC theo tên (chữ cuối của họ tên), rồi theo họ tên đầy đủ */
+const tenRieng=s=>String(s).trim().split(/\s+/).pop();
+const xepTen=(a,b)=>tenRieng(a).localeCompare(tenRieng(b),"vi")||String(a).localeCompare(String(b),"vi");
 function setLich(lich){
   L=lich;
   /* gộp các dòng cùng tên hiển thị (vd "HÀNH CHÍNH (LÀM)" và "HÀNH CHÍNH (LÀM)+") */
@@ -370,16 +373,19 @@ function setLich(lich){
   VAI=Object.values(gop).sort((a,b)=>a.rank-b.rank);
   /* danh sách tên: tách ô theo dấu phẩy/“và”, bỏ ghi chú trong ngoặc */
   const dem={};
+  if((lich.nhanVien||[]).length){for(const x of lich.nhanVien)dem[norm(x.ten)]={ten:x.ten,hien:x.hoTen||x.ten,n:1}}
+  else{
   for(const ngay of Object.values(lich.ngay||{}))for(const [nhan,v] of Object.entries(ngay)){
     if(!VAI_CO_TEN.test(norm(nhan)))continue;
     for(let p of String(v).split(/,|;|\+| và /)){p=p.replace(/\(.*?\)/g,"").replace(/\./g," ").replace(/\s+/g," ").trim();if(!p||p.split(/\s+/).length>3||/\d/.test(p)||/^\S\s/.test(p))continue;  /* bỏ viết tắt kiểu "V.Anh" */
       const k=norm(p);dem[k]=dem[k]||{ten:hoaTen(p.toLowerCase()),n:0};dem[k].n++}
   }
   for(const ds of Object.values(lich.nghi||{}))for(const n of ds){const k=norm(n.ten);if(!k||/\d/.test(k)||k.split(/\s+/).length>3)continue;dem[k]=dem[k]||{ten:hoaTen(String(n.ten).toLowerCase()),n:0};dem[k].n++}
-  TEN=Object.values(dem).filter(x=>x.n>=1).sort((a,b)=>a.ten.localeCompare(b.ten,"vi"));
+  }
+  TEN=Object.values(dem).filter(x=>x.n>=1).sort((a,b)=>xepTen(a.hien||a.ten,b.hien||b.ten));
   try{me=localStorage.getItem("hv-lich-toi")||""}catch(e){}
   if(me&&!TEN.some(x=>norm(x.ten)===me))me="";
-  $("me").innerHTML='<option value="">— Chọn tên của bạn —</option>'+TEN.map(x=>`<option value="${esc(norm(x.ten))}"${norm(x.ten)===me?" selected":""}>${esc(x.ten)}</option>`).join("");
+  $("me").innerHTML='<option value="">— Chọn tên của bạn —</option>'+TEN.map(x=>`<option value="${esc(norm(x.ten))}"${norm(x.ten)===me?" selected":""}>${esc(x.hien||x.ten)}</option>`).join("");
   const th=(lich.thang||[]).map(t=>"T"+t.thang+"/"+t.nam).join(", ");
   $("meta").textContent=(th?"Lịch "+th:"")+(lich.capNhat?" · cập nhật "+new Date(lich.capNhat).toLocaleString("vi-VN",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"}):"");
   if(!tuan)tuan=dauTuan(HOM);
@@ -763,9 +769,9 @@ function veDK(){
   if(!L||!L.dangKy){el.innerHTML="";return}
   const nv=L.nhanVien||[];
   if(!S||!S.cuaToi){
-    const ds=nv.map(x=>x.ten);
+    const ds=nv.slice().sort((a,b)=>xepTen(a.hoTen||a.ten,b.hoTen||b.ten));
     el.innerHTML=`<section class="blk dk no-print"><div class="wrap"><h2>Đăng ký nghỉ · đổi trực <small>dành cho nhân viên Khoa Dược</small></h2>
-      <form class="dk-card dk-login" id="dk-login"><label>Tên<select id="dk-ten" required><option value="">— Chọn tên —</option>${ds.map(t=>`<option${S&&norm(S.ten)===norm(t)?" selected":""}>${esc(t)}</option>`).join("")}</select></label>
+      <form class="dk-card dk-login" id="dk-login"><label>Tên<select id="dk-ten" required><option value="">— Chọn tên —</option>${ds.map(x=>`<option value="${esc(x.ten)}"${S&&norm(S.ten)===norm(x.ten)?" selected":""}>${esc(x.hoTen||x.ten)}</option>`).join("")}</select></label>
       <label>Mã cá nhân<input id="dk-ma" type="password" autocomplete="current-password" maxlength="20" placeholder="Mã nhân viên" required></label>
       <label class="ck"><input type="checkbox" id="dk-nho" checked> Ghi nhớ trên máy này</label>
       <button class="btn primary"${dkBan?" disabled":""}>Đăng nhập</button></form>${msgHtml()}

@@ -162,7 +162,7 @@ function lichLamViec_() {
     if (T) {
       nghiTuT_(T, c, nghi, chuNghi);   /* tính thẳng từ đơn (không chờ công thức "Tổng hợp nghỉ" tính lại) */
       Object.assign(ngayLe, T.le || {});
-      dangKy = true; nhanVien = T.nv.map(x => ({ ten: x.ten, viTri: x.viTri, chinh: x.chinh })); dinhMuc = T.dm.map(d => ({ boPhan: d.boPhan, buoi: d.buoi, can: d.can, khong: d.khong }));
+      dangKy = true; nhanVien = T.nv.map(x => ({ ten: x.ten, hoTen: x.hoTen || '', viTri: x.viTri, chinh: x.chinh })); dinhMuc = T.dm.map(d => ({ boPhan: d.boPhan, buoi: d.buoi, can: d.can, khong: d.khong }));
       const ns = nhanSuCongKhai_(T);
       for (const k of Object.keys(ns)) if (!nhanSu[k] || +k.slice(5, 7) === c.thang) nhanSu[k] = ns[k];
       for (const r of T.lt) if (dkHL_(r) && r.ngay && r.viTri) (lamThay[r.ngay] = lamThay[r.ngay] || []).push({ ten: r.ten, buoi: r.buoi, viTri: r.viTri });
@@ -331,7 +331,7 @@ function taiThang_(id, cThang) {
   const T = { id, tz, nv: [], dm: [], truc: {}, oLuoi: {}, ngays: [], dk: [], lt: [], dt: [], c: cThang || null };
   ganSs_(T, ss);
   for (const r of sh('Nhân viên khoa').getDataRange().getValues().slice(1))
-    if (String(r[0]).trim()) T.nv.push({ ten: String(r[0]).trim(), viTri: String(r[1]).trim() || 'Khác', chinh: nn_(r[2]) === 'co' });
+    if (String(r[0]).trim()) T.nv.push({ ten: String(r[0]).trim(), viTri: String(r[1]).trim() || 'Khác', chinh: nn_(r[2]) === 'co', hoTen: String(r[4] || '').trim() });
   for (const r of sh('Định mức').getDataRange().getValues().slice(1))
     if (String(r[0]).trim() && String(r[1]).trim() && r[2] !== '')
       T.dm.push({ boPhan: String(r[0]).trim(), buoi: /chieu/.test(nn_(r[1])) ? 'C' : 'S', can: +r[2], khong: String(r[3] || '').split(',').map(nn_).filter(Boolean),
