@@ -894,7 +894,7 @@ function doPost(e) {
   try {
     const b = JSON.parse((e && e.postData && e.postData.contents) || '{}'), f = HANH_DONG_[b.hd];
     if (!f) throw new Error('Thao tác không hợp lệ');
-    const ai = xacThuc_(b.ten, b.ma);
+    const ai = xacThuc_(b.ten, b.maCN != null ? b.maCN : b.ma);   /* maCN = mã đăng nhập; ma = mã phiếu (duyệt, huỷ, trả lời) */
     if (b.hd === 'dangNhap' || b.hd === 'cuaToi' || b.hd === 'thongKe') out = Object.assign({ ok: true, ten: ai.ten, laLD: ai.laLD }, f(ai, b));
     else if (b.hd === 'doiMa') {
       const lock = LockService.getScriptLock(); lock.waitLock(25000);
