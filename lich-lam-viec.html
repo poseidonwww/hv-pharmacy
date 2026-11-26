@@ -424,7 +424,7 @@ function veThang(){
     <div class="mt-ct" id="mt-ct">${NGT?theNgay(tuIso(NGT)):""}</div></div></section>`;
 }
 function ganThang(){
-  document.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{THANG=b.dataset.th;NGT="";giuViTri("s-thang",ve)});
+  document.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{THANG=b.dataset.th;NGT="";const t=document.createElement("div");t.innerHTML=veThang();$("s-thang").replaceWith(t.firstElementChild);ganThang()});
   document.querySelectorAll("[data-mt]").forEach(b=>b.onclick=()=>{NGT=NGT===b.dataset.mt?"":b.dataset.mt;
     document.querySelectorAll("[data-mt]").forEach(x=>x.classList.toggle("sel",x.dataset.mt===NGT));
     $("mt-ct").innerHTML=NGT?theNgay(tuIso(NGT)):"";if(NGT)$("mt-ct").scrollIntoView({block:"nearest",behavior:"smooth"})});
@@ -457,6 +457,34 @@ function oToiNay(){
   const mot=(d,nhan)=>{const v=viecCua(d);return `<span class="tn"><small>${nhan}</small>${v.length?v.map(x=>`<span class="${x.k?"k":""}">${esc(x.t)}</span>`).join(" · "):"<span>đi làm bình thường</span>"}</span>`};
   return `<div class="toi-nay"><b class="ai">${esc(ten)}</b>${mot(HOM,"Hôm nay:")}${mot(congNgay(HOM,1),"Ngày mai:")}</div>`;
 }
+/* Lịch theo tuần: đổi tuần chỉ thay riêng mục này (không vẽ lại trang → không cuộn) */
+function htmlTuan(){
+  const ngayCo=Object.keys(L.ngay||{}).sort(),dau=tuIso(ngayCo[0]),cuoi=tuIso(ngayCo[ngayCo.length-1]);
+  let h="";
+  const ngay7=[...Array(7)].map((_,i)=>congNgay(tuan,i));
+  const x7=ngay7.map(d=>(L.ngay||{})[iso(d)]||{});
+  const dong=VAI.filter(v=>x7.some(x=>gt(x,v))&&vaiHien(v));
+  const laTuanNay=+tuan===+dauTuan(HOM);
+  h+=`<section class="blk" id="s-tuan"><div class="wrap"><h2>Lịch theo tuần <small>${ddmm(ngay7[0])} – ${ddmm(ngay7[6])}/${ngay7[6].getFullYear()}${laTuanNay?" · tuần này":""}</small>
+      <span class="wk-nav no-print"><button id="wk-prev"${ngay7[0]<=dau?" disabled":""}>← Tuần trước</button><button id="wk-now"${laTuanNay?" disabled":""}>Tuần này</button><button id="wk-next"${ngay7[6]>=cuoi?" disabled":""}>Tuần sau →</button><button id="wk-print">In</button></span></h2>`;
+  h+=`<div class="wk-wrap"><table class="wk"><thead><tr><th>Vị trí</th>${ngay7.map(d=>`<th class="${+d===+HOM?"tod":(d.getDay()%6===0?"wkend":"")}">${THU[d.getDay()]}<small>${ddmm(d)}</small>${oLe(iso(d))}</th>`).join("")}</tr></thead><tbody>`
+    +(dong.length?dong.map(v=>`<tr class="${v.key?"key":""}${me&&x7.some(x=>coToi(gt(x,v)))?" toi":""}"><th>${esc(v.ten)}</th>${x7.map((x,i)=>`<td class="${+ngay7[i]===+HOM?"tod":(ngay7[i].getDay()%6===0?"wkend":"")}">${gt(x,v)?oTen(gt(x,v)):""}</td>`).join("")}</tr>`).join("")
+      :`<tr><td colspan="8" class="empty-day">Chưa có lịch cho tuần này.</td></tr>`)
+    +(ngay7.some(d=>nghiLoc(d).length)?`<tr class="offrow"><th>Nghỉ</th>${ngay7.map(d=>`<td class="${+d===+HOM?"tod":(d.getDay()%6===0?"wkend":"")}">${nghiLoc(d).map(chipNghi).join("")}</td>`).join("")}</tr>`:"")
+    +(ngay7.some(d=>(L.nhanSu||{})[iso(d)])?`<tr class="offrow"><th>Nhân sự</th>${ngay7.map(d=>`<td class="${+d===+HOM?"tod":(d.getDay()%6===0?"wkend":"")}">${oNhanSu(iso(d),1)}</td>`).join("")}</tr>`:"")
+    +`</tbody></table></div>`;
+  h+=`<div class="wk-list">${ngay7.map(d=>theNgay(d)).join("")}</div>`;
+  h+=`<div class="chu-mau">Chú thích: ${[["thang","phép tháng / phép"],["nam","phép năm"],["khac","đi học, công tác, khác"],["truc","nghỉ trực (sau ngày trực)"]].map(([l,t])=>`<span class="nc l-${l}">${t}</span>`).join("")} <span>· ✓ đủ người · chữ đỏ: thiếu người${BP?" · đang lọc: "+esc(BP):""}</span></div>`;
+  h+=`<p class="src">Nguồn: lịch làm việc của Khoa Dược trên Google Drive, tự cập nhật trong khoảng 10 phút sau khi khoa sửa. Lịch nghỉ lấy từ sheet “Đăng ký nghỉ” (hôm trước trực thì hôm sau tự ghi nghỉ trực); lý do nghỉ ốm hiển thị chung là “phép”. Nhân sự: số người có mặt theo vị trí cố định (người đang trực vẫn tính, bác Dũng không tính vào kho thuốc) so với định mức tối thiểu, dạng có mặt/tối thiểu – S sáng, C chiều.</p></div></section>`;
+  return h;
+}
+function ganTuan(){
+  const go=n=>{tuan=n;const t=document.createElement("div");t.innerHTML=htmlTuan();$("s-tuan").replaceWith(t.firstElementChild);ganTuan()};
+  $("wk-prev").onclick=()=>go(congNgay(tuan,-7));
+  $("wk-next").onclick=()=>go(congNgay(tuan,7));
+  $("wk-now").onclick=()=>go(dauTuan(HOM));
+  $("wk-print").onclick=()=>print();
+}
 /* Vẽ lại mà giữ nguyên chỗ đang xem (mục id không nhảy trên màn hình) */
 function giuViTri(id,f){const e0=$(id),y0=e0?e0.getBoundingClientRect().top:null;f();const e1=$(id);if(y0!=null&&e1)window.scrollBy(0,e1.getBoundingClientRect().top-y0)}
 function ve(){
@@ -480,31 +508,13 @@ function ve(){
         +`<div class="mine-tools no-print"><button class="btn" id="ics">Thêm vào lịch điện thoại (.ics)</button><span class="ics-note">Tải file rồi mở bằng ứng dụng Lịch (Google Calendar, iPhone…). Lịch thay đổi thì tải lại.</span></div>`:"")
       +`</div></section>`;
   }
-  /* 3) Lịch theo tuần */
-  const ngay7=[...Array(7)].map((_,i)=>congNgay(tuan,i));
-  const x7=ngay7.map(d=>(L.ngay||{})[iso(d)]||{});
-  const dong=VAI.filter(v=>x7.some(x=>gt(x,v))&&vaiHien(v));
-  const laTuanNay=+tuan===+dauTuan(HOM);
-  h+=`<section class="blk" id="s-tuan"><div class="wrap"><h2>Lịch theo tuần <small>${ddmm(ngay7[0])} – ${ddmm(ngay7[6])}/${ngay7[6].getFullYear()}${laTuanNay?" · tuần này":""}</small>
-      <span class="wk-nav no-print"><button id="wk-prev"${ngay7[0]<=dau?" disabled":""}>← Tuần trước</button><button id="wk-now"${laTuanNay?" disabled":""}>Tuần này</button><button id="wk-next"${ngay7[6]>=cuoi?" disabled":""}>Tuần sau →</button><button id="wk-print">In</button></span></h2>`;
-  h+=`<div class="wk-wrap"><table class="wk"><thead><tr><th>Vị trí</th>${ngay7.map(d=>`<th class="${+d===+HOM?"tod":(d.getDay()%6===0?"wkend":"")}">${THU[d.getDay()]}<small>${ddmm(d)}</small>${oLe(iso(d))}</th>`).join("")}</tr></thead><tbody>`
-    +(dong.length?dong.map(v=>`<tr class="${v.key?"key":""}${me&&x7.some(x=>coToi(gt(x,v)))?" toi":""}"><th>${esc(v.ten)}</th>${x7.map((x,i)=>`<td class="${+ngay7[i]===+HOM?"tod":(ngay7[i].getDay()%6===0?"wkend":"")}">${gt(x,v)?oTen(gt(x,v)):""}</td>`).join("")}</tr>`).join("")
-      :`<tr><td colspan="8" class="empty-day">Chưa có lịch cho tuần này.</td></tr>`)
-    +(ngay7.some(d=>nghiLoc(d).length)?`<tr class="offrow"><th>Nghỉ</th>${ngay7.map(d=>`<td class="${+d===+HOM?"tod":(d.getDay()%6===0?"wkend":"")}">${nghiLoc(d).map(chipNghi).join("")}</td>`).join("")}</tr>`:"")
-    +(ngay7.some(d=>(L.nhanSu||{})[iso(d)])?`<tr class="offrow"><th>Nhân sự</th>${ngay7.map(d=>`<td class="${+d===+HOM?"tod":(d.getDay()%6===0?"wkend":"")}">${oNhanSu(iso(d),1)}</td>`).join("")}</tr>`:"")
-    +`</tbody></table></div>`;
-  h+=`<div class="wk-list">${ngay7.map(d=>theNgay(d)).join("")}</div>`;
-  h+=`<div class="chu-mau">Chú thích: ${[["thang","phép tháng / phép"],["nam","phép năm"],["khac","đi học, công tác, khác"],["truc","nghỉ trực (sau ngày trực)"]].map(([l,t])=>`<span class="nc l-${l}">${t}</span>`).join("")} <span>· ✓ đủ người · chữ đỏ: thiếu người${BP?" · đang lọc: "+esc(BP):""}</span></div>`;
-  h+=`<p class="src">Nguồn: lịch làm việc của Khoa Dược trên Google Drive, tự cập nhật trong khoảng 10 phút sau khi khoa sửa. Lịch nghỉ lấy từ sheet “Đăng ký nghỉ” (hôm trước trực thì hôm sau tự ghi nghỉ trực); lý do nghỉ ốm hiển thị chung là “phép”. Nhân sự: số người có mặt theo vị trí cố định (người đang trực vẫn tính, bác Dũng không tính vào kho thuốc) so với định mức tối thiểu, dạng có mặt/tối thiểu – S sáng, C chiều.</p></div></section>`;
+  /* 3) Lịch theo tuần (vẽ riêng để đổi tuần không phải vẽ lại cả trang) */
+  h+=htmlTuan();
   h+=veThang();
   $("app").innerHTML=h;
   ganThang();
   if(dkEl){const b1=$("app").querySelector("section.blk");if(b1)b1.after(dkEl)}
-  const go=n=>{tuan=n;giuViTri("s-tuan",ve)};
-  $("wk-prev").onclick=()=>go(congNgay(tuan,-7));
-  $("wk-next").onclick=()=>go(congNgay(tuan,7));
-  $("wk-now").onclick=()=>go(dauTuan(HOM));
-  $("wk-print").onclick=()=>print();
+  ganTuan();
   if($("ics"))$("ics").onclick=taiIcs;
 }
 /* Xuất lịch của người đang chọn ra file .ics (sự kiện cả ngày) */
