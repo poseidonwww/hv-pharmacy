@@ -424,7 +424,7 @@ function veThang(){
     <div class="mt-ct" id="mt-ct">${NGT?theNgay(tuIso(NGT)):""}</div></div></section>`;
 }
 function ganThang(){
-  document.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{THANG=b.dataset.th;NGT="";ve();$("s-thang").scrollIntoView({block:"start"})});
+  document.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{THANG=b.dataset.th;NGT="";giuViTri("s-thang",ve)});
   document.querySelectorAll("[data-mt]").forEach(b=>b.onclick=()=>{NGT=NGT===b.dataset.mt?"":b.dataset.mt;
     document.querySelectorAll("[data-mt]").forEach(x=>x.classList.toggle("sel",x.dataset.mt===NGT));
     $("mt-ct").innerHTML=NGT?theNgay(tuIso(NGT)):"";if(NGT)$("mt-ct").scrollIntoView({block:"nearest",behavior:"smooth"})});
@@ -457,6 +457,8 @@ function oToiNay(){
   const mot=(d,nhan)=>{const v=viecCua(d);return `<span class="tn"><small>${nhan}</small>${v.length?v.map(x=>`<span class="${x.k?"k":""}">${esc(x.t)}</span>`).join(" · "):"<span>đi làm bình thường</span>"}</span>`};
   return `<div class="toi-nay"><b class="ai">${esc(ten)}</b>${mot(HOM,"Hôm nay:")}${mot(congNgay(HOM,1),"Ngày mai:")}</div>`;
 }
+/* Vẽ lại mà giữ nguyên chỗ đang xem (mục id không nhảy trên màn hình) */
+function giuViTri(id,f){const e0=$(id),y0=e0?e0.getBoundingClientRect().top:null;f();const e1=$(id);if(y0!=null&&e1)window.scrollBy(0,e1.getBoundingClientRect().top-y0)}
 function ve(){
   const dkEl=$("dk");if(dkEl&&$("app").contains(dkEl))$("app").after(dkEl);   /* tách khung đăng ký ra trước khi vẽ lại */
   const ngayCo=Object.keys(L.ngay||{}).sort();
@@ -498,7 +500,7 @@ function ve(){
   $("app").innerHTML=h;
   ganThang();
   if(dkEl){const b1=$("app").querySelector("section.blk");if(b1)b1.after(dkEl)}
-  const go=n=>{tuan=n;ve();document.querySelector(".wk-nav").scrollIntoView({block:"nearest"})};
+  const go=n=>{tuan=n;giuViTri("s-tuan",ve)};
   $("wk-prev").onclick=()=>go(congNgay(tuan,-7));
   $("wk-next").onclick=()=>go(congNgay(tuan,7));
   $("wk-now").onclick=()=>go(dauTuan(HOM));
