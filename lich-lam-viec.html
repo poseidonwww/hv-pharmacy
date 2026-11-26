@@ -32,6 +32,10 @@
 .lnav a{flex:none;font-size:var(--fs-sm);font-weight:600;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:99px}
 .lnav a:hover,.lnav a.on{color:var(--brand);background:var(--tint)}
 .ln-bp{margin-left:auto;flex:none;display:flex;align-items:center;gap:6px;font-size:var(--fs-xs);font-weight:600;color:var(--muted)}
+.lnav .ln-gt{display:block;padding-top:0;overflow:visible}.lnav .ln-gt[hidden]{display:none}
+.ln-gt{font-size:var(--fs-xs);color:var(--muted);padding-bottom:7px;line-height:1.45}
+.ln-gt b{color:var(--ink)}
+.ln-gt button{font:600 var(--fs-xs) var(--font);color:var(--brand);background:none;border:0;padding:0 2px;cursor:pointer;text-decoration:underline}
 .ln-bp select{font:600 var(--fs-sm) var(--font);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
 /* Hôm nay của bạn */
 .toi-nay{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;background:var(--tint);border:1px solid color-mix(in srgb,var(--brand) 30%,var(--line));border-radius:var(--r);padding:12px 16px;margin-bottom:16px;font-size:var(--fs-sm)}
@@ -314,8 +318,8 @@ ul.xem li.warn{color:#8a5d00}ul.xem li.ok{color:#14663a}
 
   <nav class="lnav no-print" id="lnav" aria-label="Chuyển mục"><div class="wrap">
     <a href="#s-hom">Hôm nay</a><a href="#dk" id="ln-dk">Lịch của tôi</a><a href="#s-tuan">Tuần</a><a href="#s-thang">Tháng</a>
-    <label class="ln-bp">Bộ phận<select id="bp"><option value="">Tất cả</option></select></label>
-  </div></nav>
+    <label class="ln-bp" title="Lọc lịch theo bộ phận của bạn: chỉ hiện các việc và người nghỉ của bộ phận đó. Các ca trực chính luôn hiện.">Bộ phận<select id="bp"><option value="">Tất cả</option></select></label>
+  </div><div class="wrap ln-gt" id="bp-gt" hidden></div></nav>
   <div id="app"><div class="wrap"><div class="state" id="state">Đang tải lịch…</div></div></div>
   <div id="dk"></div>
 </main>
@@ -855,7 +859,11 @@ function veDK(){
 let dkTuDong=false;
 function batDauDK(){veDK();if(!dkTuDong&&S&&S.ma&&L&&L.dangKy){dkTuDong=true;
   chay("cuaToi",{},{nen:!!S.cuaToi,cho:"Đang đăng nhập…",cuon:false,ok:taiThongKe,loi:e=>{if(/mã|tên/i.test(e.message)){S=null;luuS(false);veDK()}}})}}
-$("bp").addEventListener("change",e=>{BP=e.target.value;try{localStorage.setItem("hv-lich-bp",BP)}catch(x){};ve()});
+/* Giải thích bộ lọc bộ phận: chỉ hiện khi đang lọc */
+function gtBP(){const g=$("bp-gt");g.hidden=!BP;g.innerHTML=BP?`Đang xem riêng <b>${esc(BP)}</b>: chỉ hiện việc và người nghỉ của bộ phận này; các ca trực chính vẫn luôn hiện. <button type="button" id="bp-bo">Xem cả khoa</button>`:"";
+  if(BP)$("bp-bo").onclick=()=>{$("bp").value="";$("bp").dispatchEvent(new Event("change"))}}
+gtBP();
+$("bp").addEventListener("change",e=>{BP=e.target.value;try{localStorage.setItem("hv-lich-bp",BP)}catch(x){};gtBP();ve()});
 {const hd=document.querySelector("header.nav");const dat=()=>document.documentElement.style.setProperty("--hdr",(hd?hd.offsetHeight:64)+"px");dat();addEventListener("resize",dat)}
 addEventListener("scroll",()=>{let on="";for(const id of ["s-hom","dk","s-tuan","s-thang"]){const e=$(id);if(e&&e.getBoundingClientRect().top<160)on=id}
   document.querySelectorAll(".lnav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+on))},{passive:true});
